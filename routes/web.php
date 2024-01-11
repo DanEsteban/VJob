@@ -52,9 +52,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
-});
+})->name('dashboard');
 
 Route::resource('productoPrecio', ProductoPrecioController::class);
 
@@ -69,10 +69,7 @@ Route::post('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
 
 Route::get('/operations/cashier/{fecha}', [OperationController::class, 'getCashier'])->name('operation.cashier');
 
-
-
 Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
-
 
 Route::resource('customers', CustomerController::class)->except(['destroy'])->middleware(['auth:sanctum', 'verified']);
 
@@ -82,7 +79,7 @@ Route::resource('deliveries', DeliveryController::class)->except(['create', 'sto
 
 Route::resource('empresa', EmpresasController::class)->except(['index']);
 
-Route::post('/empresa/crearEmpresa', [EmpresasController::class, 'verificarCodigo'])->name('empresa.crearEmpresa');
+Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
 
 Route::resource('firma', FirmaController::class)->except(['create', 'store', 'update', 'edit', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 
@@ -113,7 +110,6 @@ Route::resource('orders', OrderController::class)->middleware(['auth:sanctum', '
 
 Route::resource('payments', PaymentController::class)->middleware(['auth:sanctum', 'verified']);
 
-
 Route::resource('productsReport', ProductReportController::class)->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('process', ProcessController::class)->except(['show'])->middleware(['auth:sanctum', 'verified']);
@@ -143,10 +139,10 @@ Route::get('/vendors/access/api/order/{id}', [VendorOrderController::class, 'pdf
 
 Route::resource('/vendors/access/api', VendorOrderController::class)->except(['destroy']);
 
-Route::get('register', ['register' => false]);
-Route::post('register', ['register' => false]);
+// Route::get('register', ['register' => false]);
+// Route::post('register', ['register' => false]);
 
-Route::get('/register', function () {return redirect('/');})->name('register');
+// Route::get('/register', function () {return redirect('/');})->name('register');
 
 Route::resource('warehouses', WarehouseController::class)->middleware(['auth:sanctum', 'verified']);
 

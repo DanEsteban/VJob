@@ -1354,6 +1354,20 @@ class OperationController extends Controller
         } catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         }
-    }    
+    } 
+    
+    //Verifica el código de registro
+    public function verificarCodigo(Request $request)
+    {
+        $codigoIngresado = $request->codigo;
+        $registro=Activacion::where('codigo_activacion', $request->codigo)->where('es_activo',0)->first();
+
+        if($registro != null){
+            return view('empresa.create', ['codigo' => $codigoIngresado]);
+        }
+        else{
+            return back()->with('error', 'El código ingresado es incorrecto.');
+        }
+    }
 }
 

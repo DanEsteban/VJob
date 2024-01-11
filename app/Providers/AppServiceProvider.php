@@ -14,6 +14,9 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+        $this->app->bind('CadenaConexion', function () {
+            return '127.0.0.1';
+        });
     }
 
     /**

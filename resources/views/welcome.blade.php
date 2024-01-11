@@ -23,7 +23,7 @@
         <style>
             body {
                 font-family: "Raleway", Arial, sans-serif;
-                background-color: #FDE7D2;
+                background-color: #0097D5;
             }
             .efecto {
                 width: 100px;
@@ -53,16 +53,16 @@
             @if (Route::has('login'))
                 <div class="fixed top-0 right-0 px-6 py-4 sm:block">
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a>
+                        <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Pantalla Principal</a>
                     @else
                     <div class="dropdown">
-                        <button class="btn btn-outline-danger dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                            Login
+                        <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            Inicio
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="/login">Users</a></li>
+                            <li><a class="dropdown-item" href="/login">Iniciar Sesión</a></li>
                             <hr>
-                            <li><a class="dropdown-item" href="/vendors/access/api/page">Suppliers</a></li>
+                            <li><a class="dropdown-item" href="/register">Registrarse</a></li>
                           </ul> 
                     </div>
                     @endauth
@@ -75,7 +75,7 @@
         <br>
         <br>
         <center>
-            <p style="font-size: 30px; color: green"><b>Welcome</b></p>
+            <p style="font-size: 30px; color: white"><b>Bienvenido</b></p>
         </center>
         <br>
         <div class="card">
@@ -97,8 +97,8 @@
         <br>
         <br>
         <center>
-            <p style="color: green">Powered by <img src="../img/ISOTIPO.png" width="30px" alt="isotipo_logo"> Visual Job</p>
-            <p style="color: green">Copyright © 2022-2024. All rights reserved.</p>
+            <p style="color: white">Creado por Visual Job</p>
+            <p style="color: white">Copyright © 2022-2026. All rights reserved.</p>
         </center>
     </body>
 </html>

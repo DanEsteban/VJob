@@ -935,17 +935,4 @@ class EmpresasController extends Controller
     {
         //
     }
-
-    public function verificarCodigo(Request $request)
-    {
-        $codigoIngresado = $request->codigo;
-        $registro=Activacion::where('codigo_activacion', $request->codigo)->where('es_activo',0)->first();
-
-        if($registro != null){
-            return view('empresa.create', ['codigo' => $codigoIngresado]);
-        }
-        else{
-            return back()->with('error', 'El código ingresado es incorrecto.');
-        }
-    }
 }

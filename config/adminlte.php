@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Flowerist</b>',
+    'logo' => 'Visual<b>Job</b>',
     'logo_img' => 'vendor/adminlte/dist/img/logo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => '',
@@ -334,13 +334,13 @@ return [
             'icon'        => 'fa-solid fa-signature'
         ],
         [
-            'text'        => 'Ticket Sets',
+            'text'        => 'Tickets',
             'url'         => '/ticket',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-spa'
         ],
         [
-            'text'        => 'Movements',
+            'text'        => 'Movimientos',
             'url'         => '/movements',
             'classes'     => 'text-white',
             'icon'        => 'fa fa-retweet'
@@ -401,13 +401,13 @@ return [
             'can'         => 'bill.index'
         ],
         [
-            'text'        => 'Orders Center',
+            'text'        => 'Pedidos',
             'url'         => '/vendors/access/api',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-cart-flatbed',       
         ],
         [
-            'text'        => 'Customers center',
+            'text'        => 'Clientes',
             'url'         => '/customers',
             'id'          => 'customer-id',
             'classes'     => 'text-white',
@@ -415,7 +415,7 @@ return [
             'can'         => 'customer.index'
         ],
         [
-            'text'        => 'Vendor center',
+            'text'        => 'Proveedores',
             'url'         => '/vendors',
             'id'          => 'vendor-id',
             'classes'     => 'text-white',
@@ -461,7 +461,7 @@ return [
             ],
         ],
         [
-            'text'    => 'Reports Center',
+            'text'    => 'Reportes',
             'icon'    => 'fa-solid fa-file-lines',
             'submenu' => [
                 [
@@ -511,7 +511,7 @@ return [
             ]
         ],
         [
-            'text' => 'Users',
+            'text' => 'Usuarios',
             'url'  => '/users',
             'id'   => 'users-id',
             'classes'  => 'text-white',
@@ -527,7 +527,7 @@ return [
             'can'  => 'roles.index'
         ],
         [
-            'text' => 'Options',
+            'text' => 'Opciones',
             'url'  => '/options',
             'id'   => 'options-id',
             'classes'  => 'text-white',
@@ -535,7 +535,7 @@ return [
             'can'  => 'options.index'
         ],
         [
-            'text' => 'Warehouse',
+            'text' => 'Bodegas',
             'url'  => '/warehouses',
             'id'   => 'warehouse-id',
             'classes'  => 'text-white',
