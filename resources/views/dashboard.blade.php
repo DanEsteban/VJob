@@ -7,6 +7,10 @@
     <div class="row align-items-center">
         <div class="bg-white  mt-3">
             <h2>INICIO <span style="font-weight: lighter;">/ Información resumida de tu gestión</span></h2>
+            @if(app('cadenaConexion'))
+                <p>El valor de CadenaConexion es: {{ app('cadenaConexion') }}</p>
+                <p>El valor de Configuracion es: {{ var_dump(app('configuracion')) }}</p>
+            @endif
         </div>
     </div>
 </div>

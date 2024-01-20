@@ -5,9 +5,7 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
-        "php": "^7.4.28|^8.2.4",
-        "bacon/bacon-qr-code": "^2.0",
-        "endroid/qr-code": "^4.8",
+        "php": "^7.4.28|^8.0",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "jeroennoten/laravel-adminlte": "^3.8",
@@ -16,12 +14,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "livewire/livewire": "^2.5",
-        "mike42/escpos-php": "^4.0",
-        "mpdf/mpdf": "*",
-        "nesbot/carbon": "^2.72",
-        "phpseclib/phpseclib": "^2.0",
-        "robrichards/xmlseclibs": "^3.1",
-        "simplesoftwareio/simple-qrcode": "^4.2",
+        "mpdf/mpdf": "^8.1",
         "spatie/laravel-permission": "^5.5"
     },
     "require-dev": {
@@ -35,13 +28,9 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "BaconQrCode\\": "vendor/bacon/bacon-qr-code/src/BaconQrCode",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        },
-        "files": [
-            "xmlseclibs/xmlseclibs.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

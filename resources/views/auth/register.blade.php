@@ -79,7 +79,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Prompt:wght@700&display=swap" rel="stylesheet">
-    <title>Iniciar Sesión</title>
+    <title>Registrarse</title>
 </head>
 <body>
     <img style="width: 200px; height: 100px;" src="/img/logo_vJOB.png" alt="Company Logo">

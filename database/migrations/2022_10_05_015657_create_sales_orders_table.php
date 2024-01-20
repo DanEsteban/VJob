@@ -23,8 +23,6 @@ class CreateSalesOrdersTable extends Migration
             $table->integer('id_term')->nullable(true);
             $table->string('billto', 255)->nullable(true);
             $table->integer('id_shipto')->nullable(true);
-            $table->integer('id_warehouse')->nullable(true);
-            $table->decimal('porcentage')->nullable(true);
             $table->decimal('taxes');
             $table->decimal('total');
             $table->string('status', 100)->default('Pending');

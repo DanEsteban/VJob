@@ -1,39 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TaxController;
 use App\Http\Controllers\BillController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ColorController;
-use App\Http\Controllers\FirmaController;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\MailsController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\TermsController;
-use App\Http\Controllers\UniteController;
-use App\Http\Controllers\UsersController;
-use App\Http\Controllers\KardexController;
-use App\Http\Controllers\LabelsController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\CashierController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProcessController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ElementsController;
-use App\Http\Controllers\EmpresasController;
-use App\Http\Controllers\ImpresoraController;
-use App\Http\Controllers\MovementsController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MailsController;
 use App\Http\Controllers\OperationController;
-use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProcessController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SizeController;
+use App\Http\Controllers\TaxController;
+use App\Http\Controllers\TermsController;
+use App\Http\Controllers\UniteController;
+use App\Http\Controllers\UsersController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\LabelsController;
+use App\Http\Controllers\MovementsController;
+use App\Http\Controllers\KardexController;
+use App\Http\Controllers\CashierController;
 use App\Http\Controllers\VendorOrderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductReportController;
-use App\Http\Controllers\ProductoPrecioController;
-
+use App\Http\Controllers\WarehouseController;
 
 
 /*
@@ -47,7 +42,6 @@ use App\Http\Controllers\ProductoPrecioController;
 |
 */
 
-
 Route::get('/', function () {
     return view('welcome');
 });
@@ -56,20 +50,9 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
-Route::resource('productoPrecio', ProductoPrecioController::class);
-
-Route::resource('invoices', InvoiceController::class);
-Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');
-Route::get('/invoices/tipoDocumento/{tipo}', [InvoiceController::class, 'tipoDocumento'])->name('invoice.tipoDocumento');
-Route::post('/invoices/xml', [InvoiceController::class, 'generarXML'])->name('invoice.xml');
-
-Route::resource('cashier', CashierController::class)->except(['update', 'edit']);
-
-Route::post('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
-
-Route::get('/operations/cashier/{fecha}', [OperationController::class, 'getCashier'])->name('operation.cashier');
-
 Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
+
+Route::resource('cashier', CashierController::class)->except(['update', 'edit'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('customers', CustomerController::class)->except(['destroy'])->middleware(['auth:sanctum', 'verified']);
 
@@ -77,24 +60,15 @@ Route::resource('colors', ColorController::class)->except(['create', 'edit', 'sh
 
 Route::resource('deliveries', DeliveryController::class)->except(['create', 'store', 'update', 'edit', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 
-Route::resource('empresa', EmpresasController::class)->except(['index']);
-
-Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
-
-Route::resource('firma', FirmaController::class)->except(['create', 'store', 'update', 'edit', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
-
-Route::post('/firma', [FirmaController::class, 'firmarXML'])->middleware(['auth:sanctum', 'verified'])->name('firma');
-
 Route::get('/invoice/print/{id}', function () { return view('templates.invoice'); })->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('group', GroupController::class)->except(['create', 'store', 'update', 'edit', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 
-Route::get('/invoices/approved/{id}', [InvoiceController::class, 'approved'])->middleware(['auth:sanctum', 'verified']); 
+Route::resource('invoices', InvoiceController::class)->middleware(['auth:sanctum', 'verified']);
+Route::get('/invoices/approved/{id}', [InvoiceController::class, 'approved'])->middleware(['auth:sanctum', 'verified']);
 Route::get('/invoices/void/{id}', [InvoiceController::class, 'void'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('inventories', ProductController::class)->except(['show'])->middleware(['auth:sanctum', 'verified']);
-
-Route::post('/iniciar', [OperationController::class, 'iniciarSesion'])->name('iniciar');
 
 Route::resource('mails', MailsController::class)->except(['create', 'store', 'edit', 'update', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 
@@ -106,9 +80,10 @@ Route::resource('kardex', KardexController::class)->except(['create', 'store', '
 
 Route::get('/options', function () { return view('options.index'); })->middleware(['auth:sanctum', 'verified']);
 
-Route::resource('orders', OrderController::class)->middleware(['auth:sanctum', 'verified']);
+Route::resource('orders', OrderController::class)->except(['destroy'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('payments', PaymentController::class)->middleware(['auth:sanctum', 'verified']);
+Route::get('/operations/customer/payment/delete/{id}', [OperationController::class, 'paymentDelete'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('productsReport', ProductReportController::class)->middleware(['auth:sanctum', 'verified']);
 
@@ -130,12 +105,12 @@ Route::resource('unite', UniteController::class)->except(['create', 'store', 'up
 
 Route::resource('users', UsersController::class)->except(['edit', 'show'])->middleware(['auth:sanctum', 'verified']);
 
-Route::resource('vendors', OperationController::class)->except(['show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
-Route::post('/vendors/access/api/login', [VendorOrderController::class, 'login'])->name('vendor.access.api');
-Route::get('/vendors/access/api/page', function () { return view('providers.login'); });
-Route::get('/vendors/access/api/main', function () { return view('providers.main'); });
-Route::post('/vendors/access/api/order/{id}', [VendorOrderController::class, 'destroy'])->name('vendor.order.delete');
-Route::get('/vendors/access/api/order/{id}', [VendorOrderController::class, 'pdf']);
+// Route::resource('vendors', VendorController::class)->except(['show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
+// Route::post('/vendors/access/api/login', [VendorOrderController::class, 'login'])->name('vendor.access.api');
+// Route::get('/vendors/access/api/page', function () { return view('providers.login'); });
+// Route::get('/vendors/access/api/main', function () { return view('providers.main'); });
+// Route::post('/vendors/access/api/order/{id}', [VendorOrderController::class, 'destroy'])->name('vendor.order.delete');
+// Route::get('/vendors/access/api/order/{id}', [VendorOrderController::class, 'pdf']);
 
 Route::resource('/vendors/access/api', VendorOrderController::class)->except(['destroy']);
 
@@ -146,11 +121,13 @@ Route::resource('/vendors/access/api', VendorOrderController::class)->except(['d
 
 Route::resource('warehouses', WarehouseController::class)->middleware(['auth:sanctum', 'verified']);
 
+Route::resource('warehouses', WarehouseController::class)->middleware(['auth:sanctum', 'verified']);
+
 Route::get('/operations/color/{name}', [OperationController::class, 'setNewColor'])->middleware(['auth:sanctum', 'verified'])->name('operation.color.name');
 Route::post('/operations/color/update/{id}', [OperationController::class, 'updateColor'])->middleware(['auth:sanctum', 'verified'])->name('operation.color.update');
 Route::get('/operations/color/delete/{id}', [OperationController::class, 'deleteColor'])->middleware(['auth:sanctum', 'verified'])->name('operation.color.delete');
 
-Route::post('/operations/verificar/login', [OperationController::class, 'verificarUser'])->name('operation.verificar');
+Route::get('/operations/cashier/{fecha}', [OperationController::class, 'getCashier'])->middleware(['auth:sanctum', 'verified'])->name('operation.cashier');
 
 Route::post('/operations/customer/new/{id}', [OperationController::class, 'setCustomer'])->middleware(['auth:sanctum', 'verified'])->name('operation.customer.new');
 Route::get('/operations/customer/{id}', [OperationController::class, 'getCustomer'])->middleware(['auth:sanctum', 'verified'])->name('operation.customer.id');
@@ -176,10 +153,8 @@ Route::post('/operations/group/update/{id}', [OperationController::class, 'updat
 Route::get('/operations/group/delete/{id}', [OperationController::class, 'deleteGroup'])->middleware(['auth:sanctum', 'verified'])->name('operation.group.delete');
 
 Route::get('/operations/item/{id}', [OperationController::class, 'getItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.id');
-
 Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
-Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
-
+Route::get('/operations/item/description/{description}', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
 Route::get('/operations/item/delete/{id}', [OperationController::class, 'delItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.delete');
 Route::get('/operations/item/image/{id}', [OperationController::class, 'getImage'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.getimage');
 Route::get('/operations/item/comparer/delete/{id}', [OperationController::class, 'deleteItemComparer'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.comparer.delete');
@@ -194,7 +169,6 @@ Route::post('/operations/item/customer/inventory/{id}', [OperationController::cl
 Route::post('/operations/item/comparer', [OperationController::class, 'setItemComparer'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.comparer');
 
 Route::post('/operations/mail/update/{id}', [OperationController::class, 'updateMail'])->middleware(['auth:sanctum', 'verified'])->name('operation.mail.update');
-Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
 
 Route::get('/operations/payment/list/{customer}', [OperationController::class, 'paymentList'])->name('operation.payments.list');
 
@@ -210,9 +184,6 @@ Route::get('/elements/bill/row', [ElementsController::class, 'addRowBill'])->mid
 Route::post('/elements/kardex/pdf', [ElementsController::class, 'kardex'])->middleware(['auth:sanctum', 'verified'])->name('element.kardex.pdf');
 Route::post('/elements/product/report/pdf', [ElementsController::class, 'productsReport'])->middleware(['auth:sanctum', 'verified'])->name('element.product.report.pdf');
 Route::get('/elements/production/items', [ElementsController::class, 'addRowItemProd'])->middleware(['auth:sanctum', 'verified'])->name('element.production.item');
-
-Route::get('elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('element.priceProduct.row');
-
 Route::get('/elements/production/item/delete/{id}', [ElementsController::class, 'delRowItemProd'])->middleware(['auth:sanctum', 'verified'])->name('element.production.delete.item');
 Route::post('/elements/product/report/pdf', [ElementsController::class, 'productsReport'])->middleware(['auth:sanctum', 'verified'])->name('element.product.report.pdf');
 
@@ -271,3 +242,9 @@ Route::post('reports/sales/find', [ReportController::class, 'findSales'])->middl
 Route::post('reports/product/find', [ReportController::class, 'findProduct'])->middleware(['auth:sanctum', 'verified']);
 Route::post('reports/customer/find', [ReportController::class, 'findCustomer'])->middleware(['auth:sanctum', 'verified']);
 
+Route::get('reports/sales', [ReportController::class, 'salesreport'])->middleware(['auth:sanctum', 'verified']);
+Route::get('reports/product', [ReportController::class, 'productreport'])->middleware(['auth:sanctum', 'verified']);
+Route::get('reports/customer', [ReportController::class, 'customereport'])->middleware(['auth:sanctum', 'verified']);
+Route::post('reports/sales/find', [ReportController::class, 'findSales'])->middleware(['auth:sanctum', 'verified']);
+Route::post('reports/product/find', [ReportController::class, 'findProduct'])->middleware(['auth:sanctum', 'verified']);
+Route::post('reports/customer/find', [ReportController::class, 'findCustomer'])->middleware(['auth:sanctum', 'verified']);

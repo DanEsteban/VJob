@@ -63,11 +63,11 @@ return [
     |
     */
 
-    'logo' => 'Visual<b>Job</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/logo.png',
+    'logo' => 'VISUAL<b>JOB</b>',
+    'logo_img' => '',
     'logo_img_class' => 'brand-image img-circle elevation-3',
-    'logo_img_xl' => '',
-    'logo_img_xl_class' => 'brand-image-xs',
+    'logo_img_xl' => 'vendor/adminlte/dist/img/Logo-web-1.png',
+    'logo_img_xl_class' => 'brand-image-xl',
     'logo_img_alt' => 'Admin Logo',
 
     /*
@@ -314,24 +314,18 @@ return [
             ],
         ],
         [
-            'text'        => 'Estimate',
+            'text'        => 'Proformas',
             'url'         => '/orders/create',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-file-contract',
             'can'         => 'estimate.create'
         ],
         [
-            'text'        => 'Invoice',
+            'text'        => 'Facturas',
             'url'         => '/invoices/create',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-file-invoice-dollar',
             'can'         => 'invoice.create'
-        ],
-        [
-            'text'        => 'Firma',
-            'url'         => '/firma',
-            'classes'     => 'text-white',
-            'icon'        => 'fa-solid fa-signature'
         ],
         [
             'text'        => 'Tickets',
@@ -346,28 +340,28 @@ return [
             'icon'        => 'fa fa-retweet'
         ],
         [
-            'text'        => 'Bill',
+            'text'        => 'Compras',
             'url'         => '/bills/create',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-truck-ramp-box',
             'can'         => 'bill.index'
         ],
         [
-            'text'        => 'Receive Payments',
+            'text'        => 'Cobros',
             'url'         => '/payments',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-hand-holding-dollar',
             'can'         => 'payment.index'
         ],
         [
-            'text'        => 'Print Label',
+            'text'        => 'Códigos de Barras',
             'url'         => '/labels',
             'id'          => 'label-id',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-barcode',
             'can'         => 'print.index'
         ],
-        ['header' => 'OPERATIONS CENTER',
+        ['header' => 'CENTROS DE OPERACIONES',
             'can'   => [
                 'estimate.index',
                 'invoice.index',
@@ -378,14 +372,14 @@ return [
             ]
         ],
         [
-            'text'        => 'Estimate Center',
+            'text'        => 'Centro de Proformas',
             'url'         => '/orders',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-list-check',
             'can'         => 'estimate.index'
         ],
         [
-            'text'        => 'Invoices Center',
+            'text'        => 'Centro de Facturas',
             'url'         => '/invoices',
             'id'          => 'invoice-id',
             'classes'     => 'text-white',
@@ -393,7 +387,7 @@ return [
             'can'         => 'invoice.index'
         ],
         [
-            'text'        => 'Bills Center',
+            'text'        => 'Centro de Compras',
             'url'         => '/bills',
             'id'          => 'bill-id',
             'classes'     => 'text-white',
@@ -401,7 +395,7 @@ return [
             'can'         => 'bill.index'
         ],
         [
-            'text'        => 'Pedidos',
+            'text'        => 'Centro de Pedidos',
             'url'         => '/vendors/access/api',
             'classes'     => 'text-white',
             'icon'        => 'fa-solid fa-cart-flatbed',       
@@ -423,7 +417,7 @@ return [
             'can'         => 'vendor.index'
         ],
         [
-            'text'        => 'Inventory Center',
+            'text'        => 'Inventarios',
             'url'         => '/inventories',
             'id'          => 'inventory-id',
             'classes'     => 'text-white',
@@ -431,78 +425,49 @@ return [
             'can'         => 'inventory.index'
         ],
         [
-            'text'    => 'Facturacion',
-            'icon'    => 'fa-solid fa-hand-holding-dollar',
-            'submenu' => [
-                [
-                    'text'    => 'Factura Cliente',
-                    'url'     => '/invoices',
-                    'icon'    => 'fa-solid fa-file-invoice',
-                    'shift'   => 'ml-3',
-                ],
-                [
-                    'text'    => 'Imprimir Cierre Caja',
-                    'url'     => '/cashier',
-                    'icon'    => 'fa-solid fa-file-lines',
-                    'shift'   => 'ml-3',
-                ]
-            ],
-        ],
-        [
-            'text'    => 'Inventarios',
-            'icon'    => 'fa fa-boxes',
-            'submenu' => [
-                [
-                    'text'    => 'Ingreso Productos y Precios',
-                    'url'     => '/productoPrecio',
-                    'icon'    => 'fa-solid fa-box-open',
-                    'shift'   => 'ml-3',
-                ]
-            ],
-        ],
-        [
             'text'    => 'Reportes',
             'icon'    => 'fa-solid fa-file-lines',
+            //'can'     => 'report.index',
+            //'can'     => 'report.index',
             'submenu' => [
                 [
-                    'text'    => 'Sales',
+                    'text'    => 'Ventas',
+                    'url'     => '/reports/sales',
                     'url'     => '/reports/sales',
                     'icon'    => 'fa-solid fa-file-lines',
                     'shift'   => 'ml-3',
                 ],
                 [
+                    'text'    => 'Saldos de Clientes',
+                    'url'     => '/reports/customer',
                     'text'    => 'Customer Balance',
                     'url'     => '/reports/customer',
                     'icon'    => 'fa-solid fa-file-lines',
                     'shift'   => 'ml-3',
                 ],
                 [
+                    'text'    => 'Saldos de Productos',
+                    'url'     => '/reports/product',
                     'text'    => 'Product Balance',
                     'url'     => '/reports/product',
                     'icon'    => 'fa-solid fa-file-lines',
                     'shift'   => 'ml-3',
                 ],
-                /*[
-                    'text'    => 'Cashier Balance',
+                [
+                    'text'    => 'Saldos de Caja',
                     'url'     => '/cashier',
                     'icon'    => 'fa-solid fa-file-lines',
                     'shift'   => 'ml-3',
-                ],*/
+                ],
                 [
                     'text'    => 'Kardex',
                     'url'     => '/kardex',
                     'icon'    => 'fa-solid fa-file-lines',
                     'shift'   => 'ml-3',
-                ],
-                [
-                    'text'    => 'Product Report',
-                    'url'     => '/productsReport',
-                    'icon'    => 'fa-solid fa-file-lines',
-                    'shift'   => 'ml-3',
                 ]
             ],
         ],
-        ['header' => 'ADMIN SETTINGS',
+        ['header' => 'OPCIONES DE ADMINISTRADOR',
             'can' => [
                 'users.index',
                 'roles.index',
@@ -540,6 +505,7 @@ return [
             'id'   => 'warehouse-id',
             'classes'  => 'text-white',
             'icon' => 'fa fa-warehouse',
+            //'can'  => 'warehouses.index'
         ],
     ],
 

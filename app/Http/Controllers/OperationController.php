@@ -10,11 +10,6 @@ use App\Models\Vendors;
 use App\Models\Groups;
 use App\Models\Products;
 use App\Models\Customers;
-use App\Models\Processes;
-use App\Models\Process_Order;
-use App\Models\ProcessCondition;
-use App\Models\ProcessPhases;
-use App\Models\ProcessStage;
 use App\Models\UnitMeasure;
 use App\Models\ImageProduct;
 use App\Models\PaymentTerms;
@@ -29,11 +24,6 @@ use App\Models\ContactCustomer;
 use App\Models\Invoices;
 use App\Models\Inventories;
 use App\Models\InventoriesCustomers;
-use App\Models\ProcessData;
-use App\Models\ProcessDataPhase;
-use App\Models\ProcessDataStage;
-use App\Models\ProcessDataCodebar;
-use App\Models\ProcessComparerItems;
 use App\Models\Products_Colors;
 use App\Models\Products_Sizes;
 use App\Models\CustomizeMail;
@@ -43,10 +33,11 @@ use App\Models\Products_LabelBar;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NoticesMail;
 use App\Models\PaymentsDetails;
-use App\Models\VendorsUsers;
 use App\Models\Activacion;
+use App\Models\Empresas;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 
 
@@ -109,19 +100,19 @@ class OperationController extends Controller
             echo "Error de conexión: " . $e->getMessage();
         } 
     }
-    public function verificarUser(Request $request)
-    {
-        $credentials = $request->only('usuario', 'password');
-        $clave = $request->password;
-        $usuarios = User::where('usuario', $request->usuario)->first();
+    // public function verificarUser(Request $request)
+    // {
+    //     $credentials = $request->only('usuario', 'password');
+    //     $clave = $request->password;
+    //     $usuarios = User::where('usuario', $request->usuario)->first();
         
-        if($usuarios && password_verify($clave, $usuarios->password)){
-            return response()->json(['success' => true]);
-        }
-        else{
-            return response()->json(['success' => false, 'message' => 'Credenciales incorrectas']);
-        }
-    }
+    //     if($usuarios && password_verify($clave, $usuarios->password)){
+    //         return response()->json(['success' => true]);
+    //     }
+    //     else{
+    //         return response()->json(['success' => false, 'message' => 'Credenciales incorrectas']);
+    //     }
+    // }
 
     //Customers Operation
     public function setCustomer(Request $request, $id){ 
@@ -710,25 +701,25 @@ class OperationController extends Controller
             }
         }
 
-        $relation_process_order = Process_Order::where('id_order', $sales_order->id)->first();
-        if($relation_process_order){
-            $process = ProcessData::where('id', $relation_process_order->id_process)->first();
-            $phases = ProcessDataPhase::where('id_data', $process->id)->get();
-            if($phases){
-                foreach ($phases as $phase) {
-                    $stages = ProcessDataStage::where('id_phases', $phase->id)->get();
-                    if($stages){
-                        foreach ($stages as $stage) {
-                            $stage->delete();
-                        }
-                    }
-                    $phase->delete();
-                }
-            }
+        // $relation_process_order = Process_Order::where('id_order', $sales_order->id)->first();
+        // if($relation_process_order){
+        //     $process = ProcessData::where('id', $relation_process_order->id_process)->first();
+        //     $phases = ProcessDataPhase::where('id_data', $process->id)->get();
+        //     if($phases){
+        //         foreach ($phases as $phase) {
+        //             $stages = ProcessDataStage::where('id_phases', $phase->id)->get();
+        //             if($stages){
+        //                 foreach ($stages as $stage) {
+        //                     $stage->delete();
+        //                 }
+        //             }
+        //             $phase->delete();
+        //         }
+        //     }
     
-            $relation_process_order->delete();
-            $process->delete();
-        }
+        //     $relation_process_order->delete();
+        //     $process->delete();
+        // }
 
         $sales_order->delete();
 
@@ -751,138 +742,138 @@ class OperationController extends Controller
 
 
      //Process Operation
-    public function getProcess($id){
-        $group_process = array();
-        $group_phases = array();
+    // public function getProcess($id){
+    //     $group_process = array();
+    //     $group_phases = array();
 
-        $process = Processes::find($id);
-        $phases = ProcessPhases::where('id_process', $process->id)->get();
-         if($phases){
-            foreach ($phases as $phase) {
-                $stages = ProcessStage::where('id_phase', $phase->id)->get();
-                $group_phases[] = [
-                    'phase' => $phase,
-                    'stages' => $stages
-                ];
-            }
-        }
+    //     $process = Processes::find($id);
+    //     $phases = ProcessPhases::where('id_process', $process->id)->get();
+    //      if($phases){
+    //         foreach ($phases as $phase) {
+    //             $stages = ProcessStage::where('id_phase', $phase->id)->get();
+    //             $group_phases[] = [
+    //                 'phase' => $phase,
+    //                 'stages' => $stages
+    //             ];
+    //         }
+    //     }
 
-        $group_process[] = [
-            "process" => $process,
-            "phases" => $group_phases
-        ];
+    //     $group_process[] = [
+    //         "process" => $process,
+    //         "phases" => $group_phases
+    //     ];
 
-        return $group_process;
-    }
+    //     return $group_process;
+    // }
 
-    public function getCondition($id){
-        $group_condition = array();
-        $id_process = Processes::where('id', $id)->value('id');
-        $phases = ProcessPhases::where('id_process', $id_process)->get();
-        if($phases){
-            foreach ($phases as $phase) {
-                $stages = ProcessStage::where('id_phase', $phase->id)->get();
-                if($stages){
-                    foreach ($stages as $stage) {
-                        if($stage->has_condition == 1){
-                            $group_condition[] = [
-                                "Condition" => ProcessCondition::where('id_stage', $stage->id)->first(),
-                                "stage" => $stage
-                            ];
-                        }
-                    }
-                }               
-            }
-        }
+    // public function getCondition($id){
+    //     $group_condition = array();
+    //     $id_process = Processes::where('id', $id)->value('id');
+    //     $phases = ProcessPhases::where('id_process', $id_process)->get();
+    //     if($phases){
+    //         foreach ($phases as $phase) {
+    //             $stages = ProcessStage::where('id_phase', $phase->id)->get();
+    //             if($stages){
+    //                 foreach ($stages as $stage) {
+    //                     if($stage->has_condition == 1){
+    //                         $group_condition[] = [
+    //                             "Condition" => ProcessCondition::where('id_stage', $stage->id)->first(),
+    //                             "stage" => $stage
+    //                         ];
+    //                     }
+    //                 }
+    //             }               
+    //         }
+    //     }
 
-        return $group_condition;
-    }
+    //     return $group_condition;
+    // }
 
-    public function getProcessName($name){
-        $response = Processes::where('description', $name)->exists();
-        if(!$response){
-            $response = 0;
-        }
+    // public function getProcessName($name){
+    //     $response = Processes::where('description', $name)->exists();
+    //     if(!$response){
+    //         $response = 0;
+    //     }
 
-        return $response;
-    }
+    //     return $response;
+    // }
 
-    public function updateStageData(Request $request){
-        $stage = ProcessDataStage::where('id', $request->id)->first();
-        $stage->start_date = $request->start;
-        $stage->end_date =  $request->end;
-        $stage->instructions = $request->instructions;
-        $stage->percentage = $request->progress;
-        $stage->save();
-        $message = null;
+    // public function updateStageData(Request $request){
+    //     $stage = ProcessDataStage::where('id', $request->id)->first();
+    //     $stage->start_date = $request->start;
+    //     $stage->end_date =  $request->end;
+    //     $stage->instructions = $request->instructions;
+    //     $stage->percentage = $request->progress;
+    //     $stage->save();
+    //     $message = null;
 
-        $phase = ProcessDataPhase::where('id', $stage->id_phases)->first();
-        $process = ProcessData::where('id', $phase->id_data)->first();
-        if($process->percentage == 100){
-            $process->status = "Complete";
-            $process->save();
-        }
+    //     $phase = ProcessDataPhase::where('id', $stage->id_phases)->first();
+    //     $process = ProcessData::where('id', $phase->id_data)->first();
+    //     if($process->percentage == 100){
+    //         $process->status = "Complete";
+    //         $process->save();
+    //     }
 
-        if ( $stage->percentage == 100) {
-            if($stage->has_send_mail == 1){
-                ///envía correo al cliente
-                $email = Customers::where('id', $process->id_customer)->value('email');
-                $customer = Customers::where('id', $process->id_customer)->value('company_name');
-                $message = CustomizeMail::where('type', 'Stage')->value('message');
-                if($email){
-                    Mail::to($email)->send(new NoticesMail($stage, $customer, $message));   
-                }
-            }
-        }
+    //     if ( $stage->percentage == 100) {
+    //         if($stage->has_send_mail == 1){
+    //             ///envía correo al cliente
+    //             $email = Customers::where('id', $process->id_customer)->value('email');
+    //             $customer = Customers::where('id', $process->id_customer)->value('company_name');
+    //             $message = CustomizeMail::where('type', 'Stage')->value('message');
+    //             if($email){
+    //                 Mail::to($email)->send(new NoticesMail($stage, $customer, $message));   
+    //             }
+    //         }
+    //     }
 
-        $stage_count = ProcessDataStage::where('id_phases', $phase->id)->count();
-        $stage_percentage = ProcessDataStage::where('id_phases', $phase->id)->sum('percentage');
-        $phase_percentage = $stage_percentage / $stage_count;
-        $phase->percentage = $phase_percentage;
-        $phase->save();
+    //     $stage_count = ProcessDataStage::where('id_phases', $phase->id)->count();
+    //     $stage_percentage = ProcessDataStage::where('id_phases', $phase->id)->sum('percentage');
+    //     $phase_percentage = $stage_percentage / $stage_count;
+    //     $phase->percentage = $phase_percentage;
+    //     $phase->save();
 
-        $phase_count = ProcessDataPhase::where('id_data', $process->id)->count();
-        $phase_percentage = ProcessDataPhase::where('id_data', $process->id)->sum('percentage');
-        $process_percentage = $phase_percentage / $phase_count; 
-        $process->percentage = $process_percentage;
-        $process->save();
+    //     $phase_count = ProcessDataPhase::where('id_data', $process->id)->count();
+    //     $phase_percentage = ProcessDataPhase::where('id_data', $process->id)->sum('percentage');
+    //     $process_percentage = $phase_percentage / $phase_count; 
+    //     $process->percentage = $process_percentage;
+    //     $process->save();
 
-        return;
-    }
+    //     return;
+    // }
 
-    public function setStageApprove(Request $request){
-        $stage = ProcessDataStage::find($request->id);
-        if($stage){
-            if ($request->type == 1) {
-                $stage->is_approved = 1;
-                $stage->save();
-            } else {
-                $stage->is_approved = 0;
-                $stage->save();
-            }
-        }
+    // public function setStageApprove(Request $request){
+    //     $stage = ProcessDataStage::find($request->id);
+    //     if($stage){
+    //         if ($request->type == 1) {
+    //             $stage->is_approved = 1;
+    //             $stage->save();
+    //         } else {
+    //             $stage->is_approved = 0;
+    //             $stage->save();
+    //         }
+    //     }
         
-        return;
-    }
+    //     return;
+    // }
 
-    public function setCodebar(Request $request){
-        $codebar = new ProcessDataCodebar;
-        $codebar->id_process = $request->process_id;
-        $codebar->id_stage = $request->stage_id;
-        $codebar->id_invoice = $request->invoice_id;
-        $codebar->code = $request->code;
-        $codebar->image = $request->image;
-        $codebar->save();
+    // public function setCodebar(Request $request){
+    //     $codebar = new ProcessDataCodebar;
+    //     $codebar->id_process = $request->process_id;
+    //     $codebar->id_stage = $request->stage_id;
+    //     $codebar->id_invoice = $request->invoice_id;
+    //     $codebar->code = $request->code;
+    //     $codebar->image = $request->image;
+    //     $codebar->save();
 
-        return;
-    }
+    //     return;
+    // }
 
-    public function deleteCodebar($id){
-        $codebar = ProcessDataCodebar::find($id);
-        $codebar->delete();
+    // public function deleteCodebar($id){
+    //     $codebar = ProcessDataCodebar::find($id);
+    //     $codebar->delete();
 
-        return;
-    }
+    //     return;
+    // }
     
 
      //Colors Operation
@@ -959,211 +950,211 @@ class OperationController extends Controller
     }
 
 
-    //Upload Files Operation
-    public function uploadCustomerFile(Request $request){
-        $attachment = null;
-        $filename = $_FILES['file']['name'];
-        $directory = "customer/files/";
-        if(!file_exists($directory)){
-            mkdir($directory, 0777);
-        }
+    // //Upload Files Operation
+    // public function uploadCustomerFile(Request $request){
+    //     $attachment = null;
+    //     $filename = $_FILES['file']['name'];
+    //     $directory = "customer/files/";
+    //     if(!file_exists($directory)){
+    //         mkdir($directory, 0777);
+    //     }
 
-        $dir = opendir($directory);
+    //     $dir = opendir($directory);
         
-        if(copy($_FILES['file']['tmp_name'], $directory.$filename)){
-                $attachment = AttachmentCustomer::create([
-                    'type_transaction' => $request->type,
-                    'id_transaction' => $request->order,
-                    'id_customer' => $request->customer,
-                    'type' => $_FILES['file']['type'],
-                    'file_name' =>  $_FILES['file']['name'],
-                    'file_size' => $_FILES['file']['size'],
-                    'file_location' => "customer/files/".$_FILES['file']['name'],
-                ]);
-        }
+    //     if(copy($_FILES['file']['tmp_name'], $directory.$filename)){
+    //             $attachment = AttachmentCustomer::create([
+    //                 'type_transaction' => $request->type,
+    //                 'id_transaction' => $request->order,
+    //                 'id_customer' => $request->customer,
+    //                 'type' => $_FILES['file']['type'],
+    //                 'file_name' =>  $_FILES['file']['name'],
+    //                 'file_size' => $_FILES['file']['size'],
+    //                 'file_location' => "customer/files/".$_FILES['file']['name'],
+    //             ]);
+    //     }
        
-        closedir($dir);
-        return json_encode($attachment);
-    }
+    //     closedir($dir);
+    //     return json_encode($attachment);
+    // }
 
-    public function uploadStageFile(Request $request){                   
-        $attachment = null;
-        $filename = $_FILES['file']['name'];
-        $directory = "files/stages/".$request->input('stage')."/";
-        if(!file_exists($directory)){
-            mkdir($directory, 0777);
-        }
+    // public function uploadStageFile(Request $request){                   
+    //     $attachment = null;
+    //     $filename = $_FILES['file']['name'];
+    //     $directory = "files/stages/".$request->input('stage')."/";
+    //     if(!file_exists($directory)){
+    //         mkdir($directory, 0777);
+    //     }
 
-        $dir = opendir($directory);
+    //     $dir = opendir($directory);
         
-       if(copy($_FILES['file']['tmp_name'], $directory.$filename)){
-            $attachment = Attachments::create([
-                'id_process' => $request->process,
-                'id_phase' => $request->phase,
-                'id_stage' => $request->stage,
-                'type' => $_FILES['file']['type'],
-                'file_name' =>  $_FILES['file']['name'],
-                'file_size' => $_FILES['file']['size'],
-                'file_location' => "files/stages/".$request->stage."/".$_FILES['file']['name'],
-            ]);
-       }
-       closedir($dir);       
-       return json_encode($attachment);
-    }
+    //    if(copy($_FILES['file']['tmp_name'], $directory.$filename)){
+    //         $attachment = Attachments::create([
+    //             'id_process' => $request->process,
+    //             'id_phase' => $request->phase,
+    //             'id_stage' => $request->stage,
+    //             'type' => $_FILES['file']['type'],
+    //             'file_name' =>  $_FILES['file']['name'],
+    //             'file_size' => $_FILES['file']['size'],
+    //             'file_location' => "files/stages/".$request->stage."/".$_FILES['file']['name'],
+    //         ]);
+    //    }
+    //    closedir($dir);       
+    //    return json_encode($attachment);
+    // }
 
-    public function deleteCustomerFile($id){
-        $file = AttachmentCustomer::find($id);
-        $delete_file  = unlink($file->file_location);
-        $file->delete();
+    // public function deleteCustomerFile($id){
+    //     $file = AttachmentCustomer::find($id);
+    //     $delete_file  = unlink($file->file_location);
+    //     $file->delete();
 
-        return json_encode($file);
-    }
+    //     return json_encode($file);
+    // }
 
-    public function deleteStageFile($id){
-        $file = Attachments::find($id);
-        $delete_file  = unlink($file->file_location);
-        $file->delete();
+    // public function deleteStageFile($id){
+    //     $file = Attachments::find($id);
+    //     $delete_file  = unlink($file->file_location);
+    //     $file->delete();
 
-        return;
-    }
+    //     return;
+    // }
 
 
-    //Items Comparer Operation
-    public function setItemComparer(Request $request){
-        $id_product = Products::where('item_name', $request->item_code)->value('id'); 
-        $ingresos = null; $egresos = null;
+    // //Items Comparer Operation
+    // public function setItemComparer(Request $request){
+    //     $id_product = Products::where('item_name', $request->item_code)->value('id'); 
+    //     $ingresos = null; $egresos = null;
 
-        if($request->item_size && $request->item_color){
-            $ingresos = Inventories::where('id_product', $id_product)
-                    ->where('id_size', $request->item_size)
-                    ->where('id_color', $request->item_color)
-                    ->where('type', 'BL')
-                    ->sum('qty');
-        }
-        else if($request->item_size){
-            $ingresos = Inventories::where('id_product', $id_product)
-                    ->where('id_size', $request->item_size)
-                    ->where('type', 'BL')
-                    ->sum('qty');
-        }
-        else if($request->item_color){
-            $ingresos = Inventories::where('id_product', $id_product)
-                    ->where('id_color', $request->item_color)
-                    ->where('type', 'BL')
-                    ->sum('qty');
-        }
-        else{
-            $ingresos = Inventories::where('id_product', $id_product)
-                    ->where('type', 'BL')
-                    ->sum('qty');
-        }
+    //     if($request->item_size && $request->item_color){
+    //         $ingresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_size', $request->item_size)
+    //                 ->where('id_color', $request->item_color)
+    //                 ->where('type', 'BL')
+    //                 ->sum('qty');
+    //     }
+    //     else if($request->item_size){
+    //         $ingresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_size', $request->item_size)
+    //                 ->where('type', 'BL')
+    //                 ->sum('qty');
+    //     }
+    //     else if($request->item_color){
+    //         $ingresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_color', $request->item_color)
+    //                 ->where('type', 'BL')
+    //                 ->sum('qty');
+    //     }
+    //     else{
+    //         $ingresos = Inventories::where('id_product', $id_product)
+    //                 ->where('type', 'BL')
+    //                 ->sum('qty');
+    //     }
 
        
-        if ($request->item_size && $request->item_color) {
-            $egresos = Inventories::where('id_product', $id_product)
-                    ->where('id_size', $request->item_size)
-                    ->where('id_color', $request->item_color)
-                    ->where('type', 'INV')
-                    ->sum('qty');
-        } 
-        else if($request->item_size) {
-            $egresos = Inventories::where('id_product', $id_product)
-                    ->where('id_size', $request->item_size)
-                    ->where('type', 'INV')
-                    ->sum('qty');
-        }
-        else if($request->item_color){
-            $egresos = Inventories::where('id_product', $id_product)
-                    ->where('id_color', $request->item_color)
-                    ->where('type', 'INV')
-                    ->sum('qty');
-        }
-        else{
-            $egresos = Inventories::where('id_product', $id_product)
-                    ->where('type', 'INV')
-                    ->sum('qty');
-        }
+    //     if ($request->item_size && $request->item_color) {
+    //         $egresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_size', $request->item_size)
+    //                 ->where('id_color', $request->item_color)
+    //                 ->where('type', 'INV')
+    //                 ->sum('qty');
+    //     } 
+    //     else if($request->item_size) {
+    //         $egresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_size', $request->item_size)
+    //                 ->where('type', 'INV')
+    //                 ->sum('qty');
+    //     }
+    //     else if($request->item_color){
+    //         $egresos = Inventories::where('id_product', $id_product)
+    //                 ->where('id_color', $request->item_color)
+    //                 ->where('type', 'INV')
+    //                 ->sum('qty');
+    //     }
+    //     else{
+    //         $egresos = Inventories::where('id_product', $id_product)
+    //                 ->where('type', 'INV')
+    //                 ->sum('qty');
+    //     }
         
         
-        $inventory_balance = $ingresos - $egresos;
-        $balance = $inventory_balance - $request->item_qty;
+    //     $inventory_balance = $ingresos - $egresos;
+    //     $balance = $inventory_balance - $request->item_qty;
 
-        $item = ProcessComparerItems::create([
-            'id_stage' => $request->id_stage,
-            'id_product' => $id_product,
-            'id_size' => $request->item_size,
-            'id_color' => $request->item_color,
-            'qty' => $request->item_qty,
-            'inventory' => $inventory_balance,
-            'balance' => $balance
-        ]);
+    //     $item = ProcessComparerItems::create([
+    //         'id_stage' => $request->id_stage,
+    //         'id_product' => $id_product,
+    //         'id_size' => $request->item_size,
+    //         'id_color' => $request->item_color,
+    //         'qty' => $request->item_qty,
+    //         'inventory' => $inventory_balance,
+    //         'balance' => $balance
+    //     ]);
         
-        $objeto = [
-            "id" => $item->id,
-            "code" => $request->item_code,
-            "description" => Products::where('item_name', $request->item_code)->value('sales_description'),
-            "size" => Sizes::where('id', $request->item_size)->value('description'),
-            "color" => Colors::where('id', $request->item_color)->value('description'),
-            "qty" => $request->item_qty,
-            "inventory" => $inventory_balance,
-            "balance" => $balance
-        ];
+    //     $objeto = [
+    //         "id" => $item->id,
+    //         "code" => $request->item_code,
+    //         "description" => Products::where('item_name', $request->item_code)->value('sales_description'),
+    //         "size" => Sizes::where('id', $request->item_size)->value('description'),
+    //         "color" => Colors::where('id', $request->item_color)->value('description'),
+    //         "qty" => $request->item_qty,
+    //         "inventory" => $inventory_balance,
+    //         "balance" => $balance
+    //     ];
 
-        return json_encode($objeto);
-    }
+    //     return json_encode($objeto);
+    // }
 
-    public function deleteItemComparer($id){
-        $item = ProcessComparerItems::where('id', $id)->first();
-        $item->delete();
+    // public function deleteItemComparer($id){
+    //     $item = ProcessComparerItems::where('id', $id)->first();
+    //     $item->delete();
 
-        return;
-    }
+    //     return;
+    // }
 
 
-    //Items Inventory Operation
-    public function setCustomerInventory(Request $request, $id){
-        $item = null;
-        $id_transaction = $id;
-        if ($request->type == "SO") {
-            $item = InventoriesCustomers::firstOrCreate([
-                'type_transaction' => 'SO',
-                'id_transaction' => $id_transaction,
-                'id_customer' => $request->id_customer,
-                'id_product' => Products::where('item_name', $request->item_name)->value('id'),
-                'qty' => $request->item_qty,
-                'id_size' => $request->item_size,
-                'id_color' => $request->item_color,
-            ]);   
-        } else {
-            $item = InventoriesCustomers::firstOrCreate([
-                'type_transaction' => 'INV',
-                'id_transaction' => $id_transaction,
-                'id_customer' => $request->id_customer,
-                'id_product' => Products::where('item_name', $request->item_name)->value('id'),
-                'qty' => $request->item_qty,
-                'id_size' => $request->item_size,
-                'id_color' => $request->item_color,
-            ]);   
-        }
+    // //Items Inventory Operation
+    // public function setCustomerInventory(Request $request, $id){
+    //     $item = null;
+    //     $id_transaction = $id;
+    //     if ($request->type == "SO") {
+    //         $item = InventoriesCustomers::firstOrCreate([
+    //             'type_transaction' => 'SO',
+    //             'id_transaction' => $id_transaction,
+    //             'id_customer' => $request->id_customer,
+    //             'id_product' => Products::where('item_name', $request->item_name)->value('id'),
+    //             'qty' => $request->item_qty,
+    //             'id_size' => $request->item_size,
+    //             'id_color' => $request->item_color,
+    //         ]);   
+    //     } else {
+    //         $item = InventoriesCustomers::firstOrCreate([
+    //             'type_transaction' => 'INV',
+    //             'id_transaction' => $id_transaction,
+    //             'id_customer' => $request->id_customer,
+    //             'id_product' => Products::where('item_name', $request->item_name)->value('id'),
+    //             'qty' => $request->item_qty,
+    //             'id_size' => $request->item_size,
+    //             'id_color' => $request->item_color,
+    //         ]);   
+    //     }
         
-        $row = [
-            'id' => $item->id,
-            'code' => $request->item_name,
-            'description' => $request->item_description,
-            'size' => Sizes::where('id', $request->item_size)->value('description'),
-            'color' => Colors::where('id', $request->item_color)->value('description'),
-            'qty' => $request->item_qty
-        ];
+    //     $row = [
+    //         'id' => $item->id,
+    //         'code' => $request->item_name,
+    //         'description' => $request->item_description,
+    //         'size' => Sizes::where('id', $request->item_size)->value('description'),
+    //         'color' => Colors::where('id', $request->item_color)->value('description'),
+    //         'qty' => $request->item_qty
+    //     ];
 
-        return json_encode($row);
-    }
+    //     return json_encode($row);
+    // }
 
-    public function deleteCustomerInventory($id){
-        $item = InventoriesCustomers::find($id);
-        $item->delete();
+    // public function deleteCustomerInventory($id){
+    //     $item = InventoriesCustomers::find($id);
+    //     $item->delete();
 
-        return;
-    }
+    //     return;
+    // }
 
     //Vendor Operation
     public function setVendor(Request $request){
@@ -1194,20 +1185,20 @@ class OperationController extends Controller
         return json_encode($vendor);
     }
 
-    public function generatePassVendor(Request $request){
-        $user = null;
-        if (VendorsUsers::where('id_vendor', $request->id)->where('user', $request->name)->exists()) {
-            $user = VendorsUsers::where('id_vendor', $request->id)->where('user', $request->name)->first();
-        } else {
-            $user = VendorsUsers::create([
-                'id_vendor' => $request->id,
-                'user' => $request->name,
-                'password' => uniqid()
-            ]);   
-        }
+    // public function generatePassVendor(Request $request){
+    //     $user = null;
+    //     if (VendorsUsers::where('id_vendor', $request->id)->where('user', $request->name)->exists()) {
+    //         $user = VendorsUsers::where('id_vendor', $request->id)->where('user', $request->name)->first();
+    //     } else {
+    //         $user = VendorsUsers::create([
+    //             'id_vendor' => $request->id,
+    //             'user' => $request->name,
+    //             'password' => uniqid()
+    //         ]);   
+    //     }
 
-        return json_encode($user);
-    }
+    //     return json_encode($user);
+    // }
 
     public function deleteVendor($id){
         $vendor = Vendors::find($id);
@@ -1367,6 +1358,22 @@ class OperationController extends Controller
         }
         else{
             return back()->with('error', 'El código ingresado es incorrecto.');
+        }
+    }
+
+    public function obtenerCadenaConexion(){
+        if (Auth::check()) {
+            // Obtiene el modelo del usuario autenticado
+            $usuarioAutenticado = Auth::user();
+    
+            // Accede al valor del campo id_empresa
+            $idEmpresa = $usuarioAutenticado->id_empresa;
+    
+            if ($idEmpresa) {
+                $datosEmpresa = Empresas::Select('base_datos', 'cadena_conexion')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();
+                App::instance('cadenaConexion', $datosEmpresa->cadena_conexion);
+                App::instance('nombreBaseDatos', $datosEmpresa->base_datos);
+            }
         }
     }
 }
