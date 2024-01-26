@@ -11,12 +11,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
-
-    
-    <div hidden id="cashier-data" data-invoices="{{ json_encode($invoices) }}" data-inicio="{{ $inicioDelDia }}"  
-        data-total-cash="{{ $totalCash }}" data-total-transfer="{{ $totalTransfer }}" data-total-payment="{{ $totalPayment }}">
-    </div> 
-
     <br>
     <div class="row">
         <div class="col-md-3">
@@ -40,7 +34,11 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><em>Fecha: <b id="fecha_invoices">{{$inicioDelDia}}</b></em></p>
+                        @php
+                            $fechaFormateada = date("d/m/Y", strtotime($inicioDelDia));
+                        @endphp
+
+                        <p><em>Fecha: <b id="fecha_invoices">{{$fechaFormateada}}</b></em></p>
                         {{-- <p><em>Receipt #: 34522677W</em></p> --}}
                     </div>
                 </div>
@@ -60,56 +58,30 @@
                             </tr>
                         </thead>
                         <tbody id="tb_invoices" >      
-                            <?php
-                                foreach ($invoices as $item){
-                            ?> 
+                            @foreach ($invoices as $item)
                                 <tr>
-                                    <?php
-                                        if ($item['tipo_documento'] === 0) {
-                                    ?>
-                                            <td>NV</td>
-                                    <?php
-                                        }
-                                        else{
-                                    ?>
-                                            <td>FC</td>
-                                    <?php
-                                        }
-                                    ?>
-                                    
-                                    <td>{{$lastEightDigits = substr($item['num_doc_sri'] , -8)}}</td>
-                                    <td>{{$item['subtotal']}}</td>
-                                    <td>{{$item['taxes']}}</td>
-                                    <td>${{$item['total']}}</td>
-                                </tr>                                        
-                            <?php
-                                }
-                            ?>        
+                                    <td>{{ $item['tipo_documento'] === 0 ? 'NV' : 'FC' }}</td>
+                                    <td>{{ substr($item['num_doc_sri'], -8) }}</td>
+                                    <td>${{ $item['subtotal'] }}</td>
+                                    <td>${{ $item['taxes'] }}</td>
+                                    <td>${{ $item['total'] }}</td>
+                                </tr>
+                            @endforeach       
                             
                         </tbody>
                         <tfoot id="tf_invoices">
                             <tr>
-                            <?php
-                                $subtotal_foot = 0;
-                                $taxes_foot = 0;
-                                $total_foot = 0;
-                                foreach ($invoices as $item){
-                                    $subtotal_foot += $item['subtotal']; 
-                                    $taxes_foot += $item['taxes'];
-                                    $total_foot += $item['total'];
-                                }
-                            ?>
                                 <td></td>
                                 <td></td>
                                 <td>
-                                    <p><strong>{{$subtotal_foot}}</strong></p>
+                                    <p><strong>${{$subtotal_foot = number_format(array_sum(array_column($invoices, 'subtotal')), 2) }}</strong></p>
                                 </td>
                                 <td>
-                                    <p><strong>{{$taxes_foot}}</strong></p>
+                                    <p><strong>${{$taxes_foot = number_format(array_sum(array_column($invoices, 'taxes')), 2) }}</strong></p>
                                 </td>
                                 <td>
-                                    <p><strong>${{$total_foot}}</strong></p>
-                                </td> 
+                                    <p><strong>${{$total_foot = number_format(array_sum(array_column($invoices, 'total')), 2) }}</strong></p>
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
@@ -126,23 +98,28 @@
                                 <th>Monto</th>
                             </tr>
                         </thead>
+
                         <tbody id="tb_cobranzas">
                             <tr class="trT">
                                 <td class="tdT nombre">Efectivo</td>
-                                <td class="tdT total">${{$totalCash}}</td>
+                                <td class="tdT total">${{ $totalCash }}</td>
                             </tr>
                             <tr class="trT">
                                 <td class="tdT nombre">Transferencia</td>
-                                <td class="tdT total">${{$totalTransfer}}</td>
+                                <td class="tdT total">${{ $totalTransfer }}</td>
                             </tr>
                             <tr class="trT">
                                 <td class="tdT nombre">Credito</td>
-                                <td class="tdT total">${{$total_foot - $totalPayment}}</td>
+                                @php
+                                    $credito = $total_foot - $totalPayment;
+                                @endphp
+                                <td class="tdT total">${{number_format($credito, 2) }}</td>
                             </tr>
                         </tbody>
+
                         <tfoot id="tf_cobranzas">
                             <tr>
-                                <td></td>
+                                <td>Total Pago</td>
                                 <td>
                                     <p><strong>${{$total_foot}}</strong></p>
                                 </td>
@@ -191,80 +168,91 @@
     </div>
 
     <button id="impirmirInicio" onclick="imprimirPagina();">Imprimir</button>
-    <button hidden id="impirmirFiltrar" onclick="imprimirPagina();">Imprimir</button>    
-
 
 </body>
 </html>
 @stop
 
 @section('css')
-<link href="/css/bootstrap.min.css" rel="stylesheet">
-<style>          
-    .card {
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .text-center {
-        text-align: center;
-    }
-    .asterisk-line {
-        border: none;
-        border-top: 1px dashed #ccc;
-        margin: 20px 0;
-    }
-    h1, h2 {
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-    th, td {
-        padding: 5px;
-        border: 1px solid #ccc;
-    }
-    thead {
-        background-color: #f2f2f2;
-    }
-    tfoot {
-        font-weight: bold;
-    }
-    .nombre {
-        width: 70%;
-    }
-    .total {
-        width: 30%;
-    }
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>          
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .asterisk-line {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 20px 0;
+        }
+        h1, h2 {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+        thead {
+            background-color: #f2f2f2;
+        }
+        tfoot {
+            font-weight: bold;
+        }
+        .nombre {
+            width: 70%;
+        }
+        .total {
+            width: 30%;
+        }
 
-</style>
+    </style>
 @stop
 
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript">
 
+    function formatDate(dateString) {
+        // Convertir la cadena de fecha a un objeto de fecha
+        var date = new Date(dateString);
+
+        // Obtener los componentes de la fecha
+        var day = date.getDate() + 1;
+        var month = date.getMonth() + 1; 
+        var year = date.getFullYear();
+
+        // Agregar ceros iniciales si es necesario
+        day = (day < 10) ? '0' + day : day;
+        month = (month < 10) ? '0' + month : month;
+
+        // Construir la cadena de fecha formateada
+        var formattedDate = day + '/' + month + '/' + year;
+
+        return formattedDate;
+    }
+
     function filtrar(objeto) {
 
-        $('#impirmirInicio').hide();
-        $('#imprimirFiltrar').removeAttr('hidden');
-
         let fecha = $(objeto).parent().parent().find('#fecha').val();
-
         $('#tb_invoices tr').remove();
         $('#tf_invoices tr').remove();
         $('#tb_cobranzas tr').remove();
         $('#tf_cobranzas tr').remove();
-
-        $('#fecha').val(fecha);
 
         $.ajax ({
             type: "GET",
@@ -276,9 +264,9 @@
                 console.log(xhr.responseText);
             },
             success : function(any){
-                console.log(any);
 
-                $('#fecha_invoices').text(fecha);
+                var formattedDate = formatDate(fecha);
+                $('#fecha_invoices').text(formattedDate);
                 var totalTransfer = 0;
                 var totalCash = 0;
                 var subtotal = 0;
@@ -339,7 +327,7 @@
                 $("#tb_cobranzas").append(payFila3);
 
                 
-                payFila4 += "<td>" + "" + "</td>";
+                payFila4 += "<td>" + "Total Pago" + "</td>";
                 payFila4 += "<td>" + total + "</td>";
                 payFila4 += "</tr>";
                 $("#tf_cobranzas").append(payFila4);
@@ -348,16 +336,34 @@
 
     }
 
-
     function imprimirPagina() {
-        var invoices = @json($invoices);
-        var inicioDelDia = @json($inicioDelDia);
-        var totalCash = @json($totalCash);
-        var totalTransfer = @json($totalTransfer);
-        var totalPayment = @json($totalPayment);
+
+        var fecha = $('#fecha').val();
+        var titulosVentas = ["TD", "Documento", "Sub", "IVA", "Total"];
+        var rowsVentas = $("#tb_invoices tr").map(function(rowIndex, row) {
+            var rowObject = {};
+            $(row).find("td").each(function(cellIndex, cell) {
+                var name = titulosVentas[cellIndex];
+                var value = $(cell).text();
+                var valueFormateado = value.replace("$", "")
+                rowObject[name] = valueFormateado;
+            });
+            return rowObject;
+        }).get();
+
+        var titulosCobranza = ["Formas de Pago", "Monto"];
+        var rowsCobranzas = $("#tb_cobranzas tr").map(function(rowIndex, row) {
+            var rowObject = {};
+            $(row).find("td").each(function(cellIndex, cell) {
+                var name = titulosCobranza[cellIndex];
+                var value = $(cell).text();
+                var valueFormateado = value.replace("$", "");
+                rowObject[name] = valueFormateado;
+            });
+            return rowObject;
+        }).get();
 
         var primerTD  = $('#tb_invoices tr:first td:first');
-
         if (primerTD.text().trim() === '') {
             Swal.fire({
                 icon: "error",
@@ -365,15 +371,13 @@
                 text: "No hay ningun campo en la tabla para mandar a imprimir! ",
             });
         } else {
-
             $.ajax({
                 type:'POST',
                 url: "imprimir-ticket",
                 dataType: 'json',
                 async: "false",
-                data: {"_token": "{{ csrf_token() }}",  invoices: invoices,
-                inicioDelDia: inicioDelDia, totalCash: totalCash, totalTransfer: totalTransfer,
-                totalPayment: totalPayment},
+                data: {"_token": "{{ csrf_token() }}",  invoices: rowsVentas,
+                fecha: fecha, cobranzas: rowsCobranzas},
                 error: function (xhr, status, error) {
                     console.log(xhr.responseText);
                 },

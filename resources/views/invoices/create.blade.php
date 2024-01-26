@@ -572,7 +572,41 @@
             }
         });
 
+        $('form').on('keydown', 'input, select, textarea', function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                mostrarAlerta();
+            }
+        });
+
+        $('form').submit(function (event) {
+            event.preventDefault();
+            mostrarAlerta();
+        });
+        
     });
+
+    function mostrarAlerta() {
+        
+        Swal.fire({
+            title: "¿Quiere guardar los cambios?",
+            text: "Usted no será capaz de revertir esto!",
+            icon: "warning",
+            showCancelButton: true,
+            cancelButtonColor: "#dc3545",
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Se ha guardado la Factura!",
+                    text: "Your file has been deleted.",
+                    icon: "success"
+                });
+                $('form').unbind('submit').submit();
+            }
+        });      
+    }
 
     function vaciarRow(objeto) {
         let fila = $(objeto).parent().parent();

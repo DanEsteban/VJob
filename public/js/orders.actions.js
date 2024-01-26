@@ -21,19 +21,19 @@ function showToast() {
 function addRow() {
     let count = $('#tb_items #tr_items').length;
     let url = "/elements/order/row";
-    $.ajax({
-        type: 'GET',
-        url: url,
-        dataType: 'html',
-        async: 'false',
-        data:{count:count},
-        error: function (xhr, status, error) {
-            console.log(xhr.responseText);
-        },
-        success : function(data){
-            $('#tb_items').append(data)
-        }
-    });
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: 'false',
+            data:{count:count},
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            },
+            success : function(data){
+                $('#tb_items').append(data)
+            }
+        });
 }
 
 function addRow2() {
@@ -56,22 +56,22 @@ function addRow2() {
 
 function addRow3() {
     let count = $('#tb_items #tr_items').length;
-    let type = $('#select_move').val();
     let url = "/elements/order/row/invoice";
-    $.ajax({
-        type: 'GET',
-        url: url,
-        dataType: 'html',
-        async: 'false',
-        data:{count:count, type:type},
-        error: function (xhr, status, error) {
-            console.log(xhr.responseText);
-        },
-        success : function(data){
-            $('#tb_items').append(data)
-        }
-    });
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: 'false',
+            data:{count:count},
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            },
+            success : function(data){
+                $('#tb_items').append(data)
+            }
+        });
 }
+
 
 function addRowInventory(objeto) {
     let table = $(objeto).parent().parent().parent();
@@ -179,7 +179,6 @@ function cancelar() {
     });
 }
 
-
 function changeItem(objeto, items) {
     let div_next = $(objeto).parent().parent().next();
     let code = $(objeto).val();
@@ -191,6 +190,41 @@ function changeItem(objeto, items) {
     
     code = items.find(isMatch);
     let tr = $(objeto).parent().parent();
+    console.log(code);
+    var colors;
+    var sizes;
+
+    $.ajax({
+        type: 'GET',
+        url: '/operations/colors',
+        dataType: 'json',
+        async: false,
+        data:{},
+        error: function (xhr, status, error) {
+            console.log(xhr.responseText);
+        },
+        success: function (color) {
+           if(color){
+                colors = color;
+           }
+        }
+    });
+
+    $.ajax({
+        type: 'GET',
+        url: '/operations/sizes',
+        dataType: 'json',
+        async: false,
+        data:{},
+        error: function (xhr, status, error) {
+            console.log(xhr.responseText);
+        },
+        success: function (size) {
+           if(size){
+                sizes = size;
+           }
+        }
+    });
 
     if(code){
         let url = "/operations/item/code/" + code['id'];        
@@ -204,6 +238,7 @@ function changeItem(objeto, items) {
                 console.log(xhr.error);
             },
             success : function(data){
+                console.log(data);
                 tr.find('#description').val(data['sales_description']);
                 tr.find('#unit').val(data['id_unit_measure']);
                 tr.find('#existencia').val(data['qty']);
@@ -297,13 +332,14 @@ function changeItem2(objeto, items) {
     let div_next = $(objeto).parent().parent().next();
     let code = $(objeto).val();
     var selectedWarehouse = $('#select_warehouse option:selected').val();
-
+    
     function isMatch(item) {
         return item.item_name === code;
     }
     
     code = items.find(isMatch);
     let tr = $(objeto).parent().parent();
+
     if(code){
         let url = "/operations/item/code/" + code['id'];        
         $.ajax({
@@ -318,17 +354,10 @@ function changeItem2(objeto, items) {
             success : function(data){
                 tr.find('#description').val(data['sales_description']);
                 tr.find('#unit').val(data['id_unit_measure']);
-                tr.find('#existencia').val(data['qty']);
-                $("#stock").val(data['qty']);
                 tr.find('#qty').val("1");
-                tr.find('#price_real').val(data['price']);
-                tr.find('#price').val(data['price']);
-                tr.find('#amt').val(data['price']);
-
                 $(div_next).find('#collapse_container div').remove();
                 $(div_next).find('#collapse_container hr').remove();
-                
-                calcular();  
+                calcular();
             }
         });
     }
@@ -347,13 +376,9 @@ function changeItem2(objeto, items) {
                 success : function(any){
                     tr.find('#description').val(any['sales_description']);
                     tr.find('#unit').val(any['id_unit_measure']);
-                    tr.find('#existencia').val(data['qty']);
-                    $("#stock").val(data['qty']);
                     tr.find('#qty').val("1");
-                    tr.find('#price_real').val(any['price']);
                     tr.find('#price').val(any['price']);
                     tr.find('#amt').val(any['price']);
-
                     $(div_next).find('#collapse_container div').remove();
                     $(div_next).find('#collapse_container hr').remove();
                     calcular();
@@ -372,14 +397,60 @@ function changeItem2(objeto, items) {
             tr.find('#description').val(" ");
             tr.find('#qty').val(" ");
             tr.find('#unit').val(" ");
-            tr.find('#price_real').val(" ");
             tr.find('#price').val(" ");
             tr.find('#amt').val(" ");
-            calcular();
         }
     }
 }
 
+function porcentage(){
+    let porcent = $("#porcentaje").val();
+    let cellsreal = $("td #price_real");
+    let cells = $("td #price");
+    
+    console.log(porcent)
+
+    // Iterar a través de las celdas y reemplazar los valores
+    cellsreal.each(function(){
+        let currentValue = $(this).val();
+
+    });
+    cells.each(function() {
+
+        let tr = $(this).parent().parent();
+        let currentValue = tr.find('#price_real').val();
+        console.log(tr);
+        let qty = parseFloat(tr.find('#qty').val()) * 1;
+        let subtotal = 0;
+
+        if(currentValue != ""){
+            if (porcent === "") {
+                let newprice = $(this).val((parseFloat(currentValue)).toFixed(2));
+                subtotal = qty * newprice.val();
+                tr.find('#amt').val((parseFloat(subtotal)).toFixed(2));
+            }
+            else{
+                let precioFinal= ((parseFloat(porcent)+100)/100)*parseFloat(currentValue);
+                let newValue = currentValue.replace(currentValue, precioFinal);
+                let newprice = $(this).val((parseFloat(newValue)).toFixed(2));
+                subtotal = qty * newprice.val();
+                tr.find('#amt').val((parseFloat(subtotal)).toFixed(2));
+            }
+        }     
+    });
+
+    calcular();
+}
+
+function precioReal(objeto) {
+    //let tr = $(objeto).parent().parent();
+    $("#tb_items #tr_items").each(function(){
+        $('#price_real').val(objeto);  
+    });
+
+    calcular();
+
+}
 
 function changePrice(objeto) {
     let tr = $(objeto).parent().parent();
@@ -390,15 +461,12 @@ function changePrice(objeto) {
         subtotal = qty * price;
         tr.find('#amt').val(subtotal.toFixed(3));
         calcular();
-        
     }
     else{
         tr.find('#amt').val("0.00");
         calcular();
     }
-
 }
-
 
 function changeQty(objeto) {
     let tr = $(objeto).parent().parent();
@@ -500,11 +568,9 @@ function newShipToModal() {
     }
 }
 
-
 function newTerm() {
-
     var seleccion = $('#select_term option:selected').html();
-    if (seleccion == "------------(New)------------") {
+    if(seleccion == "------------(New)------------"){
         $("#createTerms").modal("show");
         document.getElementById("select_term").options[0].selected = "selected";
     }
@@ -512,13 +578,14 @@ function newTerm() {
     if (seleccion == "Cash") {
         $("#payment_amount").removeAttr('disabled');
         $("#payment_total").removeAttr('disabled');
-    } else {
+    }
+    else{
         $("#payment_amount").attr('disabled', true);
         $("#payment_total").attr('disabled', true);
-
+        $("#payment_amount").val('');
+        $("#payment_total").val('$0.00');
     }
 }
-
 
 function salir() {
     Swal.fire({
@@ -814,10 +881,13 @@ function showOptions(objeto, option) {
 
 function taxes(objeto) {
     let texto = $(objeto).find("option:selected").text();
+    
     if(texto != "Choose Taxes"){
         let valor = texto.split('-')[1];
         valor =  parseFloat(valor.replace('%', ' ')) / 100;
-        let subtotal = parseFloat($('#order_subtotal').val().replace('$', ' '));
+        console.log(valor);
+        let subtotal = parseFloat($('#order_subtotal').val().replace(',', '').replace('$', ' '));
+        console.log(subtotal);
         let tax = valor * subtotal;
         $('#order_tax').val("$"+tax.toFixed(2));
         let total = subtotal + tax;
@@ -829,6 +899,7 @@ function taxes(objeto) {
         $('#order_total').val("$"+subtotal);
     }
 }
+
 
 function validateCliente() {
     let cliente = $('#select_customer').val();

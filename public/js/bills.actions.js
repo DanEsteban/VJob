@@ -115,7 +115,7 @@ function changeItem(objeto, items, types) {
                 tr.find('#price').val(data['price']);
                 $(div_next).find('#collapse_container div').remove();
                 $(div_next).find('#collapse_container hr').remove();
-                
+
                 if(data['id_process']){
                     url = "/operations/process/condition/"+data['id_process'];
                     $.ajax({

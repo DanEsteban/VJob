@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Dashboard')
+@section('title', 'Pantalla de Inicio')
 
 @section('content_header')
 <div class="container-fluid bg-white shadow"  style="height: 5rem;">
