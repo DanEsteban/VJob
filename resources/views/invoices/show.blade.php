@@ -71,16 +71,18 @@
                         <p><b>Correo electrónico:</b> {{$cabeceraInv['email']}}</p>
                         <p><b>Teléfono:</b> {{$cabeceraInv['phone']}}</p>                     
                     </div>
-                    <div class="col-md-3 d-flex justify-content-end">
-                        <button type="button" class="btn btn-sm btn-outline-primary mr-2">
-                            <i class="fas fa-file"></i> Nuevo
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary mr-2">
-                            <i class="fas fa-print"></i> Imprimir
-                        </button>
-                        <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
-                            <i class="fas fa-door-open"></i> Salir
-                        </button>
+                    <div id="botones" class="col-md-3">
+                        <div class="d-flex justify-content-end">
+                            <a href="/invoices/create" class="btn btn-sm btn-outline-primary mr-2">
+                                <i class="fas fa-file"></i> Nuevo
+                            </a>
+                            <button onclick="imprimir();" type="button" class="btn btn-sm btn-outline-primary mr-2">
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                            <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
+                                <i class="fas fa-door-open"></i> Salir
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,10 +205,6 @@
             font-size: 25px;
         }
 
-        #savemodal input{
-            height: 27px;
-        }
-
         .form-group {
             margin-bottom: 0;
         }
@@ -221,12 +219,18 @@
             height: 1.8rem;
         }
 
+        @media print {
+            #botones {
+                display: none;
+            }
+        }
     </style>
 @stop
 
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript">
+
     $(document).ready(function () {
         $('#dTable').DataTable({
             searching: false, 
@@ -303,31 +307,8 @@
 
     });
 
-    function vaciarRow(objeto) {
-        let fila = $(objeto).parent().parent();
-        const primerInput = $(fila).find('td input').first();
-        Swal.fire({
-        title: 'Do you want to delete this invoice?',
-        showDenyButton: true,
-        confirmButtonText: 'Delete',
-        denyButtonText: `Cancelar`,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $(fila).find('td input').each(function() {
-                    $(this).val('');
-                });
-
-                $("#PVP1").empty();
-                $("#PVP1").removeClass();
-                $("#PVP2").empty();
-                $("#PVP2").removeClass();
-                $("#PVP3").empty();
-                $("#PVP3").removeClass();
-                $("#PVP4").empty();
-                $("#PVP4").removeClass();
-                primerInput.focus();
-            }
-        })
+    function imprimir(){
+        window.print()
     }
 
     function changeQty(objeto) {
@@ -366,62 +347,6 @@
         
         
         return filasConDatos;
-    }
-
-    function changeItem(objeto) {
-        let code = $(objeto).val();
-        let tr = $(objeto).parent().parent();
-        if(code){
-            let url = "/operations/item/code/" + code;        
-            $.ajax({
-                type: 'GET',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{},
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){
-                    tr.find('#items').val(data[0]['id']);
-                    tr.find('#description').val(data[0]['item_name']);
-                    tr.find('#cantidad').val("1");
-                    tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1').val(data[0]['pvp1']);
-                    tr.find('#cantidad2').val(data[0]['cantidad2']);
-                    tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
-                    tr.find('#pvp2').val(data[0]['pvp2']);
-                    tr.find('#cantidad3').val(data[0]['cantidad3']);
-                    tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
-                    tr.find('#pvp3').val(data[0]['pvp3']);
-                    tr.find('#cantidad4').val(data[0]['cantidad4']);
-                    tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
-                    tr.find('#pvp4').val(data[0]['pvp4']);
-                    if(data[0]['iva'] === 1){
-                        tr.find('#iva').attr("checked", "checked");
-                    }
-                    let porcentage = 12/100;                   
-                    let precio_neto =  parseFloat(data[0]['pvp1_neto'])  
-                    let subtotal = precio_neto ;
-                    tr.find('#subtotal').val(subtotal);
-                    
-                    var select = $(objeto);
-                    var currentRow = select.closest('tr');
-                    var nextRow = currentRow.next();
-                    // Mueve el foco a la siguiente fila
-                    if (nextRow.length > 0) {
-                        nextDatalist = nextRow.find('#items');
-                        nextDatalist.focus();
-                    } 
-                }
-            });
-            
-
-            var filasConDatos = leerFilas();
-            numeroRegistros(filasConDatos);
-            calcular(filasConDatos);
-        }
     }
 
     function cambioPrecio(filasDuplicadas, indice, precio, precio_iva, num_precio){
@@ -511,46 +436,6 @@
 
     }
 
-    function changeDescription(objeto) {
-        let descripcion = $(objeto).val();
-        let tr = $(objeto).parent().parent();
-        if(descripcion){
-            let url = "/operations/item/description";    
-            $.ajax({
-                type: 'POST',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{"_token": "{{ csrf_token() }}", descripcion: descripcion },
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){  
-                    tr.find('#items').val(data[0]['id']);
-                    tr.find('#cantidad').val("1");
-                    tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1').val(data[0]['pvp1']);
-                    tr.find('#cantidad2').val(data[0]['cantidad2']);
-                    tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
-                    tr.find('#pvp2').val(data[0]['pvp2']);
-                    tr.find('#cantidad3').val(data[0]['cantidad3']);
-                    tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
-                    tr.find('#pvp3').val(data[0]['pvp3']);
-                    tr.find('#cantidad4').val(data[0]['cantidad4']);
-                    tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
-                    tr.find('#pvp4').val(data[0]['pvp4']);
-                    if(data[0]['iva'] === 1){
-                        tr.find('#iva').attr("checked", "checked");
-                    }
-                    let porcentage = 12/100;                   
-                    let precio_neto =  parseFloat(data[0]['pvp1_neto'])  
-                    let subtotal = precio_neto  * 1;
-                    tr.find('#subtotal').val(subtotal); 
-                }
-            });
-        }
-    }
-
     function calcular(filasConDatos) {
 
         for (var codigo in filasConDatos) {
@@ -590,146 +475,11 @@
         $('#apagar').val(sumaTotal.toFixed(2));
     }
 
-    function seleccion() {
-        let apagar = parseFloat($('#apagar').val());  
-        if(apagar !== 0.00){
-            $('#abono1').prop('readonly', false);
-            $('#abono2').prop('readonly', false);
-            $('#abono1').val(apagar);
-            $('#formaPago1').val('1');
-
-        }
-        $('#savemodal').modal('show');
-    }
-
-    function cerrarmodal() {
-        $('#savemodal').modal('toggle');
-    }
-
-    function buscarPorRuc(object){
-
-        let ruc = object.value;
-        if(ruc){
-            let url = "/invoices/buscarCliente/" + ruc;        
-            $.ajax({
-                type: 'GET',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{},
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){
-                    console.log(data.length);
-                    if (data.length !== 0) {
-                        $('#cliente').val(data[0]['cliente'])
-                        $('#direccion').val(data[0]['direccion'])
-                        $('#telefono').val(data[0]['telefono'])
-                        $('#email').val(data[0]['email'])
-                        $('#id_cliente').val(data[0]['id'])
-                    } else {
-                        console.log(data);
-                        $('#cliente').val('')
-                        $('#direccion').val('')
-                        $('#telefono').val('')
-                        $('#email').val('')
-                        $('#id_cliente').val('')
-                    }
-
-
-                }
-            });    
-        }
-
-    }
-
-    function selectDoc(object){
-
-        $('tr').removeClass('table-active');
-        $(object).addClass('table-active');
-
-        let idtipoDoc = ($(object).find('#id_TipoDoc')).html();
-        let tipoDoc = ($(object).find('#tipoDoc')).html();
-        let numeros = ($(object).find('#serie')).html();
-        let secuencial = ($(object).find('#secuencial')).html();
-        let serie = numeros.split("-")[0];
-        let establecimiento = numeros.split("-")[1];
-        $('#serieNumero').val(serie);
-        $('#estableNumero').val(establecimiento);
-        $('#id_tipo_doc').val(idtipoDoc);
-        
-        let numero = secuencial.toString().padStart(9, '0');
-        $('#secuencialNumero').val(numero);
-        
-
-    }
-
-    function calculoSaldo(){
-        
-        let apagar = parseFloat($('#apagar').val());
-        let abono1 = parseFloat($('#abono1').val());
-        let abono2 = parseFloat($('#abono2').val());
-
-        if (isNaN(abono1)) {
-            $('#abono1').val(0.00); 
-            abono1 = 0;
-        }
-
-        if (isNaN(abono2)) {
-            $('#abono2').val(0.00); 
-            abono2 = 0;
-        }
-
-        let totalAbonos = abono1 + abono2;
-        if (abono1 > apagar) {
-            showError("El Abono no puede ser mayor al valor TOTAL", '#abono1');
-        } else if (abono2 > apagar) {
-            showError("El Abono 2 no puede ser mayor al valor TOTAL", '#abono2');
-        } else if (totalAbonos > apagar) {
-            showError("La Suma de los Abonos no puede ser mayor al valor TOTAL", '#saldo');
-        } else {
-            let resulFinal = apagar - abono1 - abono2;
-            $('#saldo').val(resulFinal);
-        }
-
-        function showError(message, element) {
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: message,
-            });
-            $(element).val(0);
-        }
-    }
-
-    function changeFormaPago(){
-        let formaPago1 = $('#formaPago1').val();
-        let formaPago2 = $('#formaPago2').val();
-
-        if (formaPago1 === "2") {
-            $("#numTransfer1").removeAttr('hidden');
-            $("#banco1").removeAttr('hidden');
-        }else{
-            $("#numTransfer1").attr('hidden', true);
-            $("#banco1").attr('hidden', true);
-        }
-
-        if (formaPago2 === "2") {
-            $("#numTransfer2").removeAttr('hidden');
-            $("#banco2").removeAttr('hidden');
-        }else{
-            $("#numTransfer2").attr('hidden', true);
-            $("#banco2").attr('hidden', true);
-        }
-
-    }
-
     function salir() {
         Swal.fire({
-            title: 'Do you want to exit the form?',
+            title: 'Quiere salir del formulario??',
             showDenyButton: true,
-            confirmButtonText: 'Exit',
+            confirmButtonText: 'Salir',
             denyButtonText: `Cancelar`,
             }).then((result) => {
                 if (result.isConfirmed) {
