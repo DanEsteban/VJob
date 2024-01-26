@@ -96,30 +96,23 @@ class CashierController extends Controller
 
     public function imprimirTicket(Request $request)
     {
-        //return $request;
-        // Variables para la impresion
-        $invoices = $request->input('invoices');
-        $inicioDelDia = $request->input('inicioDelDia');
-        $totalCash = $request->input('totalCash');
-        $totalTransfer = $request->input('totalTransfer');
-        $totalPayment = $request->input('totalPayment');
-
-        /////////////////////////////////////////////////
-
-        $nombre_impresora = "ImpresoraTermica";
+        // Variables para la impresión
+        $invoices = $request->invoices;
+        $cobranzas = $request->cobranzas;
+        $fecha = $request->fecha;
 
         // Crear el conector e imprimir
+        $nombre_impresora = "ImpresoraTermica";
         $connector = new WindowsPrintConnector($nombre_impresora);
         $printer = new Printer($connector);
-        
+
         // Cabecera de la factura
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text("================================\n");
         $printer->text("Cierre de Caja\n");
         $printer->text("================================\n\n");
+        $printer->text("Fecha: $fecha\n\n");
 
-        $printer->text("Fecha: " . $inicioDelDia . "\n\n");
-        
         // Tabla de ventas
         $printer->setJustification(Printer::JUSTIFY_LEFT);
         $printer->text("Ventas del Día\n");
@@ -127,38 +120,44 @@ class CashierController extends Controller
         $printer->text("TD  Documento  Sub   IVA  Total\n");
         $printer->text("--------------------------------\n");
 
+        // Antes del bucle
+        $totalFact = number_format(array_sum(array_column($invoices, 'Total')), 2);
+        $totalSub = number_format(array_sum(array_column($invoices, 'Sub')), 2);
+        $totalIVA = number_format(array_sum(array_column($invoices, 'IVA')), 2);
+
+        // Dentro del bucle de ventas
         foreach ($invoices as $item) {
-            if ($item['tipo_documento'] === 0) {
-                $tdoc = 'NV';
-            } else {
-                $tdoc = 'FC';
-            }
-            $formattedSubtotal = '$' . number_format($item['subtotal'], 2);
-            $formattedTaxes = '$' . number_format($item['taxes'], 2);
-            $formattedTotal = '$' . number_format($item['total'], 2);
-        
-            $printer->text(sprintf("%-5s%-9s%-7s%-6s%-9s\n", $tdoc, substr($item['num_doc_sri'], -8), $formattedSubtotal, $formattedTaxes, $formattedTotal));
+            $formattedSubtotal = '$' . number_format(floatval($item['Sub']), 2);
+            $formattedTaxes = '$' . number_format(floatval($item['IVA']), 2);
+            $formattedTotal = '$' . number_format(floatval($item['Total']), 2);
+
+            $printer->text(sprintf("%-5s%-9s%-7s%-6s%-9s\n", $item['TD'], substr($item['Documento'], -8), $formattedSubtotal, $formattedTaxes, $formattedTotal));
         }
-        $totalFact = number_format(array_sum(array_column($invoices, 'total')), 2);
+
         // Pie de página
         $printer->text("--------------------------------\n");
-        $printer->text("Subtotal: $" . number_format(array_sum(array_column($invoices, 'subtotal')), 2) . "\n");
-        $printer->text("IVA:      $" . number_format(array_sum(array_column($invoices, 'taxes')), 2) . "\n");
-        $printer->text("Total:    $" .  $totalFact . "\n\n");
+        $printer->text(sprintf("Subtotal: $%s\n", number_format($totalSub, 2)));
+        $printer->text(sprintf("IVA:      $%s\n", number_format($totalIVA, 2)));
+        $printer->text(sprintf("Total:    $%s\n\n", $totalFact));
 
-
-        // Tabla de Cobranzas del dia
-        $printer->text("Cobranzas del dia\n");
+        // Tabla de Cobranzas del día
+        $printer->text("Cobranzas del día\n");
         $printer->text("================================\n");
         $printer->text("Forma de Pago      Monto\n");
         $printer->text("--------------------------------\n");
-        $printer->text(sprintf("%-20s$%-10s\n", 'Efectivo', number_format($totalCash, 2)));
-        $printer->text(sprintf("%-20s$%-10s\n", 'Transferencia', number_format($totalTransfer, 2)));    
-        $printer->text(sprintf("%-20s$%-10s\n", 'Credito', number_format(($totalFact-$totalPayment), 2)));
+
+        // Antes del bucle de cobranzas
+        $totalPago = number_format(array_sum(array_column($cobranzas, 'Monto')), 2);
+
+        // Dentro del bucle de cobranzas
+        foreach ($cobranzas as $item) {
+            $printer->text(sprintf("%-20s$%-10s\n", $item['Formas de Pago'], number_format(floatval($item['Monto']), 2)));
+        }
 
         // Pie de página
         $printer->text("\n--------------------------------\n");
-        $printer->text("Total Pagos: $" .   $totalFact . "\n");
+        $printer->text(sprintf("Total Pagos: $%s\n", $totalPago));
+        $printer->text("\n\n");
 
         // Cortar el papel
         $printer->cut();
@@ -166,5 +165,4 @@ class CashierController extends Controller
         // Cerrar la conexión con la impresora
         $printer->close();
     }
-
 }
