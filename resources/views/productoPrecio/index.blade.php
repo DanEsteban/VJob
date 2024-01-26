@@ -6,29 +6,37 @@
 
 @section('plugins.Select.DataTable', true)
 
-@section('content_header')
-<div id="producto-precio" class="container-fluid bg-white shadow" style="min-height: 6rem;">
-    <div class="row align-items-center">
-        <div class="bg-white col-md-8 col-12 mt-3">
-            <h2 class=" text-md-left">Producto-Precio</h2>
-        </div>
 
-        <div class="col-md-2 col-12 mt-3 text-center text-md-right">
-            <button onclick="newProduct();" type="button" class="btn btn-outline-danger" style="width:100%;">
-                <i class="fa fa-plus"></i>  Nuevo Producto
-            </button>
+
+@section('content_header')
+    <div class="container-fluid bg-white shadow" style="min-height: 5rem;">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-8 mt-3">
+                <div class="bg-white">
+                    <h2>Producto-Precio</h2>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mt-3">
+                <button onclick="newProduct();" type="button" class="btn btn-outline-danger btn-block mb-3">
+                    <i class="fa fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
         </div>
     </div>
-</div>
+
 @stop
 
+
 @section('content')
+
     @php
         use App\Models\Customers;
         $anteriorID = null;
     @endphp
     <form action="/productoPrecio" method="POST" id="formulario">
         @csrf
+        
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -177,7 +185,8 @@
                 console.log(xhr.responseText);
             },
             success : function(data){
-                $('#tb_items').append(data)
+                // $('#tb_items').append(data)
+                $('#tb_items').prepend(data);
             }
         });
     }

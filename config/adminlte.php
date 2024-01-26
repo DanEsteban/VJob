@@ -321,11 +321,23 @@ return [
             'can'         => 'estimate.create'
         ],
         [
-            'text'        => 'Facturas',
-            'url'         => '/invoices/create',
-            'classes'     => 'text-white',
-            'icon'        => 'fa-solid fa-file-invoice-dollar',
-            'can'         => 'invoice.create'
+            'text'    => 'Facturacion',
+            'icon'    => 'fa-solid fa-file-lines',
+            'submenu' => [
+                [
+                    'text'        => 'Facturas',
+                    'url'         => '/invoices',
+                    'icon'        => 'fa-solid fa-file-invoice-dollar',
+                    'can'         => 'invoice.index',
+                    'shift'   => 'ml-3',
+                ],
+                [
+                    'text'    => 'Cierre de Caja',
+                    'url'     => '/cashier',
+                    'icon'    => 'fa-solid  fa-cash-register',
+                    'shift'   => 'ml-3',
+                ]
+            ],
         ],
         [
             'text'        => 'Tickets',
@@ -417,12 +429,16 @@ return [
             'can'         => 'vendor.index'
         ],
         [
-            'text'        => 'Inventarios',
-            'url'         => '/inventories',
-            'id'          => 'inventory-id',
-            'classes'     => 'text-white',
-            'icon'        => 'fa fa-boxes',
-            'can'         => 'inventory.index'
+            'text'    => 'Inventarios',
+            'icon'    => 'fa fa-boxes',
+            'submenu' => [
+                [
+                    'text'    => 'Ingreso Productos y Precios',
+                    'url'     => '/productoPrecio',
+                    'icon'    => 'fa-solid fa-box-open',
+                    'shift'   => 'ml-3',
+                ]
+            ],
         ],
         [
             'text'    => 'Reportes',

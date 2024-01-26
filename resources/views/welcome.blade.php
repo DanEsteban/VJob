@@ -58,12 +58,12 @@
                     <div class="dropdown">
                         <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                             Inicio
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="/login">Iniciar Sesión</a></li>
-                            <hr>
-                            <li><a class="dropdown-item" href="/register">Registrarse</a></li>
-                          </ul> 
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="/login">Iniciar Sesión</a></li>
+                                <hr>
+                                <li><a class="dropdown-item" href="/register">Registrarse</a></li>
+                            </ul> 
                     </div>
                     @endauth
                 </div>

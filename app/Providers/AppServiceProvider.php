@@ -16,34 +16,32 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('variableGlobal', function () {
-            return 'northwind';
+        $this->app->bind('conexionBase', function () {
+            if (Auth::check()) {
+                //Obtiene el modelo del usuario autenticado
+                $usuarioAutenticado = Auth::user();
+            
+                //Accede al valor del campo id_empresa
+                $idEmpresa = $usuarioAutenticado->id_empresa;
+            
+                if ($idEmpresa) {
+                        $dataBase = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
+                        $configuracion = config('database.connections.' + $dataBase);
+                        //return $datosEmpresa->cadena_conexion;
+                        if ($configuracion) {
+                            $variablesEnv = [
+                                'DB_CONNECTION' => $configuracion['driver'],
+                                'DB_HOST' => $configuracion['host'],
+                                'DB_PORT' => $configuracion['port'],
+                                'DB_DATABASE' => $configuracion['database'],
+                                'DB_USERNAME' => $configuracion['username'],
+                                'DB_PASSWORD' => $configuracion['password'],
+                            ];
+                        }
+                    
+                    }
+                }
         });
-
-        if (Auth::check()) {
-            // Obtiene el modelo del usuario autenticado
-            $usuarioAutenticado = Auth::user();
-    
-            // Accede al valor del campo id_empresa
-            $idEmpresa = $usuarioAutenticado->id_empresa;
-    
-            if ($idEmpresa) {
-                $dataBase = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
-                $configuracion = config('database.connections.' + $dataBase);
-                //return $datosEmpresa->cadena_conexion;
-
-                $variablesEnv = [
-                    'DB_CONNECTION' => $configuracion['driver'],
-                    'DB_HOST' => $configuracion['host'],
-                    'DB_PORT' => $configuracion['port'],
-                    'DB_DATABASE' => $configuracion['database'],
-                    'DB_USERNAME' => $configuracion['username'],
-                    'DB_PASSWORD' => $configuracion['password'],
-                ];
-            }
-        }
-
-        
     }
 
     /**

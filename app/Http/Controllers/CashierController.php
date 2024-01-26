@@ -26,8 +26,8 @@ class CashierController extends Controller
         $totalCash = 0;
         $totalTransfer = 0;
         $total=0;
-        //$inicioDelDia = date('Y-m-d');
-        $inicioDelDia = '2023-12-18';
+        $inicioDelDia = date('Y-m-d');
+        //$inicioDelDia = '2023-12-18';
         $dsn = "mysql:host=localhost;dbname=empresa1";
         $usuario = "root";
         $contrasena = "";
