@@ -56,7 +56,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
-                            <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact['number'], 9, "0", STR_PAD_LEFT); ?></h4>
+                            <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
                             <div class="text-right">
                                 <label for="fecha">Fecha:</label>
                                 <span><?php echo $fechaLarga; ?></span>
@@ -73,7 +73,7 @@
         <input type="text" name="emp_nombre" value="{{$datosEmp['emp_nombre']}}" hidden>
         <input type="text" name="emp_ruc" value="{{$datosEmp['emp_ruc']}}" hidden>
         <input type="text" name="emp_dir" value="{{$datosEmp['emp_dir']}}" hidden>
-        <input type="text" name="number" value="<?php echo str_pad($numFact['number'], 9, "0", STR_PAD_LEFT); ?>" hidden>
+        <input type="text" name="number" value="<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?>" hidden>
         <div class="card">
             <div class="card-body">
                 <table id="dTable" class="table table-bordered table-responsive" style="width: 100%; max-height: 329px;">

@@ -341,8 +341,7 @@ class InvoiceController extends Controller
             $vendors = [];
             $seriesFact = [];
             $numFact = $result4->fetch();
-            //return intVal($numFact['number']);
-            //$numFact = intVal($numFact['number']) + 1;
+            $numFact = intVal($numFact['number'])+1;
             
             $payment_terms = [];
 
