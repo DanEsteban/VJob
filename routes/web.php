@@ -25,6 +25,7 @@ use App\Http\Controllers\LabelsController;
 use App\Http\Controllers\MovementsController;
 use App\Http\Controllers\KardexController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\ProductoPrecioController;
 use App\Http\Controllers\VendorOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductReportController;
@@ -49,6 +50,17 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
+Route::resource('productoPrecio', ProductoPrecioController::class);
+
+Route::resource('invoices', InvoiceController::class);
+Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');
+Route::get('/invoices/tipoDocumento/{tipo}', [InvoiceController::class, 'tipoDocumento'])->name('invoice.tipoDocumento');
+Route::post('/invoices/xml', [InvoiceController::class, 'generarXML'])->name('invoice.xml');
+
+Route::resource('cashier', CashierController::class)->except(['update', 'edit']);
+
+Route::get('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
 
 Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
 
