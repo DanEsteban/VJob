@@ -937,8 +937,8 @@
     function buscarPorRuc(object){
 
         let ruc = object.value;
-        
-        if(ruc){
+        console.log(ruc);
+        if(ruc !== '9999999999999'){
             let url = "/invoices/buscarCliente/" + ruc;        
             $.ajax({
                 type: 'GET',
@@ -950,7 +950,6 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
-                    console.log(data.length);
                     if (data.length !== 0) {
                         $('#cliente').val(data[0]['cliente'])
                         $('#direccion').val(data[0]['direccion'])
@@ -958,7 +957,6 @@
                         $('#email').val(data[0]['email'])
                         $('#id_cliente').val(data[0]['id'])
                     } else {
-                        console.log(data);
                         $('#cliente').val('')
                         $('#direccion').val('')
                         $('#telefono').val('')
@@ -966,13 +964,23 @@
                         $('#id_cliente').val('')
                     }
                 }
-            });    
-        }
+            });            
+
+            var nombreABuscar = "Factura";
+            var tabla = $("#modal-tabla tbody tr");
+            tabla.removeClass("table-active");
+
+            tabla.filter(function() {
+                selectDoc(this);
+                return $(this).find("td:eq(1)").text() === nombreABuscar;
+                }).addClass("table-active");
+            }
 
     }
 
     function selectDoc(object){
 
+        console.log(object);
         $('tr').removeClass('table-active');
         $(object).addClass('table-active');
 

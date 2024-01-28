@@ -406,7 +406,6 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        //return $request;
         try {
             $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -693,6 +692,21 @@ class InvoiceController extends Controller
             $sql = "UPDATE document_numbers SET number = :number WHERE type = 'Factura'";
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':number', $number, \PDO::PARAM_INT);
+            $stmt->execute();
+
+            $sec = $request->secuencialNumero;
+            $sec = ltrim($sec, '0');
+            $sec = (int)$sec +1;
+
+            if ($request->id_tipo_doc === "1") {
+                $sql = "UPDATE serie_factura SET secuencial = :sec WHERE nombre = 'Factura'";
+
+            } else {
+                $sql = "UPDATE serie_factura SET secuencial = :sec WHERE nombre = 'Nota de Venta'";
+            }
+
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':sec', $sec, \PDO::PARAM_INT);
             $stmt->execute();
     
             if($tipo_ident != '7' || $tipo_documento !== "0"){
