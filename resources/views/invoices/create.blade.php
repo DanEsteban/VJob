@@ -15,11 +15,12 @@
 
 <?php
     use Carbon\Carbon;
-        
-    $locale = App::getLocale();
 
-    setlocale(LC_TIME, $locale);
-    $fechaLarga = Carbon::now()->locale($locale)->isoFormat('dddd, DD [de] MMMM [de] YYYY');
+    date_default_timezone_set('America/Guayaquil');
+
+    $fechaActual = Carbon::now();
+    $fechaFormateada  = $fechaActual->locale('es_ES')->isoFormat('dddd, D [de] MMMM [de] YYYY');
+    
     const porc_iva = 0.12;
 ?>
 
@@ -43,13 +44,11 @@
                         <p><strong>{{$datosEmp['emp_nombre']}}</strong></p>
                         <p><strong>Ruc: </strong>{{$datosEmp['emp_ruc']}}</p>
                         <p>{{$datosEmp['emp_dir']}}</p>
-                        <p>{{$datosEmp['emp_tel']}}</p>
+                        <p><strong>Telf: </strong>{{$datosEmp['emp_tel']}}</p>
                     </div>
                 </div>
             </div>
         </div>
-
-        
 
         <div class="card-body">
             <div class="container-fluid">
@@ -58,8 +57,8 @@
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
                             <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
                             <div class="text-right">
-                                <label for="fecha">Fecha:</label>
-                                <span><?php echo $fechaLarga; ?></span>
+                                <label for="fechaSpan">Fecha:</label>
+                                <span id="fechaSpan"><?php echo $fechaFormateada ; ?></span>
                             </div>
                         </div>
                     </div>
@@ -243,172 +242,179 @@
                     </div>
                 </div>
             </div>
-        <!-- Modal -->
-            <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content rounded-5 shadow" style="width:700px;">
-                        <div class="modal-header bg-primary" style="color: #fff;">
-                            <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
-                            <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group row">
-                                <label for="ruc" class="col-sm-3 col-form-label">Identificación:</label>
-                                <div class="col-sm-3">
-                                    <input onchange="buscarPorRuc(this);" type="text" class="form-control" id="ruc" name="ruc" value="9999999999999" required autocomplete="off">
-                                </div>
+            <!-- Modal -->
+                <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
+                    <div class="modal-dialog modal-sm" role="document">
+                        <div class="modal-content rounded-5 shadow" style="width:700px;">
+                            <div class="modal-header bg-primary" style="color: #fff;">
+                                <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
+                                <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-
-                            <div class="form-group row">
-                                <label for="cliente" class="col-sm-3 col-form-label">Cliente:</label>
-                                <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="cliente" name="cliente" value="CONSUMIDOR FINAL (SOLO CONTADOS)" required>
-                                    <input type="text" id="id_cliente" name="id_cliente" value="1" hidden>
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for="direccion" class="col-sm-3 col-form-label">Dirección:</label>
-                                <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="direccion" name="direccion" value="SIN DIRECCIÓN" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for= "telefono" class="col-sm-3 col-form-label">Teléfono:</label>
-                                <div class="col-sm-3">
-                                    <input type="text" class="form-control" id="telefono" name="telefono" value="999999999" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for="email" class="col-sm-3 col-form-label">Email:</label>
-                                <div class="col-sm-8">
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
-                                </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for="vendedor" class="col-sm-3 col-form-label">Vendedor</label>
-                                <div class="col-sm-3">
-                                    <select id="vendedor" id="vendedor" name="vendedor" type="text" class="form-control form-control-sm" width="300px">
-                                        <option value="0">--Seleccione--</option>
-                                        @foreach ($vendors as $item)
-                                            <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <hr class="my-4">
-                            <table id="modal-tabla" class="table table-xl" style="max-height: 350px;">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th hidden></th>
-                                        <th>Tipo Documento</th>
-                                        <th>Serie-Establ.</th>
-                                        <th>Secuencial</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($seriesFact as $key => $serie)
-                                        <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
-                                            <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
-                                            <td id="tipoDoc">{{$serie['nombre']}}</td>
-                                            <td id="serie">{{$serie['punto_emision']}}-{{$serie['establecimiento']}}</td>
-                                            <td id="secuencial">{{$serie['secuencial']}}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <div class="form-group row">
-                                <label class="col-form-label col-sm-2">Numero:</label>
-                                <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
-                                <?php foreach ($seriesFact as $elemento) { ?>
-                                    <div class="col-sm-2">
-                                        <input id="serieNumero" name="serieNumero" type="text" class="form-control" value="{{$elemento['punto_emision']}}">
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input id="estableNumero" name="estableNumero" type="text" class="form-control" value="{{$elemento['establecimiento']}}">
-                                    </div>
-                                    <div class="col-sm-5">
-                                        <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
-                                    </div>
-                                    
-                                <?php break; } ?>
-                            </div>
-                            <hr class="my-4">
-                            <div class="my-3">        
-                                <div class="form-group row modalGroup">
-                                    <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
-                                    <div class="col-sm-2">
-                                        <input type="apagar" class="form-control text-sm-left" id="apagar" name="apagar" value="0.00" readonly>
+                            <div class="modal-body">
+                                <div class="form-group row">
+                                    <label for="ruc" class="col-sm-3 col-form-label">Identificación:</label>
+                                    <div class="col-sm-3">
+                                        <input onchange="buscarPorRuc(this);" type="text" class="form-control" id="ruc" name="ruc" value="9999999999999" required autocomplete="off">
                                     </div>
                                 </div>
-                                <div class="form-group row modalGroup">
-                                    <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                    <div class="col-sm-2">
-                                        <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left" id="abono1" name="abono1" value="0.00" readonly>
+
+                                <div class="form-group row">
+                                    <label for="cliente" class="col-sm-3 col-form-label">Cliente:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="cliente" name="cliente" value="CONSUMIDOR FINAL (SOLO CONTADOS)" required>
+                                        <input type="text" id="id_cliente" name="id_cliente" value="1" hidden>
                                     </div>
-                                    <div class="col-sm-2">
-                                        <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control">
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="direccion" class="col-sm-3 col-form-label">Dirección:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="direccion" name="direccion" value="SIN DIRECCIÓN" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for= "telefono" class="col-sm-3 col-form-label">Teléfono:</label>
+                                    <div class="col-sm-3">
+                                        <input type="text" class="form-control" id="telefono" name="telefono" value="999999999" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="email" class="col-sm-3 col-form-label">Email:</label>
+                                    <div class="col-sm-8">
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="fecha_fact" class="col-sm-3 col-form-label">Fecha:</label>
+                                    <div class="col-sm-3">
+                                        <input onchange="cambioFecha()" type="date" class="form-control" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="vendedor" class="col-sm-3 col-form-label">Vendedor</label>
+                                    <div class="col-sm-3">
+                                        <select id="vendedor" id="vendedor" name="vendedor" type="text" class="form-control form-control-sm" width="300px">
                                             <option value="0">--Seleccione--</option>
-                                            @foreach ($payment_terms as $item)
+                                            @foreach ($vendors as $item)
                                                 <option value="{{$item['id']}}">{{$item['name']}}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-sm-3 ntransfer">
-                                        <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
+                                </div>
+                                <hr class="my-4">
+                                <table id="modal-tabla" class="table table-xl" style="max-height: 350px;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th hidden></th>
+                                            <th>Tipo Documento</th>
+                                            <th>Serie-Establ.</th>
+                                            <th>Secuencial</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($seriesFact as $key => $serie)
+                                            <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
+                                                <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
+                                                <td id="tipoDoc">{{$serie['nombre']}}</td>
+                                                <td id="serie">{{$serie['punto_emision']}}-{{$serie['establecimiento']}}</td>
+                                                <td id="secuencial">{{$serie['secuencial']}}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="form-group row">
+                                    <label class="col-form-label col-sm-2">Numero:</label>
+                                    <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
+                                    <?php foreach ($seriesFact as $elemento) { ?>
+                                        <div class="col-sm-2">
+                                            <input id="serieNumero" name="serieNumero" type="text" class="form-control" value="{{$elemento['punto_emision']}}">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input id="estableNumero" name="estableNumero" type="text" class="form-control" value="{{$elemento['establecimiento']}}">
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
+                                        </div>
+                                        
+                                    <?php break; } ?>
+                                </div>
+                                <hr class="my-4">
+                                <div class="my-3">        
+                                    <div class="form-group row modalGroup">
+                                        <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
+                                        <div class="col-sm-2">
+                                            <input type="apagar" class="form-control text-sm-left" id="apagar" name="apagar" value="0.00" readonly>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-2">
-                                        <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
+                                    <div class="form-group row modalGroup">
+                                        <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
+                                        <div class="col-sm-2">
+                                            <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left" id="abono1" name="abono1" value="0.00" readonly>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control">
+                                                <option value="0">--Seleccione--</option>
+                                                @foreach ($payment_terms as $item)
+                                                    <option value="{{$item['id']}}">{{$item['name']}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3 ntransfer">
+                                            <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row modalGroup">
+                                        <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
+                                        <div class="col-sm-2">
+                                            <input onkeyup="calculoSaldo();" type="text" class="form-control" id="abono2" name="abono2" value="0.00" readonly>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control">
+                                                <option value="0">--Seleccione--</option>
+                                                @foreach ($payment_terms as $item)
+                                                    <option value="{{$item['id']}}">{{$item['name']}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3 ntransfer">
+                                            <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row modalGroup">
+                                        <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
+                                        <div class="col-sm-2">
+                                            <input type="text" class="form-control text-sm-left" id="saldo" name="saldo" value="0.00">
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="form-group row modalGroup">
-                                    <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                    <div class="col-sm-2">
-                                        <input onkeyup="calculoSaldo();" type="text" class="form-control" id="abono2" name="abono2" value="0.00" readonly>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control">
-                                            <option value="0">--Seleccione--</option>
-                                            @foreach ($payment_terms as $item)
-                                                <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-3 ntransfer">
-                                        <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
-                                    </div>
-                                </div>
+                                <hr class="my-4">
 
-                                <div class="form-group row modalGroup">
-                                    <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
-                                    <div class="col-sm-2">
-                                        <input type="text" class="form-control text-sm-left" id="saldo" name="saldo" value="0.00">
+                                <div>
+                                    <div class="d-flex justify-content-center">
+                                        <button class="btn btn-primary" type="submit">Grabar</button>
+                                        <button onclick="cerrarmodal();" class="btn btn-secondary ml-2" type="button">Corregir</button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <hr class="my-4">
-
-                            <div>
-                                <div class="d-flex justify-content-center">
-                                    <button class="btn btn-primary" type="submit">Grabar</button>
-                                    <button onclick="cerrarmodal();" class="btn btn-secondary ml-2" type="button">Corregir</button>
-                                </div>
-                            </div>
-                        </div>                    
+                            </div>                    
+                        </div>
                     </div>
                 </div>
-            </div>
-        <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
+            <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
 
         </div>
     </form>
@@ -443,12 +449,6 @@
             color: #ffff;
             font-weight: 600;
             border-radius: 5px;
-        }
-    
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 1;
         }
 
         #dTable td input{
@@ -498,8 +498,16 @@
 
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"></script>
 <script type="text/javascript">
+    
+    //Ajustando la Fecha.
+    const dateTimeFormatter = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'America/Guayaquil'
+    });
+    
     $(document).ready(function () {
+
         $('#dTable').DataTable({
             searching: false, 
             paging: false,    
@@ -585,6 +593,20 @@
         });
         
     });
+
+    function cambioFecha() {
+        var fechaInput = $('#fecha_fact').val()
+        var fechaSpan = $('#fechaSpan')
+        var fechaFormateada = obtenerFechaFormateada(fechaInput);
+        fechaSpan.html(fechaFormateada);
+        
+    }
+
+    function obtenerFechaFormateada(fecha) {
+        var fechaFormateada = moment(fecha).locale('es_ES').format('dddd, D [de] MMMM [de] YYYY');
+
+        return fechaFormateada;
+    }
 
     function mostrarAlerta() {
         
@@ -1038,24 +1060,6 @@
             });
     }
 
-
-    function modulo11(numero) {
-        let suma = 0;
-        let peso = 2;
-
-        // Recorre el número de derecha a izquierda
-        for (let i = numero.length - 1; i >= 0; i--) {
-            suma += parseInt(numero.charAt(i)) * peso;
-            peso++;
-
-            if (peso > 7) {
-            peso = 2;
-            }
-        }
-
-        const digitoVerificador = 11 - (suma % 11);
-        return digitoVerificador === 10 ? 1 : digitoVerificador;
-    }
 
 </script>
 @stop

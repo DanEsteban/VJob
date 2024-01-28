@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\AssamblyItems;
 use App\Models\Taxes;
 use App\Models\Products;
@@ -44,6 +43,7 @@ class InvoiceController extends Controller
     public function generarXML($emp_nombre, $emp_ruc, $emp_dir, $name, $numero_ident, $tipo_ident, $phone, $email, $direccion,
     $num_doc_sri, $tipo_documento, $subtotal, $taxes, $base0, $base_iva,
     $total, $detalles)
+    
     {
 
         $fechaActual = date('d-m-Y');
@@ -406,7 +406,7 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-
+        //return $request;
         try {
             $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -421,6 +421,7 @@ class InvoiceController extends Controller
             $direccion = $request->direccion;
             $id_vendedor = $request->vendedor;
             $balance = $request->saldo;
+            $fecha = $request->fecha;
 
             
                 
@@ -433,7 +434,8 @@ class InvoiceController extends Controller
                             email = :email, 
                             direccion = :direccion,
                             id_vendedor = :id_vendedor,
-                            balance = :balance
+                            balance = :balance,
+                            created_at = :fecha
                         WHERE id = :id_cliente ";
                 $stmt = $db->prepare($sql);
                 $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);
@@ -448,9 +450,9 @@ class InvoiceController extends Controller
 
                 $sql = "INSERT INTO customers 
                     (tipo_ident, numero_ident, name, phone,
-                    email, direccion, id_vendedor, balance)
+                    email, direccion, id_vendedor, balance, created_at)
                     VALUES (:tipo_ident, :numero_ident, :name,
-                    :phone, :email, :direccion, :id_vendedor, :balance)";     
+                    :phone, :email, :direccion, :id_vendedor, :balance, :fecha)";     
                     $stmt = $db->prepare($sql);
             }           
             
@@ -462,6 +464,7 @@ class InvoiceController extends Controller
             $stmt->bindParam(':direccion', $direccion, \PDO::PARAM_STR);
             $stmt->bindParam(':id_vendedor', $id_vendedor, \PDO::PARAM_STR); 
             $stmt->bindParam(':balance', $balance, \PDO::PARAM_STR);
+            $stmt->bindParam(':fecha', $fecha, \PDO::PARAM_STR);
 
             $stmt->execute();
 

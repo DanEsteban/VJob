@@ -8,6 +8,10 @@
 @stop
 
 @section('content')
+
+<?php
+    date_default_timezone_set('America/Guayaquil');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <body>
