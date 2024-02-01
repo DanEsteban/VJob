@@ -406,6 +406,7 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
+        //return $request;
         try {
             $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -420,25 +421,22 @@ class InvoiceController extends Controller
             $direccion = $request->direccion;
             $id_vendedor = $request->vendedor;
             $balance = $request->saldo;
-            $fecha = $request->fecha;
 
-            
-                
             if($id_cliente !== null){
+                
                 $sql = "UPDATE customers 
-                        SET tipo_ident = :tipo_ident,    
+                        SET tipo_ident = :tipo_ident,     
                             numero_ident = :numero_ident,
                             name = :name,
                             phone = :phone,  
                             email = :email, 
                             direccion = :direccion,
                             id_vendedor = :id_vendedor,
-                            balance = :balance,
-                            created_at = :fecha
+                            balance = :balance
                         WHERE id = :id_cliente ";
                 $stmt = $db->prepare($sql);
                 $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);
-
+                
                 //Payment_customer
                 $id_customer = $id_cliente;
                 $invoice = $request->number;
@@ -449,9 +447,9 @@ class InvoiceController extends Controller
 
                 $sql = "INSERT INTO customers 
                     (tipo_ident, numero_ident, name, phone,
-                    email, direccion, id_vendedor, balance, created_at)
+                    email, direccion, id_vendedor, balance)
                     VALUES (:tipo_ident, :numero_ident, :name,
-                    :phone, :email, :direccion, :id_vendedor, :balance, :fecha)";     
+                    :phone, :email, :direccion, :id_vendedor, :balance)";     
                     $stmt = $db->prepare($sql);
             }           
             
@@ -463,7 +461,6 @@ class InvoiceController extends Controller
             $stmt->bindParam(':direccion', $direccion, \PDO::PARAM_STR);
             $stmt->bindParam(':id_vendedor', $id_vendedor, \PDO::PARAM_STR); 
             $stmt->bindParam(':balance', $balance, \PDO::PARAM_STR);
-            $stmt->bindParam(':fecha', $fecha, \PDO::PARAM_STR);
 
             $stmt->execute();
 
@@ -520,7 +517,7 @@ class InvoiceController extends Controller
             $number = $sales_number;
             $tipo_documento = $request->id_tipo_doc;
             $num_doc_sri = $request->serieNumero.$request->estableNumero.$request->secuencialNumero;
-            $date = date('Y-m-d');
+            $date = $request->fecha_fact;
             $phone = $request->telefono;
             $email = $request->email;
             $subtotal = $request->sumaSub;
@@ -548,7 +545,6 @@ class InvoiceController extends Controller
             $stmt->bindParam(':base0', $base0, \PDO::PARAM_STR);
             $stmt->bindParam(':base_iva', $base_iva, \PDO::PARAM_STR);
             $stmt->bindParam(':total', $total, \PDO::PARAM_STR);
-
             $stmt->execute();
             
             $lastId_invoice = $db->lastInsertId();
@@ -631,7 +627,7 @@ class InvoiceController extends Controller
 
             // Payment_Customers
             $id_customer = $request->id_cliente ?? $id_cliente;
-            $date = date('Y-m-d');
+            $date = $request->fecha_fact;
             $invoice = $request->number;
             $amount = $request->total;
 
@@ -650,7 +646,7 @@ class InvoiceController extends Controller
             // Payment_Details
 
             $id_payment = $lastId_payment;
-            $date = date('Y-m-d');
+            $date = $request->fecha_fact;
             $id_term = $request->formaPago1;
             $valor = floatval($request->abono1);
             $reference = $request->numTransfer1;
@@ -729,9 +725,7 @@ class InvoiceController extends Controller
                     $total,
                     $detalles
                 );
-
-            }
-            
+            }           
             return redirect()->route('invoices.show', $id_invoice);
         
         } catch (\PDOException $e) {
@@ -778,9 +772,9 @@ class InvoiceController extends Controller
                 LEFT JOIN products ON invoices_items.id_item = products.id
                 WHERE invoices_items.id_invoice = {$id}";
 
-            $consulta6 = "SELECT name, value FROM parameters WHERE name LIKE 'emp_%'";
+            $consulta3 = "SELECT name, value FROM parameters WHERE name LIKE 'emp_%'";
             
-            $result6= $conexion->query($consulta6);                     
+            $result3= $conexion->query($consulta3);                     
             $result= $conexion->query($consulta);
             $result2= $conexion->query($consulta2);
 
@@ -817,13 +811,12 @@ class InvoiceController extends Controller
                 ];
             }
 
-            foreach ($result6 as $fila) {
+            foreach ($result3 as $fila) {
 
-                $datosEmp[$fila['name']]=
-                    $fila['value']
-                ;
+                $datosEmp[$fila['name']] = $fila['value'];
             }
-            //return $cabeceraInv;
+            
+            //return $baseProductsInv;
             return view('invoices.show', compact('cabeceraInv','baseProductsInv', 'datosEmp'));
             
         }catch (\PDOException $e) {

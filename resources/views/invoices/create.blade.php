@@ -93,6 +93,7 @@
                         <th hidden>Cantidad4</th>
                         <th style="width: 20px;" id="thP4" hidden>Pre.neto</th>
                         <th hidden>PrecioIva4</th>
+                        <th hidden></th>
                         <th style="width: 1px;">IVA</th>
                         <th style="width: 20px;">Subtotal</th>
                         <th hidden>Num.Precio</th>           
@@ -132,7 +133,8 @@
                                 <td id="tdC4" hidden><input hidden type="text" id="cantidad4" class="form-control form-control-sm"></td>
                                 <td id="tdP4" hidden><input hidden type="text" id="pvp4_neto" class="form-control form-control-sm"></td>
                                 <td hidden><input hidden type="text" id="pvp4" class="form-control form-control-sm"></td>
-                                <td><input type="checkbox" id="iva" name="iva[]" disabled></td>
+                                <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
+                                <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
                                 <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
                                 <td hidden><input type="text" id="num_precio" name="num_precio[]" class="form-control form-control-sm" readonly></td> 
                             </tr>
@@ -583,16 +585,39 @@
         $('form').on('keydown', 'input, select, textarea', function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                mostrarAlerta();
             }
         });
 
-        $('form').submit(function (event) {
-            event.preventDefault();
-            mostrarAlerta();
-        });
+        // $('form').submit(function (event) {
+        //     event.preventDefault();
+        //     mostrarAlerta();
+        // });
         
     });
+
+    // function mostrarAlerta() {
+        
+    //     Swal.fire({
+    //         title: "¿Quiere guardar los cambios?",
+    //         text: "Usted no será capaz de revertir esto!",
+    //         icon: "warning",
+    //         showCancelButton: true,
+    //         cancelButtonColor: "#dc3545",
+    //         cancelButtonText: "Cancelar",
+    //         confirmButtonText: "Guardar",
+    //         focusCancel: true,
+            
+    //     }).then((result) => {
+    //         if (result.isConfirmed) {
+    //             Swal.fire({
+    //                 title: "Se ha guardado la Factura!",
+    //                 text: "Your file has been deleted.",
+    //                 icon: "success"
+    //             });
+    //             $('form').unbind('submit').submit();
+    //         }
+    //     });      
+    // }
 
     function cambioFecha() {
         var fechaInput = $('#fecha_fact').val()
@@ -608,27 +633,7 @@
         return fechaFormateada;
     }
 
-    function mostrarAlerta() {
-        
-        Swal.fire({
-            title: "¿Quiere guardar los cambios?",
-            text: "Usted no será capaz de revertir esto!",
-            icon: "warning",
-            showCancelButton: true,
-            cancelButtonColor: "#dc3545",
-            confirmButtonText: "Guardar",
-            cancelButtonText: "Cancelar"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: "Se ha guardado la Factura!",
-                    text: "Your file has been deleted.",
-                    icon: "success"
-                });
-                $('form').unbind('submit').submit();
-            }
-        });      
-    }
+    
 
     function vaciarRow(objeto) {
         let fila = $(objeto).parent().parent();
@@ -695,7 +700,7 @@
         return filasConDatos;
     }
 
-    function changeItem(objeto) {
+    function changeItem(objeto) { 
         let code = $(objeto).val();
         let tr = $(objeto).parent().parent();
         if(code){
@@ -710,6 +715,7 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
+                    //console.log(data);
                     tr.find('#items').val(data[0]['id']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
@@ -725,11 +731,10 @@
                     tr.find('#cantidad4').val(data[0]['cantidad4']);
                     tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
                     tr.find('#pvp4').val(data[0]['pvp4']);
-                    if(data[0]['iva'] === 1){
-                        tr.find('#iva').attr("checked", "checked");
-                    }
-                    let porcentage = 12/100;                   
-                    let precio_neto =  parseFloat(data[0]['pvp1_neto'])  
+                    tr.find('#id_iva').val(data[0]['iva']);
+                    tr.find('#iva').val(data[0]['porcentajeIva']+"%");
+                
+                    let precio_neto =  (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
                     let subtotal = precio_neto ;
                     tr.find('#subtotal').val(subtotal);
                     
@@ -756,13 +761,11 @@
         subarray.forEach((subarreglo)  => {            
             var cantidad = parseFloat(($(subarreglo[0]).find('#tdC1 input')).val())
             var subtotal_final = parseFloat(cantidad*precio_iva).toFixed(2);
-            ($(subarreglo[0]).find('#tdP0 input')).val(precio.toFixed(5));
+            ($(subarreglo[0]).find('#tdP0 input')).val(precio.toFixed(2));
             ($(subarreglo[0]).find('#subtotal')).val(subtotal_final);
             ($(subarreglo[0]).find('#num_precio')).val(num_precio);
             
         });
-
-
     }
 
     function numeroRegistros(filasConDatos) {
@@ -794,7 +797,7 @@
                     }
 
                     if (codigoCantidadSuma[codigo].cantidad >= cantidad1 && (cantidad2 ? codigoCantidadSuma[codigo].cantidad < cantidad2 : true)) {
-                        var subtotal = parseFloat(cantidad1*precio1).toFixed(5);
+                        var subtotal = parseFloat(cantidad1*precio1).toFixed(2);
                         sumaSubtotal += parseFloat(subtotal);
                         var num_precio = 1;
                         cambioPrecio(filasConDatos, codigo, precio1, precio_iva1, num_precio);
@@ -802,7 +805,7 @@
 
                     } 
                     else if (codigoCantidadSuma[codigo].cantidad >= cantidad2 && (cantidad3 ? codigoCantidadSuma[codigo].cantidad < cantidad3 : true)) {
-                        var subtotal = parseFloat(cantidad1*precio2).toFixed(5);
+                        var subtotal = parseFloat(cantidad1*precio2).toFixed(2);
                         sumaSubtotal += parseFloat(subtotal);
                         var num_precio = 2;
                         cambioPrecio(filasConDatos, codigo, precio2, precio_iva2, num_precio);
@@ -810,7 +813,7 @@
                         
                     } 
                     else if(codigoCantidadSuma[codigo].cantidad >= cantidad3 && (cantidad4 ? codigoCantidadSuma[codigo].cantidad < cantidad4 : true)) {
-                        var subtotal = parseFloat(cantidad1*precio3).toFixed(5);
+                        var subtotal = parseFloat(cantidad1*precio3).toFixed(2);
                         sumaSubtotal += parseFloat(subtotal);
                         var num_precio = 3;
                         cambioPrecio(filasConDatos, codigo, precio3, precio_iva3, num_precio);
@@ -818,7 +821,7 @@
                         
                     }
                     else if(codigoCantidadSuma[codigo].cantidad >= cantidad4 ){
-                        var subtotal = parseFloat(cantidad1*precio4).toFixed(5);
+                        var subtotal = parseFloat(cantidad1*precio4).toFixed(2);
                         sumaSubtotal += parseFloat(subtotal);
                         var num_precio = 4;
                         cambioPrecio(filasConDatos, codigo, precio4, precio_iva4, num_precio);
@@ -852,9 +855,12 @@
                 error: function (xhr, status, error) {
                     console.log(xhr.error);
                 },
-                success : function(data){  
+                success : function(data){ 
+                    console.log(data) 
                     tr.find('#items').val(data[0]['id']);
+                    tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
+                    tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
                     tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
                     tr.find('#pvp1').val(data[0]['pvp1']);
                     tr.find('#cantidad2').val(data[0]['cantidad2']);
@@ -866,15 +872,27 @@
                     tr.find('#cantidad4').val(data[0]['cantidad4']);
                     tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
                     tr.find('#pvp4').val(data[0]['pvp4']);
-                    if(data[0]['iva'] === 1){
-                        tr.find('#iva').attr("checked", "checked");
-                    }
-                    let porcentage = 12/100;                   
-                    let precio_neto =  parseFloat(data[0]['pvp1_neto'])  
-                    let subtotal = precio_neto  * 1;
-                    tr.find('#subtotal').val(subtotal); 
+                    tr.find('#id_iva').val(data[0]['iva']);
+                    tr.find('#iva').val(data[0]['porcentajeIva']+"%");
+                    
+                    let precio_neto =  (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
+                    let subtotal = precio_neto ;
+                    tr.find('#subtotal').val(subtotal);
+                    
+                    var select = $(objeto);
+                    var currentRow = select.closest('tr');
+                    var nextRow = currentRow.next();
+                    // Mueve el foco a la siguiente fila
+                    if (nextRow.length > 0) {
+                        nextDatalist = nextRow.find('#items');
+                        nextDatalist.focus();
+                    } 
                 }
             });
+
+            var filasConDatos = leerFilas();
+            numeroRegistros(filasConDatos);
+            calcular(filasConDatos);
         }
     }
 
@@ -889,20 +907,20 @@
                     var total = parseFloat(($(subElemento[0]).find('#subtotal')).val());
                     var cantidad = parseInt(($(subElemento[0]).find('#tdC1 input')).val());
                     var precio_neto = parseFloat(($(subElemento[0]).find('#tdP0 input')).val());
-                    var checkbox = $(subElemento[0]).find('#iva');
-                    if (checkbox.prop("checked")) {
-                        var baseIva = parseFloat(cantidad*precio_neto).toFixed(5);
+                    var porcentajeIva = ($(subElemento[0]).find('#iva')).val()
+
+                    if (porcentajeIva !== "0%") {
+                        var baseIva = parseFloat(cantidad*precio_neto).toFixed(2);
                         sumaBaseIva += parseFloat(baseIva);
                     }else{
-                        var baseCero = parseFloat(cantidad*precio_neto).toFixed(5);
+                        var baseCero = parseFloat(cantidad*precio_neto).toFixed(2);
                         sumaBaseCero += parseFloat(baseCero);
                     } 
-                    var subtotal = parseFloat(cantidad*precio_neto).toFixed(5);
+                    var subtotal = parseFloat(cantidad*precio_neto).toFixed(2);
                     sumaSubtotal += parseFloat(subtotal);
 
                     sumaTotal += parseFloat(total);
 
-                    
                 }
             }
         }

@@ -256,7 +256,7 @@ class OperationController extends Controller
         $group = Groups::find($request->id);
         $group->name = $request->name;
         $group->save();
-
+ 
         return;
     }
 
@@ -411,6 +411,29 @@ class OperationController extends Controller
     }
 
     public function getItemByCode($code){
+
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
+        try {
+
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
+
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+
+
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
         
         try {
 
@@ -438,6 +461,12 @@ class OperationController extends Controller
 
             foreach ($resultados as $row) {
                 $productId = $row['id'];
+                for ($i=0; $i < count($p_impuestos); $i++) { 
+                                
+                    if ($row['iva'] == strval($p_impuestos[$i]['id'])) {
+                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                    }
+                }
 
                 if ($currentProduct === null || $currentProduct['id'] !== $productId) {
                     if ($currentProduct !== null) {
@@ -448,6 +477,7 @@ class OperationController extends Controller
                         "item_name" => $row['item_name'],
                         "bar_code" => $row['bar_code'],
                         "iva" => $row['iva'],
+                        "porcentajeIva" => $porcentajeIva,
                         "abbreviation" => $row['abbreviation'],
                         "pvp1_neto" => null,
                         "pvp1" => null,
@@ -470,7 +500,7 @@ class OperationController extends Controller
 
                 switch ($numPrecio) {
                     case 1:
-                        $currentProduct['pvp1'] = $precio_iva;
+                        $currentProduct['pvp1'] = floatval($precio_iva);
                         $currentProduct['pvp1_neto'] = $precio_neto;
                         break;
                     case 2:
@@ -506,10 +536,32 @@ class OperationController extends Controller
     
     public function getItemByDescription(Request $request){
 
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
         try {
 
-            $descripcion = $request->descripcion;
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
 
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+
+
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
+
+
+        try {
+            $descripcion = $request->descripcion;
             $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         
@@ -531,6 +583,13 @@ class OperationController extends Controller
             foreach ($resultados as $row) {
                 $productId = $row['id'];
 
+                for ($i=0; $i < count($p_impuestos); $i++) { 
+                                
+                    if ($row['iva'] == strval($p_impuestos[$i]['id'])) {
+                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                    }
+                }
+
                 if ($currentProduct === null || $currentProduct['id'] !== $productId) {
                     if ($currentProduct !== null) {
                         $productos[] = $currentProduct;
@@ -540,6 +599,7 @@ class OperationController extends Controller
                         "item_name" => $row['item_name'],
                         "bar_code" => $row['bar_code'],
                         "iva" => $row['iva'],
+                        "porcentajeIva" => $porcentajeIva,
                         "abbreviation" => $row['abbreviation'],
                         "pvp1_neto" => null,
                         "pvp1" => null,

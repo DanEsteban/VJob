@@ -304,9 +304,9 @@
                 var foot = "<tr>";
                 foot += "<td>" + "" + "</td>";
                 foot += "<td>" + "" + "</td>";
-                foot += "<td>" + subtotal + "</td>";
-                foot += "<td>" + taxes + "</td>";
-                foot += "<td>" + total + "</td>";
+                foot += "<td>" + subtotal.toFixed(2) + "</td>";
+                foot += "<td>" + taxes.toFixed(2) + "</td>";
+                foot += "<td>" + total.toFixed(2) + "</td>";
                 foot += "</tr>";
                 $("#tf_invoices").append(foot);
                 
@@ -316,23 +316,23 @@
                 var payFila4 = "<tr>";
 
                 payFila1 += "<td>" + "Efectivo" + "</td>";
-                payFila1 += "<td>" + any[0].totalCash + "</td>";
+                payFila1 += "<td>" + (any[0].totalCash).toFixed(2) + "</td>";
                 payFila1 += "</tr>";
                 $("#tb_cobranzas").append(payFila1);
 
                 payFila2 += "<td>" + "Transferencia" + "</td>";
-                payFila2 += "<td>" + any[0].totalTransfer + "</td>";
+                payFila2 += "<td>" + (any[0].totalTransfer).toFixed(2) + "</td>";
                 payFila2 += "</tr>";
                 $("#tb_cobranzas").append(payFila2);
 
                 payFila3 += "<td>" + "Credito" + "</td>";
-                payFila3 += "<td>" + (total - any[0].totalPayment) + "</td>";
+                payFila3 += "<td>" + (total - any[0].totalPayment).toFixed(2) + "</td>";
                 payFila3 += "</tr>";
                 $("#tb_cobranzas").append(payFila3);
 
                 
                 payFila4 += "<td>" + "Total Pago" + "</td>";
-                payFila4 += "<td>" + total + "</td>";
+                payFila4 += "<td>" + total.toFixed(2) + "</td>";
                 payFila4 += "</tr>";
                 $("#tf_cobranzas").append(payFila4);
             }

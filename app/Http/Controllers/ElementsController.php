@@ -55,51 +55,80 @@ class ElementsController extends Controller
                 ];
             }
 
-            $row = '<tr id="tr_items">'.
-                        '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
-                        <td><button onclick="editRow(this);" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
-                        <td><input type="text" name="id[]" class="form-control form-control-sm" readonly></td>
-                        <td><input type="text" name="producto[]" style="width:auto" class="form-control form-control-sm"></td>
-                        <td>
-                            <select onchange="filtrarLinea(this);" id="type[]" name="type[]" class="form-control form-control-sm">
-                                <option value="0">--Seleccione--</option>';
-                                foreach ($item_types as $item) {
-                                    $row .= '<option value="' . $item["id"] . '">' . $item["name"] . '</option>';
-                                }
-                $row .=     '</select>
-                        </td>
-                        <td>
-                            <select id="group[]" name="group[]" class="form-control form-control-sm">
-                                <option value="0">--Seleccione--</option>
-                            </select>
-                        </td>
-                        <td><input type="checkbox" id="iva[]" onchange="siIva(this);"></td>
-                        <td hidden><input type="text" id="valorIva" name="iva[]" value="0"></td>
-                        <td><input onchange="comprobacionbarCode(this);" type="text" id="codigoBarras[]" name="codigoBarras[]" class="form-control form-control-sm"></td>
-                        <td>
-                            <select id="medida[]" name="medida[]" class="form-control form-control-sm">
-                                <option value="0">--Seleccione--</option>';
-                                foreach ($unit_measures as $item) {
-                                    $row .= '<option value="' . $item["id"] . '">' . $item["abbreviation"] . '</option>';
-                                }
-                $row .=     '</select>
-                        </td>
-                        <td><input type="text" id="pvp1[]" name="pvp1[]" class="form-control form-control-sm"></td>
-                        <td><input type="text" id="cantidad2[]" name="cantidad2[]" class="form-control form-control-sm"></td>    
-                        <td><input type="text" id="pvp2[]" name="pvp2[]" class="form-control form-control-sm"></td>
-                        <td><input type="text" id="cantidad3[]" name="cantidad3[]" class="form-control form-control-sm"></td>
-                        <td><input type="text" id="pvp3[]" name="pvp3[]" class="form-control form-control-sm"></td>
-                        <td><input type="text" id="cantidad4[]" name="cantidad4[]" class="form-control form-control-sm"></td>
-                        <td><input type="text" id="pvp4[]" name=pvp4[] class="form-control form-control-sm"></td>
-
-                    </tr>';
-                
-            return $row;
-
-
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
+
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
+
+        try {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
+
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }
+
+                $row = '<tr id="tr_items">'.
+                '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
+                <td><button onclick="editRow(this);" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                <td><input type="text" name="id[]" class="form-control form-control-sm" readonly></td>
+                <td><input type="text" name="producto[]" style="width:auto" class="form-control form-control-sm"></td>
+                <td>
+                    <select onchange="filtrarLinea(this);" id="type" name="type[]" class="form-control form-control-sm">
+                        <option value="0">--Seleccione--</option>';
+                        foreach ($item_types as $item) {
+                            $row .= '<option value="' . $item["id"] . '">' . $item["name"] . '</option>';
+                        }
+        $row .=     '</select>
+                </td>
+                <td>
+                    <select id="group" name="group[]" class="form-control form-control-sm">
+                        <option value="0">--Seleccione--</option>
+                    </select>
+                </td>
+                
+                <td>
+                    <select id="iva" name="iva[]" class="form-control form-control-sm">
+                        <option value="0">--Seleccione--</option>';
+                        foreach ($p_impuestos as $item) {
+                            $row .= '<option value="' . $item["id"] . '">' . $item["porcentaje"] . '</option>';
+                        }
+        $row .=     '</select>
+                </td>
+                
+                <td><input onchange="comprobacionbarCode(this);" type="text" id="codigoBarras" name="codigoBarras[]" class="form-control form-control-sm"></td>
+                <td>
+                    <select id="medida" name="medida[]" class="form-control form-control-sm">
+                        <option value="0">--Seleccione--</option>';
+                        foreach ($unit_measures as $item) {
+                            $row .= '<option value="' . $item["id"] . '">' . $item["abbreviation"] . '</option>';
+                        }
+        $row .=     '</select>
+                </td>
+                <td><input type="text" id="pvp1" name="pvp1[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="cantidad2" name="cantidad2[]" class="form-control form-control-sm"></td>    
+                <td><input type="text" id="pvp2" name="pvp2[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="cantidad3" name="cantidad3[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="pvp3" name="pvp3[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="cantidad4" name="cantidad4[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="pvp4" name=pvp4[] class="form-control form-control-sm"></td>
+
+            </tr>';
+
+        return $row;
+
     }
     public function addRowOrder(Request $request){
         $items = Products::where('is_active', 1)->get()->toArray();

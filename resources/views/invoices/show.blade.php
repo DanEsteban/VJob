@@ -16,11 +16,11 @@
 <?php
     use Carbon\Carbon;
         
-    $locale = App::getLocale();
-    setlocale(LC_TIME, $locale);
+    date_default_timezone_set('America/Guayaquil');
 
-    $fechaCarbon = Carbon::createFromFormat('Y-m-d',  $cabeceraInv['date'])->locale($locale);
-    $fechaLarga = $fechaCarbon->isoFormat('dddd, DD [de] MMMM [de] YYYY');
+    $fechaActual = $cabeceraInv['date'];
+    //$fechaActual = 2024-01-31
+    $fechaFormateada = Carbon::createFromFormat('Y-m-d', $fechaActual)->locale('es_ES')->isoFormat('dddd, D [de] MMMM [de] YYYY');
 
     const porc_iva = 0.12;
 ?>
@@ -55,7 +55,7 @@
                             <h4 class="invoice-color mb-2 mt-md-2">Factura #<?php echo $cabeceraInv['number']; ?></h4>
                             <div class="text-right">
                                 <label for="fecha">Fecha:</label>
-                                <span>{{$fechaLarga}}</span>
+                                <span>{{$fechaFormateada}}</span>
                             </div>
                         </div>
                     </div>
@@ -112,7 +112,10 @@
                                 </td>
                                 <td><input type="text" onchange="changeQty(this);" id="cantidad" value="{{$item['qty']}}" class="form-control form-control-sm"></td>
                                 <td><input type="text" id="pvp0_neto" value="{{$item['precio_neto']}}" class="form-control form-control-sm" readonly></td>  
-                                <td><input type="checkbox" id="iva" <?php echo $item['iva'] === 1 ? 'checked' : ''; ?> disabled></td>
+                                
+                                
+                                <td><input type="text" id="iva" value="{{$item['iva']}}" class="form-control form-control-sm" readonly></td>
+                                
                                 <td><input type="text" id="subtotal" value="{{$item['pvp']}}" class="form-control form-control-sm" readonly></td>
                             </tr>
                         <?php endforeach; ?>    

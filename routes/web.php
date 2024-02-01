@@ -53,6 +53,10 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 
 Route::resource('productoPrecio', ProductoPrecioController::class);
 
+Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
+Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
+Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
+
 Route::resource('invoices', InvoiceController::class);
 Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');
 Route::get('/invoices/tipoDocumento/{tipo}', [InvoiceController::class, 'tipoDocumento'])->name('invoice.tipoDocumento');
@@ -61,6 +65,9 @@ Route::post('/invoices/xml', [InvoiceController::class, 'generarXML'])->name('in
 Route::resource('cashier', CashierController::class)->except(['update', 'edit']);
 
 Route::get('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
+
+
+
 
 Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
 
@@ -166,7 +173,6 @@ Route::get('/operations/group/delete/{id}', [OperationController::class, 'delete
 
 Route::get('/operations/item/{id}', [OperationController::class, 'getItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.id');
 Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
-Route::get('/operations/item/description/{description}', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
 Route::get('/operations/item/delete/{id}', [OperationController::class, 'delItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.delete');
 Route::get('/operations/item/image/{id}', [OperationController::class, 'getImage'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.getimage');
 Route::get('/operations/item/comparer/delete/{id}', [OperationController::class, 'deleteItemComparer'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.comparer.delete');

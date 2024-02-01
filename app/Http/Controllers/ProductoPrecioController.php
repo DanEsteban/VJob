@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+
 class ProductoPrecioController extends Controller
 {
     /**
@@ -17,7 +18,6 @@ class ProductoPrecioController extends Controller
         $dsn = "mysql:host=localhost;dbname=empresa1";
         $usuario = "root";
         $contrasena = "";
-
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
@@ -40,8 +40,6 @@ class ProductoPrecioController extends Controller
                 LEFT JOIN groups ON products.id_group = groups.id
                 LEFT JOIN unit_measures ON products.id_unit_measure = unit_measures.id
             */ 
-            
-            
             $consulta = "SELECT 
                 p.id AS product_id,
                 t.id AS id_product_type,
@@ -150,12 +148,37 @@ class ProductoPrecioController extends Controller
                     "abbreviation" => $fila['abbreviation']   
                 ];
             }
+
             //return $resultados;
-            return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures'));
+            //return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures'));
 
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         }  
+        
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
+        
+        try {
+
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
+
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+            return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos'));
+
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
     }
 
     /**
@@ -176,6 +199,29 @@ class ProductoPrecioController extends Controller
      */
     public function store(Request $request)
     {   
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
+        try {
+
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
+
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+
+            //return $p_impuestos[0]['id'];
+
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
 
         try {
 
@@ -236,15 +282,19 @@ class ProductoPrecioController extends Controller
                         if ($price['pvp'] != null) {
                             $num_precio = $price['num'];
                             $precio_iva = $price['pvp'];
-                            if ($iva === "1") {
-                                $precio =  floatval($precio_iva/1.12);
-                                $precio = strval($precio);
-
-                            }else{
-                                $precio = $precio_iva;
+                            for ($i=0; $i < count($p_impuestos); $i++) { 
+                                if ($iva === strval($p_impuestos[$i]['id'])) {
+                                    $precio =  floatval($precio_iva/(1+(floatval($p_impuestos[$i]['porcentaje'])/100)));
+                                    $precio = strval($precio);
+                                }
                             }
+                            // if ($iva === "2") {
+                            //     $precio =  floatval($precio_iva/1.12);
+                            //     $precio = strval($precio);
+                            // }else{
+                            //     $precio = $precio_iva;
+                            // }
 
-                            
                             $desde = $price['cantidad'];
                             $hasta = ($desde_anterior != null) ? intval($desde_anterior) - 1 : 999999999;
                             $desde_anterior = $desde;
@@ -313,13 +363,15 @@ class ProductoPrecioController extends Controller
                         if ($price['pvp'] != null) {
                             $num_precio = $price['num'];
                             $precio_iva = $price['pvp'];
-                            if ($iva === "1") {
-                                $precio =  floatval($precio_iva/1.12);
-                                $precio = strval($precio);
-                            }else{
-                                $precio = $precio_iva;
+                            //return [$iva, $p_impuestos[1]['id']];
+                            for ($i=0; $i < count($p_impuestos); $i++) { 
+                                
+                                if ($iva == strval($p_impuestos[$i]['id'])) {
+                                    $precio =  floatval($precio_iva/(1+(floatval($p_impuestos[$i]['porcentaje'])/100)));
+                                    $precio = strval($precio);
+                                }
                             }
-
+                            
                             $desde = $price['cantidad'];
                             $hasta = ($desde_anterior != null) ? intval($desde_anterior) - 1 : 999999999;
                             $desde_anterior = $desde;

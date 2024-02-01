@@ -50,7 +50,6 @@
                                 <th>Linea</th>
                                 <th>Familia</th>
                                 <th>IVA</th>
-                                <th hidden>siIva</th>
                                 <th>Codigo Barras</th>
                                 <th>U.M.</th>
                                 <th>PVP</th>
@@ -99,14 +98,28 @@
                                             @endif 
                                             
                                         </select>
+                                    </td>      
+                                    <td>
+                                        <select id="iva" class="form-control form-control-sm" disabled>
+                                            @if(isset($resultado['iva']))
+                                                @foreach ($p_impuestos as $impuesto)
+                                                    @if ($resultado['iva'] === $impuesto['id'])
+                                                        <option value="{{ $impuesto['id'] }}">{{ $impuesto['porcentaje'] }}</option>
+                                                    @endif
+                                                @endforeach
+                                            @else
+                                                <option value="0">--Seleccione--</option>                                             
+                                            @endif 
+
+                                            @foreach ($p_impuestos as $impuesto)
+                                                @if ($resultado['iva'] != $impuesto['id'])
+                                                    <option value="{{ $impuesto['id'] }}">{{ $impuesto['porcentaje'] }}</option>
+                                                @endif
+                                            @endforeach
+                                            
+                                        </select>
                                     </td>
-                                    @if($resultado['iva'] == "1")
-                                        <td><input type="checkbox" id="iva" onchange="siIva(this);"  checked disabled></td>
-                                        <td hidden><input type="text" id="valorIva" value="1"></td> 
-                                    @else
-                                        <td><input type="checkbox" id="iva" onchange="siIva(this);" disabled></td>    
-                                        <td hidden><input type="text" id="valorIva" value="0"></td>                                            
-                                    @endif            
+                                    
                                     <td><input type="text" id="codigoBarras" onchange="comprobacionbarCode(this);" value="{{$resultado['bar_code']}}" class="form-control form-control-sm" disabled></td>
                                     <td>
                                         <select id="medida" class="form-control form-control-sm" disabled>
@@ -185,7 +198,7 @@
                 console.log(xhr.responseText);
             },
             success : function(data){
-                // $('#tb_items').append(data)
+                //$('#tb_items').append(data)
                 $('#tb_items').prepend(data);
             }
         });
