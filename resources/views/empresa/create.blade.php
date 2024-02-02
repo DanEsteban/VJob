@@ -45,7 +45,7 @@
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <label for="ruc" class="col-sm-4 col-form-label form-control-sm" align="left">Ruc:</label>
-                                            <input autocomplete="off" id="ruc" name="ruc" type="text" class="form-control form-control-sm" tabindex="2" required/>
+                                            <input autocomplete="off" id="ruc" name="ruc" type="text" class="form-control form-control-sm" tabindex="2" value="{{$ruc}}" required/>
                                         </div>
                                     </div>
                                 </div>
@@ -61,7 +61,7 @@
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <label for="cs_mail" class="col-sm-4 col-form-label form-control-sm" align="left">Correo:</label>
-                                            <input autocomplete="off" id="cs_mail" name="cs_mail" type="text" class="form-control form-control-sm" tabindex="4"/>
+                                            <input autocomplete="off" id="cs_mail" name="cs_mail" type="text" class="form-control form-control-sm" tabindex="4" value="{{$email}}" />
                                         </div>
                                     </div>
                                 </div>
@@ -70,7 +70,7 @@
                                     <div class="col-md-6">
                                         <div class="input-group mb-3">
                                             <label class="col-sm-4 col-form-label form-control-sm" for="rutaFirma">Archivo Firma</label>
-                                            <input type="file" class="form-control" id="rutaFirma" name="rutaFirma" accept=".p12">
+                                            <input type="file" class="form-control" id="rutaFirma" name="rutaFirma" accept=".p12" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">

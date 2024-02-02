@@ -75,23 +75,23 @@
         <input type="text" name="number" value="<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?>" hidden>
         <div class="card">
             <div class="card-body">
-                <table id="dTable" class="table table-bordered table-responsive" style="width: 100%; max-height: 329px;">
+                <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
                     <thead class="bg-dark sticky-header">
                         <th width="2%"></th>
                         <th style="width: 90px;">Código</th>
                         <th style="width: 300px;">Descripción</th>    
                         <th style="width: 10px;">Cant.Unid.</th>
                         <th style="width: 20px;" id="thP0">Pre.neto</th>        
-                        <th hidden style="width: 20px;" id="thP1">Pre.neto</th>                       
+                        <th hidden id="thP1">Pre.neto</th>                       
                         <th hidden>PrecioIva</th>
                         <th hidden>Cantidad2</th>
                         <th style="width: 20px;" id="thP2" hidden>Pre.neto</th>
                         <th hidden>PrecioIva2</th>  
                         <th hidden>Cantidad3</th>
-                        <th style="width: 20px;" id="thP3" hidden>Pre.neto</th>
+                        <th id="thP3" hidden>Pre.neto</th>
                         <th hidden>PrecioIva3</th>
                         <th hidden>Cantidad4</th>
-                        <th style="width: 20px;" id="thP4" hidden>Pre.neto</th>
+                        <th id="thP4" hidden>Pre.neto</th>
                         <th hidden>PrecioIva4</th>
                         <th hidden></th>
                         <th style="width: 1px;">IVA</th>
@@ -99,7 +99,7 @@
                         <th hidden>Num.Precio</th>           
                     </thead>
                     <tbody>
-                        <?php for ($i = 0; $i < 50; $i++) : ?>
+                        <?php for ($i = 0; $i < 10; $i++) : ?>
                             <tr>
                                 <td>
                                     <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
@@ -138,9 +138,13 @@
                                 <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
                                 <td hidden><input type="text" id="num_precio" name="num_precio[]" class="form-control form-control-sm" readonly></td> 
                             </tr>
-                        <?php endfor; ?>    
+                        <?php endfor; ?> 
                     </tbody>
                 </table>
+                <hr>
+                <center>
+                    <button onclick="addRow();" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus"></i> Row</button>
+                </center> 
             </div>
         </div>
 
@@ -452,10 +456,6 @@
             font-weight: 600;
             border-radius: 5px;
         }
-
-        #dTable td input{
-            text-align: right;
-        }
         
         #sumaSub, #total{
             color: red;
@@ -513,9 +513,8 @@
         $('#dTable').DataTable({
             searching: false, 
             paging: false,    
-           // scrollY: '300px', 
+            // scrollY: '300px', 
             scrollCollapse: true, 
-            responsive: true,
             info: false 
         });
 
@@ -586,38 +585,9 @@
             if (event.key === "Enter") {
                 event.preventDefault();
             }
-        });
-
-        // $('form').submit(function (event) {
-        //     event.preventDefault();
-        //     mostrarAlerta();
-        // });
-        
+        });        
     });
 
-    // function mostrarAlerta() {
-        
-    //     Swal.fire({
-    //         title: "¿Quiere guardar los cambios?",
-    //         text: "Usted no será capaz de revertir esto!",
-    //         icon: "warning",
-    //         showCancelButton: true,
-    //         cancelButtonColor: "#dc3545",
-    //         cancelButtonText: "Cancelar",
-    //         confirmButtonText: "Guardar",
-    //         focusCancel: true,
-            
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             Swal.fire({
-    //                 title: "Se ha guardado la Factura!",
-    //                 text: "Your file has been deleted.",
-    //                 icon: "success"
-    //             });
-    //             $('form').unbind('submit').submit();
-    //         }
-    //     });      
-    // }
 
     function cambioFecha() {
         var fechaInput = $('#fecha_fact').val()
@@ -633,13 +603,11 @@
         return fechaFormateada;
     }
 
-    
-
     function vaciarRow(objeto) {
         let fila = $(objeto).parent().parent();
         const primerInput = $(fila).find('td input').first();
         Swal.fire({
-        title: 'Do you want to delete this invoice?',
+        title: 'Do you want to delete this item?',
         showDenyButton: true,
         confirmButtonText: 'Delete',
         denyButtonText: `Cancelar`,
@@ -658,6 +626,9 @@
                 $("#PVP4").empty();
                 $("#PVP4").removeClass();
                 primerInput.focus();
+                var filasConDatos = leerFilas();
+                numeroRegistros(filasConDatos);
+                calcular(filasConDatos);
             }
         })
     }

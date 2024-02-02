@@ -741,6 +741,26 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
+        $dsn = "mysql:host=localhost;dbname=vjob";
+        $usuario = "root";
+        $contrasena = "";
+
+        try {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
+            $result= $conexion->query($consulta);
+
+            $p_impuestos=[];
+            foreach ($result as $fila) {
+                $p_impuestos[]=[
+                    "id" => $fila['id'],
+                    "porcentaje" => $fila['porcentaje'],     
+                ];
+            }
+        } catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }
         
         $dsn = "mysql:host=localhost;dbname=empresa1";
         $usuario = "root";
@@ -801,12 +821,19 @@ class InvoiceController extends Controller
 
             foreach ($result2 as $fila) {
 
+                for ($i=0; $i < count($p_impuestos); $i++) { 
+                                
+                    if ($fila['iva'] == strval($p_impuestos[$i]['id'])) {
+                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                    }
+                }
+
                 $baseProductsInv[]=[
                     "id" => $fila['id'],
                     "item_name" => $fila['item_name'],
                     "qty" => $fila['qty'],
                     "precio_neto" => $fila['precio_neto'],
-                    "iva" => $fila['iva'],
+                    "iva" => $porcentajeIva,
                     "pvp" => $fila['pvp'],
                 ];
             }

@@ -1410,16 +1410,19 @@ class OperationController extends Controller
     //Verifica el código de registro
     public function verificarCodigo(Request $request)
     {
-        $codigoIngresado = $request->codigo;
-        $registro=Activacion::where('codigo_activacion', $request->codigo)->where('es_activo',0)->first();
+        $codigoIngresado = $request->codigoRegistro;
+        $registro=Activacion::where('codigo_activacion', $codigoIngresado)->where('es_activo',0)->first();
 
-        if($registro != null){
-            return view('empresa.create', ['codigo' => $codigoIngresado]);
+        if($registro){
+            return redirect()->route('empresa.create', ['ruc' => $registro->ruc, 'email' => $registro->correo]);
+            //return view('empresa.create', ['ruc' => $registro->ruc, 'email' => $registro->correo]);
         }
         else{
             return back()->with('error', 'El código ingresado es incorrecto.');
         }
     }
+
+
 
     public function obtenerCadenaConexion(){
         if (Auth::check()) {

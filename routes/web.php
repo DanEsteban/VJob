@@ -1,35 +1,36 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TaxController;
 use App\Http\Controllers\BillController;
-use App\Http\Controllers\ColorController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\ElementsController;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\MailsController;
-use App\Http\Controllers\OperationController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProcessController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SizeController;
-use App\Http\Controllers\TaxController;
+use App\Http\Controllers\ColorController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\MailsController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\UniteController;
 use App\Http\Controllers\UsersController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\LabelsController;
-use App\Http\Controllers\MovementsController;
 use App\Http\Controllers\KardexController;
-use App\Http\Controllers\CashierController;
-use App\Http\Controllers\ProductoPrecioController;
-use App\Http\Controllers\VendorOrderController;
+use App\Http\Controllers\LabelsController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\ProductReportController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\CashierController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProcessController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\ElementsController;
+use App\Http\Controllers\EmpresasController;
+use App\Http\Controllers\MovementsController;
+use App\Http\Controllers\OperationController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\VendorOrderController;
+use App\Http\Controllers\ProductReportController;
+use App\Http\Controllers\ProductoPrecioController;
 
 
 /*
@@ -51,11 +52,13 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
+Route::resource('empresa', EmpresasController::class);
 Route::resource('productoPrecio', ProductoPrecioController::class);
 
 Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
 Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
 Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
+Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
 
 Route::resource('invoices', InvoiceController::class);
 Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');

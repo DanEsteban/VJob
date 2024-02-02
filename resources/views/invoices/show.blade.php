@@ -114,7 +114,7 @@
                                 <td><input type="text" id="pvp0_neto" value="{{$item['precio_neto']}}" class="form-control form-control-sm" readonly></td>  
                                 
                                 
-                                <td><input type="text" id="iva" value="{{$item['iva']}}" class="form-control form-control-sm" readonly></td>
+                                <td><input type="text" id="iva" value="{{$item['iva']}}%" class="form-control form-control-sm" readonly></td>
                                 
                                 <td><input type="text" id="subtotal" value="{{$item['pvp']}}" class="form-control form-control-sm" readonly></td>
                             </tr>
