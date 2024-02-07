@@ -111,12 +111,12 @@
                                     <input autocomplete="off" id="description" value="{{$item['item_name']}}" type="text" autocomplete="off" class="form-control form-control-sm" width="300px">
                                 </td>
                                 <td><input type="text" onchange="changeQty(this);" id="cantidad" value="{{$item['qty']}}" class="form-control form-control-sm"></td>
-                                <td><input type="text" id="pvp0_neto" value="{{$item['precio_neto']}}" class="form-control form-control-sm" readonly></td>  
+                                <td><input type="text" id="pvp0_neto" value="{{number_format($item['precio_neto'], 2)}}" class="form-control form-control-sm" readonly></td>  
                                 
                                 
                                 <td><input type="text" id="iva" value="{{$item['iva']}}%" class="form-control form-control-sm" readonly></td>
                                 
-                                <td><input type="text" id="subtotal" value="{{$item['pvp']}}" class="form-control form-control-sm" readonly></td>
+                                <td><input type="text" id="subtotal" value="{{number_format($item['pvp'], 2)}}" class="form-control form-control-sm" readonly></td>
                             </tr>
                         <?php endforeach; ?>    
                     </tbody>

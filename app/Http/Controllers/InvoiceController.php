@@ -30,6 +30,7 @@ use App\Models\AttachmentCustomer;
 use App\Models\PaymentCustomers;
 use App\Models\PaymentsDetails;
 use App\Models\Colors;
+use App\Models\Impuesto;
 use App\Models\Products_LabelBar;
 use App\Models\Sizes;
 use App\Models\UnitMeasure;
@@ -37,6 +38,8 @@ use App\Models\TicketSetItems;
 use App\Models\Warehouses;
 use Illuminate\Http\Request;
 use DOMDocument;
+use Illuminate\Support\Facades\App;
+
 
 class InvoiceController extends Controller
 {
@@ -267,14 +270,15 @@ class InvoiceController extends Controller
      */
     public function index()
     {     
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD = App::make('dataBase');
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
 
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
-
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $consulta = "SELECT invoices.id, invoices.number, invoices.date, invoices.total,
@@ -282,13 +286,10 @@ class InvoiceController extends Controller
                         FROM invoices 
                         LEFT JOIN customers ON invoices.id_customer = customers.id ORDER BY invoices.number DESC";
 
-
             $result= $conexion->query($consulta);
-
             $invoices = [];
             
             foreach ($result as $fila) {
-
                 $invoices[]=[
                     "id" => $fila['id'],
                     "date" => $fila['date'],
@@ -312,84 +313,43 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD = App::make('dataBase');
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
 
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
-
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-            $consulta = "SELECT id, item_name FROM products" ;
-            $consulta2 = "SELECT * FROM vendors";
-            $consulta3 = "SELECT * FROM serie_factura";
-            $consulta4 = "SELECT number FROM document_numbers WHERE type = 'Factura'";
-            $consulta5 = "SELECT * FROM payment_terms";
-            $consulta6 = "SELECT name, value FROM parameters WHERE name LIKE 'emp_%'";
+            // Preparar la consulta para obtener los productos, proveedores, series de facturas, términos de pago y datos de la empresa
+            $consulta = "SELECT id, item_name FROM products;
+                        SELECT id, name FROM vendors;
+                        SELECT id, nombre, tipo_documento, establecimiento, punto_emision, secuencial FROM serie_factura;
+                        SELECT number FROM document_numbers WHERE type = 'Factura';
+                        SELECT id, name FROM payment_terms;
+                        SELECT name, value FROM parameters WHERE name LIKE 'emp_%';";
 
-            $result= $conexion->query($consulta);
-            $result2= $conexion->query($consulta2);
-            $result3= $conexion->query($consulta3);
-            $result4= $conexion->query($consulta4);
-            $result5= $conexion->query($consulta5);
-            $result6= $conexion->query($consulta6);
-
-            $datosEmp = [];            
-            $items = [];    
-            $vendors = [];
-            $seriesFact = [];
-            $numFact = $result4->fetch();
-            $numFact = intVal($numFact['number'])+1;
+            // Ejecutar las consultas
+            $resultado = $conexion->query($consulta);
             
-            $payment_terms = [];
+            // Obtener los resultados de todas las consultas
+            $resultados = [];
+            do {
+                $resultados[] = $resultado->fetchAll(\PDO::FETCH_ASSOC);
+            } while ($resultado->nextRowset());
 
-
-            foreach ($result as $fila) {
-                $items[]=[
-                    "id" => $fila['id'],
-                    "item_name" => $fila['item_name']
-                ];
+           // Asignar los resultados a las variables correspondientes
+            $items = $resultados[0];
+            $vendors = $resultados[1];
+            $seriesFact = $resultados[2];
+            $numFact = intval($resultados[3][0]['number']) + 1;
+            $payment_terms = $resultados[4];
+            $datosEmp = [];
+            foreach ($resultados[5] as $fila) {
+                $datosEmp[$fila['name']] = $fila['value'];
             }
-
-            foreach ($result2 as $fila) {
-
-                $vendors[]=[
-                    "id" => $fila['id'],
-                    "name" => $fila['name']
-                ];
-            }
-
-            foreach ($result3 as $fila) {
-
-                $seriesFact[]=[
-                    "id" => $fila['id'],
-                    "nombre" => $fila['nombre'],
-                    "tipo_documento" => $fila['tipo_documento'],
-                    "establecimiento" => $fila['establecimiento'],
-                    "punto_emision" => $fila['punto_emision'],
-                    "secuencial" => $fila['secuencial'],
-                ];
-            }
-
-            
-            foreach ($result5 as $fila) {
-
-                $payment_terms[]=[
-                    "id" => $fila['id'],
-                    "name" => $fila['name']  
-                ];
-            }
-
-            foreach ($result6 as $fila) {
-
-                $datosEmp[$fila['name']]=
-                    $fila['value']
-                ;
-            }
-
-            //return $datosEmp;
 
             return view('invoices.create', compact('items','vendors','seriesFact','numFact', 'payment_terms', 'datosEmp'));
             
@@ -741,45 +701,29 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $dsn = "mysql:host=localhost;dbname=vjob";
-        $usuario = "root";
-        $contrasena = "";
 
-        try {
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
-            $result= $conexion->query($consulta);
+        $nombreBD = App::make('dataBase');
 
-            $p_impuestos=[];
-            foreach ($result as $fila) {
-                $p_impuestos[]=[
-                    "id" => $fila['id'],
-                    "porcentaje" => $fila['porcentaje'],     
-                ];
-            }
-        } catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        }
-        
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
 
         try
         {
+            $p_impuestos = Impuesto::pluck('porcentaje', 'id')->toArray();
+
             $conexion = new \PDO($dsn, $usuario, $contrasena);
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $consulta = "SELECT 
-                invoices.number, invoices.date, invoices.subtotal, invoices.taxes, invoices.base0, 
-                invoices.base_iva, invoices.total, 
-                customers.numero_ident, customers.name, customers.phone, 
-                customers.email, customers.direccion, customers.balance 
-                FROM invoices
-                LEFT JOIN customers ON invoices.id_customer = customers.id
-                WHERE invoices.id = {$id}";
-            
+                    invoices.number, invoices.date, invoices.subtotal, invoices.taxes, invoices.base0, 
+                    invoices.base_iva, invoices.total, 
+                    customers.numero_ident, customers.name, customers.phone, 
+                    customers.email, customers.direccion, customers.balance 
+                    FROM invoices
+                    LEFT JOIN customers ON invoices.id_customer = customers.id
+                    WHERE invoices.id = :id";
+
             $consulta2 = "SELECT 
                     invoices_items.qty, 
                     invoices_items.unit,
@@ -790,45 +734,22 @@ class InvoiceController extends Controller
                     products.iva
                 FROM invoices_items 
                 LEFT JOIN products ON invoices_items.id_item = products.id
-                WHERE invoices_items.id_invoice = {$id}";
+                WHERE invoices_items.id_invoice = :id";
 
             $consulta3 = "SELECT name, value FROM parameters WHERE name LIKE 'emp_%'";
-            
-            $result3= $conexion->query($consulta3);                     
-            $result= $conexion->query($consulta);
-            $result2= $conexion->query($consulta2);
 
-            $datosEmp = []; 
-            $cabeceraInv = [];    
+            $statement = $conexion->prepare($consulta);
+            $statement->bindParam(':id', $id, \PDO::PARAM_INT);
+            $statement->execute();
+            $cabeceraInv = $statement->fetch(\PDO::FETCH_ASSOC);
+
+            $statement2 = $conexion->prepare($consulta2);
+            $statement2->bindParam(':id', $id, \PDO::PARAM_INT);
+            $statement2->execute();
             $baseProductsInv = [];
-
-            foreach ($result as $fila) {
-                $cabeceraInv=[
-                    "number" => $fila['number'],
-                    "name" => $fila['name'],
-                    "numero_ident" => $fila['numero_ident'],
-                    "phone" => $fila['phone'],
-                    "email" => $fila['email'],
-                    "direccion" => $fila['direccion'],
-                    "date" => $fila['date'],
-                    "subtotal" => $fila['subtotal'],
-                    "taxes" => $fila['taxes'],
-                    "base0" => $fila['base0'],
-                    "base_iva" => $fila['base_iva'],
-                    "total" => $fila['total'],
-                ];
-            }
-
-            foreach ($result2 as $fila) {
-
-                for ($i=0; $i < count($p_impuestos); $i++) { 
-                                
-                    if ($fila['iva'] == strval($p_impuestos[$i]['id'])) {
-                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
-                    }
-                }
-
-                $baseProductsInv[]=[
+            while ($fila = $statement2->fetch(\PDO::FETCH_ASSOC)) {
+                $porcentajeIva = $p_impuestos[$fila['iva']] ?? 0;
+                $baseProductsInv[] = [
                     "id" => $fila['id'],
                     "item_name" => $fila['item_name'],
                     "qty" => $fila['qty'],
@@ -838,13 +759,14 @@ class InvoiceController extends Controller
                 ];
             }
 
-            foreach ($result3 as $fila) {
+            $result3 = $conexion->query($consulta3)->fetchAll(\PDO::FETCH_ASSOC);
 
+            $datosEmp = [];
+            foreach ($result3 as $fila) {
                 $datosEmp[$fila['name']] = $fila['value'];
             }
-            
-            //return $baseProductsInv;
-            return view('invoices.show', compact('cabeceraInv','baseProductsInv', 'datosEmp'));
+
+            return view('invoices.show', compact('cabeceraInv', 'baseProductsInv', 'datosEmp'));
             
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
@@ -1292,9 +1214,12 @@ class InvoiceController extends Controller
 
     public function verificarCliente($ruc)
     {
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD = App::make('dataBase');
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
+
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
@@ -1324,10 +1249,12 @@ class InvoiceController extends Controller
 
     public function tipoDocumento($tipo)
     {
-        
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD = App::make('dataBase');
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
+
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
@@ -1344,7 +1271,4 @@ class InvoiceController extends Controller
             echo "Error de conexión: " . $e->getMessage();
         } 
     }
-
-
-
 }

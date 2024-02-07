@@ -18,6 +18,7 @@ use App\Models\Inventories;
 use App\Models\ProductsBalances;
 use App\Models\Parameters;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 
 class ElementsController extends Controller
@@ -45,7 +46,6 @@ class ElementsController extends Controller
                     "abbreviation" => $fila['abbreviation']   
                 ];
             }
-
 
             $item_types=[];
             foreach ($result as $fila) {
@@ -128,39 +128,72 @@ class ElementsController extends Controller
             </tr>';
 
         return $row;
-
     }
-    public function addRowOrder(Request $request){
-        $items = Products::where('is_active', 1)->get()->toArray();
-        $types = ItemTypes::find(2);
-        $jitems = json_encode($items);
-        $jtypes = json_encode($types); 
 
+    public function addRowOrder(){
+    
+        $nombreBD = App::make('dataBase');
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
+
+        try
+        {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            $consulta = "SELECT id, item_name FROM products" ;
+            $result= $conexion->query($consulta);
+            $items = []; 
+
+            foreach ($result as $fila) {
+                $items[]=[
+                    "id" => $fila['id'],
+                    "item_name" => $fila['item_name']
+                ];
+            }
+
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+        
         $row = '<tr id="tr_items">'.
-                    '<td><button onclick="delRow(this);" onblur="calcular();" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
+                    '<td><button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></td>
                     <td>
-                        <input autocomplete="off" onchange="changeItem(this, '.htmlspecialchars($jitems).' , '.htmlspecialchars($jtypes).')" onblur="calcular();" id="items" name="items[]" type="text" class="form-control form-control-sm" width="300px" list="itemsList">
+                        <input onchange="changeItem(this);" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
                         <datalist id="itemsList">';                     
                             foreach ($items as $item){
-                                $row .= '<option value="{{'.$item["item_name"].'}}"></option>';
+                                $row .= '<option value="{{' . $item['id'] . '}}"></option>';
                             }
         $row .=         '</datalist>
                     </td>
                     <td>
-                        <input autocomplete="off" onchange="changeDescription(this, '.htmlspecialchars($jitems).' , '.htmlspecialchars($jtypes).')" id="description" name="description[]" type="text" class="form-control form-control-sm" list="itemDesList">
-                        <datalist id="itemDesList">';                     
+                        <input onchange="changeDescription(this)" id="description" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemDesList">
+                            <datalist id="itemDesList">';                     
                             foreach ($items as $item){
-                            $row .= '<option value="{{'.$item["sales_description"].'}}"></option>';
+                                $row .= '<option value="{{' . $item['item_name'] . '}}"></option>';
                             }
-        $row .=             '</datalist>
-                        </td>
-                        <td hidden><input id="existencia" name="existencia[]" type="text" class="form-control form-control-sm"></td>
-                        <td><input autocomplete="off" onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
-                        <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" readonly></td>
-                        <td hidden><input id="price_real" name="price_real[]" type="text" class="form-control form-control-sm"></td>
-                        <td><input autocomplete="off" onkeyup="changePrice(this);" id="price" name="price[]" type="text" class="form-control form-control-sm"></td>
-                        <td><input id="amt" type="text" class="form-control form-control-sm" readonly></td>
-                    </tr>';
+        $row .=         '</datalist>
+                    </td>
+                    <td id="tdC1"><input type="text" onchange="changeQty(this);" id="cantidad" name="cantidad[]" class="form-control form-control-sm"></td>
+                    <td id="tdP0"><input type="text" id="pvp0_neto" name="pvp0_neto[]" class="form-control form-control-sm" readonly></td>  
+                    <td hidden id="tdP1"><input type="text" id="pvp1_neto" class="form-control form-control-sm" readonly></td>                   
+                    <td hidden><input hidden type="text" id="pvp1"  class="form-control form-control-sm"></td>
+                    <td id="tdC2" hidden><input hidden type="text" id="cantidad2" class="form-control form-control-sm"></td>
+                    <td id="tdP2" hidden><input hidden type="text" id="pvp2_neto" class="form-control form-control-sm"></td>
+                    <td hidden><input hidden type="text" id="pvp2" class="form-control form-control-sm"></td>
+                    <td id="tdC3" hidden><input hidden type="text" id="cantidad3" class="form-control form-control-sm"></td>
+                    <td id="tdP3" hidden><input hidden type="text" id="pvp3_neto" class="form-control form-control-sm"></td>
+                    <td hidden><input hidden type="text" id="pvp3"  class="form-control form-control-sm"></td>
+                    <td id="tdC4" hidden><input hidden type="text" id="cantidad4" class="form-control form-control-sm"></td>
+                    <td id="tdP4" hidden><input hidden type="text" id="pvp4_neto" class="form-control form-control-sm"></td>
+                    <td hidden><input hidden type="text" id="pvp4" class="form-control form-control-sm"></td>
+                    <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
+                    <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
+                    <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
+                    <td hidden><input type="text" id="num_precio" name="num_precio[]" class="form-control form-control-sm" readonly></td> 
+                </tr>';
             
         return $row;
     }

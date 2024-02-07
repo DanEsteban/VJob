@@ -45,7 +45,7 @@
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <label for="ruc" class="col-sm-4 col-form-label form-control-sm" align="left">Ruc:</label>
-                                            <input autocomplete="off" id="ruc" name="ruc" type="text" class="form-control form-control-sm" tabindex="2" value="{{$ruc}}" required/>
+                                            <input autocomplete="off" id="ruc" name="ruc" type="text" class="form-control form-control-sm" tabindex="2" value="{{$ruc}}" readonly/>
                                         </div>
                                     </div>
                                 </div>
@@ -61,7 +61,7 @@
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <label for="cs_mail" class="col-sm-4 col-form-label form-control-sm" align="left">Correo:</label>
-                                            <input autocomplete="off" id="cs_mail" name="cs_mail" type="text" class="form-control form-control-sm" tabindex="4" value="{{$email}}" />
+                                            <input autocomplete="off" id="cs_mail" name="cs_mail" type="text" class="form-control form-control-sm" tabindex="4" value="{{$email}}" readonly/>
                                         </div>
                                     </div>
                                 </div>

@@ -55,7 +55,6 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 Route::resource('empresa', EmpresasController::class);
 Route::resource('productoPrecio', ProductoPrecioController::class);
 
-Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
 Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
 Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
 Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
@@ -68,6 +67,11 @@ Route::post('/invoices/xml', [InvoiceController::class, 'generarXML'])->name('in
 Route::resource('cashier', CashierController::class)->except(['update', 'edit']);
 
 Route::get('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
+
+Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
+Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->name('element.order.row');
+
+
 
 
 
@@ -197,7 +201,6 @@ Route::get('/elements/estimate/pdf/{id}', [ElementsController::class, 'estimate'
 Route::get('/elements/invoice/pdf/{id}', [ElementsController::class, 'invoice'])->middleware(['auth:sanctum', 'verified'])->name('element.invoice.pdf');
 Route::get('/elements/invoice/print/{id}', [ElementsController::class, 'invoiceTicket'])->middleware(['auth:sanctum', 'verified'])->name('element.invoice.ticket');
 Route::get('/elements/movement/pdf/{id}', [ElementsController::class, 'movement'])->middleware(['auth:sanctum', 'verified'])->name('element.movement.pdf');
-Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->middleware(['auth:sanctum', 'verified'])->name('element.order.row');
 Route::get('/elements/order/row/invoice', [ElementsController::class, 'addRowOrder3'])->middleware(['auth:sanctum', 'verified'])->name('element.order.row.invoice');
 Route::get('/elements/vendor/order/row', [ElementsController::class, 'addRowOrder2'])->name('element.vendor.order.row');
 Route::get('/elements/vendor/international/order/row', [ElementsController::class, 'addRowVendorOrder'])->name('element.vendor.international.order.row');

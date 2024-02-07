@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Models\Empresas;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\App;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+
         $this->app->bind('conexionBase', function () {
             if (Auth::check()) {
                 //Obtiene el modelo del usuario autenticado
@@ -25,8 +26,8 @@ class AppServiceProvider extends ServiceProvider
                 $idEmpresa = $usuarioAutenticado->id_empresa;
             
                 if ($idEmpresa) {
-                        $dataBase = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
-                        $configuracion = config('database.connections.' + $dataBase);
+                        $datos = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
+                        $configuracion = config('database.connections.' . $datos->base_datos);
                         //return $datosEmpresa->cadena_conexion;
                         if ($configuracion) {
                             $variablesEnv = [
@@ -41,7 +42,25 @@ class AppServiceProvider extends ServiceProvider
                     
                     }
                 }
+            
         });
+
+        $this->app->bind('dataBase', function () {
+            if (Auth::check()) {
+                //Obtiene el modelo del usuario autenticado
+                $usuarioAutenticado = Auth::user();
+            
+                //Accede al valor del campo id_empresa
+                $idEmpresa = $usuarioAutenticado->id_empresa;
+            
+                if ($idEmpresa) {
+                        $datos = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
+                        return  $datos->base_datos;
+                    }
+                }
+        });
+
+        app()->instance('codigo', '9999999999999');
     }
 
     /**

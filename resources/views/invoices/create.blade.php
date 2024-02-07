@@ -98,9 +98,9 @@
                         <th style="width: 20px;">Subtotal</th>
                         <th hidden>Num.Precio</th>           
                     </thead>
-                    <tbody>
+                    <tbody id="tb_items">
                         <?php for ($i = 0; $i < 10; $i++) : ?>
-                            <tr>
+                            <tr id="tr_items">
                                 <td>
                                     <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
@@ -503,10 +503,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"></script>
 <script type="text/javascript">
     
-    //Ajustando la Fecha.
-    const dateTimeFormatter = new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'America/Guayaquil'
-    });
     
     $(document).ready(function () {
 
@@ -616,7 +612,6 @@
                 $(fila).find('td input').each(function() {
                     $(this).val('');
                 });
-
                 $("#PVP1").empty();
                 $("#PVP1").removeClass();
                 $("#PVP2").empty();
@@ -661,13 +656,9 @@
                     // Si no existe, crea un nuevo arreglo
                     filasConDatos[codigo] = [];
                 }
-                filasConDatos[codigo].push(tr);
-                
-            }
-        
+                filasConDatos[codigo].push(tr);              
+            }    
         }); 
-        
-        
         return filasConDatos;
     }
 
@@ -686,7 +677,7 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
-                    //console.log(data);
+                    console.log(data)
                     tr.find('#items').val(data[0]['id']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
@@ -705,7 +696,7 @@
                     tr.find('#id_iva').val(data[0]['iva']);
                     tr.find('#iva').val(data[0]['porcentajeIva']+"%");
                 
-                    let precio_neto =  (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
+                    let precio_neto = (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
                     let subtotal = precio_neto ;
                     tr.find('#subtotal').val(subtotal);
                     
@@ -720,6 +711,61 @@
                 }
             });
             
+
+            var filasConDatos = leerFilas();
+            numeroRegistros(filasConDatos);
+            calcular(filasConDatos);
+        }
+    }
+
+    function changeDescription(objeto) {
+        let descripcion = $(objeto).val();
+        let tr = $(objeto).parent().parent();
+        if(descripcion){
+            let url = "/operations/item/description";    
+            $.ajax({
+                type: 'POST',
+                url: url,
+                dataType: 'json',
+                async: false,
+                data:{"_token": "{{ csrf_token() }}", descripcion: descripcion },
+                error: function (xhr, status, error) {
+                    console.log(xhr.error);
+                },
+                success : function(data){ 
+                    console.log(data) 
+                    tr.find('#items').val(data[0]['id']);
+                    tr.find('#description').val(data[0]['item_name']);
+                    tr.find('#cantidad').val("1");
+                    tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
+                    tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
+                    tr.find('#pvp1').val(data[0]['pvp1']);
+                    tr.find('#cantidad2').val(data[0]['cantidad2']);
+                    tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
+                    tr.find('#pvp2').val(data[0]['pvp2']);
+                    tr.find('#cantidad3').val(data[0]['cantidad3']);
+                    tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
+                    tr.find('#pvp3').val(data[0]['pvp3']);
+                    tr.find('#cantidad4').val(data[0]['cantidad4']);
+                    tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
+                    tr.find('#pvp4').val(data[0]['pvp4']);
+                    tr.find('#id_iva').val(data[0]['iva']);
+                    tr.find('#iva').val(data[0]['porcentajeIva']+"%");
+                    
+                    let precio_neto =  (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
+                    let subtotal = precio_neto ;
+                    tr.find('#subtotal').val(subtotal);
+                    
+                    var select = $(objeto);
+                    var currentRow = select.closest('tr');
+                    var nextRow = currentRow.next();
+                    // Mueve el foco a la siguiente fila
+                    if (nextRow.length > 0) {
+                        nextDatalist = nextRow.find('#items');
+                        nextDatalist.focus();
+                    } 
+                }
+            });
 
             var filasConDatos = leerFilas();
             numeroRegistros(filasConDatos);
@@ -810,61 +856,6 @@
         sumaTotal = 0;
         codigoCantidadSuma = {};
 
-    }
-
-    function changeDescription(objeto) {
-        let descripcion = $(objeto).val();
-        let tr = $(objeto).parent().parent();
-        if(descripcion){
-            let url = "/operations/item/description";    
-            $.ajax({
-                type: 'POST',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{"_token": "{{ csrf_token() }}", descripcion: descripcion },
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){ 
-                    console.log(data) 
-                    tr.find('#items').val(data[0]['id']);
-                    tr.find('#description').val(data[0]['item_name']);
-                    tr.find('#cantidad').val("1");
-                    tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1').val(data[0]['pvp1']);
-                    tr.find('#cantidad2').val(data[0]['cantidad2']);
-                    tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
-                    tr.find('#pvp2').val(data[0]['pvp2']);
-                    tr.find('#cantidad3').val(data[0]['cantidad3']);
-                    tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
-                    tr.find('#pvp3').val(data[0]['pvp3']);
-                    tr.find('#cantidad4').val(data[0]['cantidad4']);
-                    tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
-                    tr.find('#pvp4').val(data[0]['pvp4']);
-                    tr.find('#id_iva').val(data[0]['iva']);
-                    tr.find('#iva').val(data[0]['porcentajeIva']+"%");
-                    
-                    let precio_neto =  (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
-                    let subtotal = precio_neto ;
-                    tr.find('#subtotal').val(subtotal);
-                    
-                    var select = $(objeto);
-                    var currentRow = select.closest('tr');
-                    var nextRow = currentRow.next();
-                    // Mueve el foco a la siguiente fila
-                    if (nextRow.length > 0) {
-                        nextDatalist = nextRow.find('#items');
-                        nextDatalist.focus();
-                    } 
-                }
-            });
-
-            var filasConDatos = leerFilas();
-            numeroRegistros(filasConDatos);
-            calcular(filasConDatos);
-        }
     }
 
     function calcular(filasConDatos) {
@@ -964,7 +955,6 @@
                 return $(this).find("td:eq(1)").text() === nombreABuscar;
                 }).addClass("table-active");
             }
-
     }
 
     function selectDoc(object){
@@ -1042,6 +1032,23 @@
             $("#banco2").attr('hidden', true);
         }
 
+    }
+
+    function addRow() {
+        let url = "/elements/order/row";
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: 'false',
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            },
+            success : function(data){
+                $('#tb_items').append(data);
+                $('#tb_items').children().last().find('input[type="text"]').first().focus();
+            }
+        });
     }
 
     function salir() {
