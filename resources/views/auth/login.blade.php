@@ -19,6 +19,7 @@
     <title>Iniciar Sesión</title>
 </head>
 <body>
+    
     <img style="width: 200px; height: 100px;" src="/img/logo_vJOB.png" alt="Company Logo">
     <div class="container-form">
         <div class="information">

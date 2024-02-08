@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\App;
 
 class ProductoPrecioController extends Controller
 {
@@ -15,7 +15,10 @@ class ProductoPrecioController extends Controller
      */
     public function index()
     {
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD = App::make('dataBase');
+        return $nombreBD;
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
         $contrasena = "";
         try

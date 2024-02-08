@@ -366,13 +366,14 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        //return $request;
+        $nombreBD = App::make('dataBase');
+
         try {
-            $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
+            $db = new \PDO('mysql:host=localhost;dbname='.$nombreBD, 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-            $id_cliente = $request->id_cliente;
             //Customer
+            $id_cliente = $request->id_cliente;
             $numero_ident = $request->ruc;
             $tipo_ident = $this->identificarTipoIdentificacion($numero_ident);
             $name = $request->cliente;
@@ -382,37 +383,24 @@ class InvoiceController extends Controller
             $id_vendedor = $request->vendedor;
             $balance = $request->saldo;
 
-            if($id_cliente !== null){
-                
-                $sql = "UPDATE customers 
-                        SET tipo_ident = :tipo_ident,     
-                            numero_ident = :numero_ident,
-                            name = :name,
-                            phone = :phone,  
-                            email = :email, 
-                            direccion = :direccion,
-                            id_vendedor = :id_vendedor,
-                            balance = :balance
-                        WHERE id = :id_cliente ";
-                $stmt = $db->prepare($sql);
-                $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);
-                
-                //Payment_customer
-                $id_customer = $id_cliente;
-                $invoice = $request->number;
-                $amount = $request->total;                
-                
-
-            }else{
-
-                $sql = "INSERT INTO customers 
+            // Actualizar o insertar cliente
+            $sql = ($id_cliente !== null) ? "UPDATE customers 
+                    SET tipo_ident = :tipo_ident,     
+                        numero_ident = :numero_ident,
+                        name = :name,
+                        phone = :phone,  
+                        email = :email, 
+                        direccion = :direccion,
+                        id_vendedor = :id_vendedor,
+                        balance = :balance
+                    WHERE id = :id_cliente " : 
+                    "INSERT INTO customers 
                     (tipo_ident, numero_ident, name, phone,
                     email, direccion, id_vendedor, balance)
                     VALUES (:tipo_ident, :numero_ident, :name,
-                    :phone, :email, :direccion, :id_vendedor, :balance)";     
-                    $stmt = $db->prepare($sql);
-            }           
-            
+                    :phone, :email, :direccion, :id_vendedor, :balance)";
+                
+            $stmt = $db->prepare($sql);
             $stmt->bindParam(':tipo_ident', $tipo_ident, \PDO::PARAM_STR);
             $stmt->bindParam(':numero_ident', $numero_ident, \PDO::PARAM_STR);
             $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
@@ -421,23 +409,19 @@ class InvoiceController extends Controller
             $stmt->bindParam(':direccion', $direccion, \PDO::PARAM_STR);
             $stmt->bindParam(':id_vendedor', $id_vendedor, \PDO::PARAM_STR); 
             $stmt->bindParam(':balance', $balance, \PDO::PARAM_STR);
-
+            $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);
             $stmt->execute();
 
-            //return $id_cliente;
-
+            // Obtener ID del cliente insertado
             $lastId_cliente = $db->lastInsertId();
-
             //return $lastId_cliente;
             
-            if($lastId_cliente !== "0"){
-                $id_cliente = $lastId_cliente;
-                //return $request;
-            } 
-            else{
-                $id_cliente = $request->id_cliente;
-            }
+            $id_cliente = ($lastId_cliente !== "0") 
+                    ? $lastId_cliente 
+                    : $request->id_cliente;
 
+
+            // Generar número de factura único
             $length = 9; 
             $sales_number = "";
             $number = intval($request->number);
@@ -446,32 +430,22 @@ class InvoiceController extends Controller
             $sql = "SELECT * FROM invoices WHERE number = :secuencial LIMIT 1";
 
             $stmt = $db->prepare($sql);
-
-            // Vincula los valores a los marcadores de posición
             $stmt->bindParam(':secuencial', $secuencial, \PDO::PARAM_STR);
-
             $stmt->execute();
-
             $if_exists = $stmt->rowCount();
 
             if ($if_exists == 1) {
-                while ($if_exists == 1)
-                {
+                while ($if_exists == 1) {
                     $number = intval($secuencial);   
                     $number += 1;
                     $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
                     $sales_number = $secuencial;
-                    $sql = "SELECT * FROM invoices WHERE number = :secuencial LIMIT 1";
-                    $stmt = $db->prepare($sql);
-                    $stmt->bindParam(':secuencial', $secuencial, \PDO::PARAM_STR);
                     $stmt->execute();
                     $if_exists = $stmt->rowCount();
                 }
-            }
-            else{
+            } else {
                 $sales_number = $request->number;
             }
-            
 
             //Invoice
             $number = $sales_number;
@@ -491,8 +465,6 @@ class InvoiceController extends Controller
             :num_doc_sri, :id_cliente, :date, :phone, :subtotal, :email, :taxes,  :base0, :base_iva, :total)";
             
             $stmt = $db->prepare($sql);
-
-            // Vincula los valores a los marcadores de posición
             $stmt->bindParam(':number', $number, \PDO::PARAM_STR);
             $stmt->bindParam(':tipo_documento', $tipo_documento, \PDO::PARAM_INT);
             $stmt->bindParam(':num_doc_sri', $num_doc_sri, \PDO::PARAM_STR);
@@ -518,73 +490,70 @@ class InvoiceController extends Controller
                 'lastId_invoiceItem' => array(),
                 'qty' => array()
             );
-            $resultados = array();
+            $resultados = [];
             
-            $detalles = array();
+            $detalles = [];
+            
+            // Preparar consulta SQL para obtener el nombre del producto
+            $sql_select_product = "SELECT item_name FROM products WHERE id = :id_item";
+            $stmt_select_product = $db->prepare($sql_select_product);
+
+            // Preparar consulta SQL para insertar o actualizar elementos de la factura
+            $sql_insert_update_item = "INSERT INTO invoices_items (id_invoice, id_item, qty, precio_neto, pvp, num_precio) 
+                                        VALUES (:id_invoice, :id_item, :qty, :precio_neto, :pvp, :num_precio)
+                                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty)";
+            $stmt_insert_update_item = $db->prepare($sql_insert_update_item);
+
+            $db->beginTransaction();
 
             foreach ($request->items as $index => $item) {
-                if($item !== null)
-                {  
+                if ($item !== null) {  
                     $id_item = $item;
                     $qty = intval($request->cantidad[$index]);
                     $precio_neto = $request->pvp0_neto[$index];
                     $pvp = $request->subtotal[$index];
-                    $num_precio = $request->num_precio[$index];     
-                            
-                    $sql = "SELECT item_name FROM products WHERE id = :id_item";
+                    $num_precio = $request->num_precio[$index];  
 
-                    $stmt = $db->prepare($sql);
-                    $stmt->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
-                    $stmt->execute();
-                    $item_name= $stmt->fetch();
+                    // Ejecutar consulta para obtener el nombre del producto
+                    $stmt_select_product->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
+                    $stmt_select_product->execute();
+                    $item_name = $stmt_select_product->fetchColumn();
 
-                    
+                    // Ejecutar consulta para insertar o actualizar elementos de la factura
+                    $stmt_insert_update_item->bindParam(':id_invoice', $id_invoice, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->bindParam(':qty', $qty, \PDO::PARAM_INT);
+                    $stmt_insert_update_item->bindParam(':precio_neto', $precio_neto, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->bindParam(':pvp', $pvp, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->bindParam(':num_precio', $num_precio, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->execute();
+
+                    // Guardar detalles del producto
+                    $detalles[$id_item] = [
+                        'codigo' => $id_item,
+                        'descripcion' => $item_name,
+                        'qty' => $qty,
+                        'precioUnitario' => floatval($precio_neto) / floatval($qty),
+                        'precioTotalSinImpuesto' => $precio_neto
+                    ];
+
+                    // Actualizar objeto $itemRepetido
                     if (!isset($resultados[$id_item])) {
-
-                        $sql = "INSERT INTO invoices_items (id_invoice, id_item, qty, precio_neto, pvp, num_precio) 
-                        VALUES (:id_invoice, :id_item, :qty, :precio_neto, :pvp, :num_precio)";
-    
-                        $stmt = $db->prepare($sql);
-    
-                        // Vincula los valores a los marcadores de posición
-                        $stmt->bindParam(':id_invoice', $id_invoice, \PDO::PARAM_STR);
-                        $stmt->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
-                        $stmt->bindParam(':qty', $qty, \PDO::PARAM_INT);
-                        $stmt->bindParam(':precio_neto', $precio_neto, \PDO::PARAM_STR);
-                        $stmt->bindParam(':pvp', $pvp, \PDO::PARAM_STR);
-                        $stmt->bindParam(':num_precio', $num_precio, \PDO::PARAM_STR);
-                        $stmt->execute();
-
-                        $resultados[$id_item] = array(
-
+                        $resultados[$id_item] = [
                             'qty' => $qty,
                             'lastId_invoiceItem' => $db->lastInsertId()
-                        );
-
-                        $detalles[$id_item] = [
-                            'codigo' => $id_item,
-                            'descripcion' => $item_name[0],
-                            'qty' => $qty,
-                            'precioUnitario' => floatval($precio_neto)/floatval($qty),
-                            'precioTotalSinImpuesto' => $precio_neto
                         ];
-
                     } else {
-
-                        $resultados[$id_item]['qty'] += $qty;
-                        $detalles[$id_item]['qty'] += $qty;
-                        $sql = "UPDATE invoices_items SET qty = :qty WHERE id = :lastId_invoiceItem AND id_item = :id_item";
-                        $stmt = $db->prepare($sql);
-                        $stmt->bindParam(':qty', $resultados[$id_item]['qty'], \PDO::PARAM_INT);
-                        $stmt->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
-                        $stmt->bindParam(':lastId_invoiceItem', $resultados[$id_item]['lastId_invoiceItem'], \PDO::PARAM_STR);
-                        $stmt->execute();
+                        $itemRepetido->id_item[] = $id_item;
+                        $itemRepetido->lastId_invoiceItem[] = $resultados[$id_item]['lastId_invoiceItem'];
+                        $itemRepetido->qty[] = $qty;
                     }
-                    
                 }
             }
-            
 
+            $db->commit();
+            
+            //////////////////////////////////
             // Payment_Customers
             $id_customer = $request->id_cliente ?? $id_cliente;
             $date = $request->fecha_fact;
