@@ -23,11 +23,15 @@
     <title>Registrarse</title>
 </head>
 <body>
-    @if( Session::has('info') )
-        <div class="alert alert-success alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            {{ Session::get('info') }}
-        </div>
+    
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+            });
+        </script>
     @endif
     <img style="width: 200px; height: 100px;" src="/img/logo_vJOB.png" alt="Company Logo">
     <div class="container-form">

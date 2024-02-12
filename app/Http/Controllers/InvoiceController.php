@@ -552,8 +552,7 @@ class InvoiceController extends Controller
             }
 
             $db->commit();
-            
-            //////////////////////////////////
+
             // Payment_Customers
             $id_customer = $request->id_cliente ?? $id_cliente;
             $date = $request->fecha_fact;
@@ -561,10 +560,9 @@ class InvoiceController extends Controller
             $amount = $request->total;
 
             $sql = "INSERT INTO payment_customer 
-            (id_customer, date, invoice, amount)
-            VALUES (:id_customer, :date, :invoice, :amount)";     
+                    (id_customer, date, invoice, amount)
+                    VALUES (:id_customer, :date, :invoice, :amount)";
             $stmt = $db->prepare($sql);
-
             $stmt->bindParam(':id_customer', $id_customer, \PDO::PARAM_INT);
             $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
             $stmt->bindParam(':invoice', $invoice, \PDO::PARAM_STR);
@@ -572,9 +570,9 @@ class InvoiceController extends Controller
             $stmt->execute();
 
             $lastId_payment = $db->lastInsertId();
+            
             // Payment_Details
-
-            $id_payment = $lastId_payment;
+            //$id_payment = $lastId_payment;
             $date = $request->fecha_fact;
             $id_term = $request->formaPago1;
             $valor = floatval($request->abono1);
@@ -584,34 +582,26 @@ class InvoiceController extends Controller
             $banco2 = $request->banco2;
             $valor2 =  floatval($request->abono2);
 
-            if($valor && $valor > 0){
-                $sql = "INSERT INTO payment_details 
-                (id_payment, date, id_term, valor, reference, banco)
-                VALUES (:id_payment, :date, :id_term, :valor, :reference, :banco)";     
-                $stmt = $db->prepare($sql);
+            $paymentDetailsData = [
+                ['valor' => $valor, 'reference' => $reference, 'banco' => $banco],
+                ['valor' => $valor2, 'reference' => $reference2, 'banco' => $banco2]
+            ];
 
-                $stmt->bindParam(':id_payment', $id_payment, \PDO::PARAM_INT);
-                $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
-                $stmt->bindParam(':id_term', $id_term, \PDO::PARAM_STR);
-                $stmt->bindParam(':valor', $valor, \PDO::PARAM_INT);
-                $stmt->bindParam(':reference', $reference, \PDO::PARAM_STR);
-                $stmt->bindParam(':banco', $banco, \PDO::PARAM_STR);
-                $stmt->execute();
-    
-            }
+            $sql = "INSERT INTO payment_details 
+                    (id_payment, date, id_term, valor, reference, banco)
+                    VALUES (:id_payment, :date, :id_term, :valor, :reference, :banco)";
 
-            if($valor2 && $valor > 0){
-                $sql = "INSERT INTO payment_details 
-                (id_payment, date, id_term, valor, reference, banco)
-                VALUES (:id_payment, :date, :id_term, :valor2, :reference2, :banco2)";     
-                $stmt = $db->prepare($sql); 
-                $stmt->bindParam(':id_payment', $id_payment, \PDO::PARAM_INT);
-                $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
-                $stmt->bindParam(':id_term', $id_term, \PDO::PARAM_STR);
-                $stmt->bindParam(':valor2', $valor2, \PDO::PARAM_INT);
-                $stmt->bindParam(':reference2', $reference2, \PDO::PARAM_STR);
-                $stmt->bindParam(':banco2', $banco2, \PDO::PARAM_STR);
-                $stmt->execute();  
+            $stmt = $db->prepare($sql);
+            foreach ($paymentDetailsData as $paymentDetail) {
+                if ($paymentDetail['valor'] && $paymentDetail['valor'] > 0) {
+                    $stmt->bindParam(':id_payment', $lastId_payment, \PDO::PARAM_INT); // Asignar el id_payment
+                    $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
+                    $stmt->bindParam(':id_term', $id_term, \PDO::PARAM_STR);
+                    $stmt->bindParam(':valor', $paymentDetail['valor'], \PDO::PARAM_INT);
+                    $stmt->bindParam(':reference', $paymentDetail['reference'], \PDO::PARAM_STR);
+                    $stmt->bindParam(':banco', $paymentDetail['banco'], \PDO::PARAM_STR);
+                    $stmt->execute();
+                }
             }
 
             $sql = "UPDATE document_numbers SET number = :number WHERE type = 'Factura'";
@@ -619,6 +609,7 @@ class InvoiceController extends Controller
             $stmt->bindParam(':number', $number, \PDO::PARAM_INT);
             $stmt->execute();
 
+            // Incrementar el número secuencial y actualizar la serie de facturas
             $sec = $request->secuencialNumero;
             $sec = ltrim($sec, '0');
             $sec = (int)$sec +1;
@@ -635,7 +626,6 @@ class InvoiceController extends Controller
             $stmt->execute();
     
             if($tipo_ident != '7' || $tipo_documento !== "0"){
-
                 $emp_nombre = $request->emp_nombre;
                 $emp_ruc = $request->emp_ruc;
                 $emp_dir = $request->emp_dir;
@@ -654,7 +644,8 @@ class InvoiceController extends Controller
                     $total,
                     $detalles
                 );
-            }           
+            }   
+                    
             return redirect()->route('invoices.show', $id_invoice);
         
         } catch (\PDOException $e) {

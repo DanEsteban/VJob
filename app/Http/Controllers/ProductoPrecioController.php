@@ -16,7 +16,7 @@ class ProductoPrecioController extends Controller
     public function index()
     {
         $nombreBD = App::make('dataBase');
-        return $nombreBD;
+        //return $nombreBD;
 
         $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";

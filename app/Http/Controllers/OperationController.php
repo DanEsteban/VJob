@@ -434,39 +434,44 @@ class OperationController extends Controller
             $stmt->execute();
             $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Crear un array asociativo para almacenar los porcentajes de IVA
-            $porcentajesIva = [];
-            foreach ($p_impuestos as $impuesto) {
-                $porcentajesIva[$impuesto->id] = $impuesto->porcentaje;
-            }
-            
-            // Iterar sobre los resultados y construir el array de productos
             $productos = [];
+            
+            $currentProduct = null;
 
             foreach ($resultados as $row) {
                 $productId = $row['id'];
-                $porcentajeIva = $porcentajesIva[$row['iva']] ?? null;
-                $producto = [
-                    "id" => $productId,
-                    "item_name" => $row['item_name'],
-                    "bar_code" => $row['bar_code'],
-                    "iva" => $row['iva'],
-                    "porcentajeIva" => $porcentajeIva,
-                    "abbreviation" => $row['abbreviation'],
-                    "pvp1_neto" => null,
-                    "pvp1" => null,
-                    "cantidad2" => null,
-                    "pvp2_neto" => null,
-                    "pvp2" => null,
-                    "cantidad3" => null,
-                    "pvp3" => null,
-                    "pvp3_neto" => null,
-                    "cantidad4" => null,
-                    "pvp4" => null,
-                    "pvp4_neto" => null,
-                ];
+                for ($i=0; $i < count($p_impuestos); $i++) { 
+                                
+                    if ($row['iva'] == strval($p_impuestos[$i]['id'])) {
+                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                    }
+                }
 
-                // Asignar precios y cantidades
+                if ($currentProduct === null || $currentProduct['id'] !== $productId) {
+                    if ($currentProduct !== null) {
+                        $productos[] = $currentProduct;
+                    }
+                    $currentProduct = [
+                        "id" => $productId,
+                        "item_name" => $row['item_name'],
+                        "bar_code" => $row['bar_code'],
+                        "iva" => $row['iva'],
+                        "porcentajeIva" => $porcentajeIva,
+                        "abbreviation" => $row['abbreviation'],
+                        "pvp1_neto" => null,
+                        "pvp1" => null,
+                        "cantidad2" => null,
+                        "pvp2_neto" => null,
+                        "pvp2" => null,
+                        "cantidad3" => null,
+                        "pvp3" => null,
+                        "pvp3_neto" => null,
+                        "cantidad4" => null,
+                        "pvp4" => null,
+                        "pvp4_neto" => null,
+                    ];
+                }
+
                 $numPrecio = $row['num_precio'];
                 $precio_iva = $row['precio_iva'];
                 $precio_neto = $row['precio'];
@@ -474,30 +479,33 @@ class OperationController extends Controller
 
                 switch ($numPrecio) {
                     case 1:
-                        $producto['pvp1'] = floatval($precio_iva);
-                        $producto['pvp1_neto'] = $precio_neto;
+                        $currentProduct['pvp1'] = floatval($precio_iva);
+                        $currentProduct['pvp1_neto'] = $precio_neto;
                         break;
                     case 2:
-                        $producto['pvp2'] = $precio_iva;
-                        $producto['pvp2_neto'] = $precio_neto;
-                        $producto['cantidad2'] = $desde;
+                        $currentProduct['pvp2'] = $precio_iva;
+                        $currentProduct['pvp2_neto'] = $precio_neto;
+                        $currentProduct['cantidad2'] = $desde;
                         break;
                     case 3:
-                        $producto['pvp3'] = $precio_iva;
-                        $producto['pvp3_neto'] = $precio_neto;
-                        $producto['cantidad3'] = $desde;
+                        $currentProduct['pvp3'] = $precio_iva;
+                        $currentProduct['pvp3_neto'] = $precio_neto;
+                        $currentProduct['cantidad3'] = $desde;
                         break;
                     case 4:
-                        $producto['pvp4'] = $precio_iva;
-                        $producto['pvp4_neto'] = $precio_neto;
-                        $producto['cantidad4'] = $desde;
+                        $currentProduct['pvp4'] = $precio_iva;
+                        $currentProduct['pvp4_neto'] = $precio_neto;
+                        $currentProduct['cantidad4'] = $desde;
                         break;
                 }
             }
-            // Agregar el producto al array de productos
-            $productos[] = $producto;
+
+            if ($currentProduct !== null) {
+                $productos[] = $currentProduct;
+            }
 
             return json_encode($productos);
+
         } catch (\PDOException $e) {
             // Manejo de errores de la base de datos
             echo "Error de base de datos: " . $e->getMessage();
@@ -1345,23 +1353,27 @@ class OperationController extends Controller
     public function verificarCodigo(Request $request)
     {       
         $codigoIngresado = $request->codigoRegistro;
-        $registro=Activacion::where('codigo_activacion', $codigoIngresado)->where('es_activo',0)->first();
-        $empresa = Empresas::where('ruc', $registro->ruc)->first();
+        $registro = Activacion::where('codigo_activacion', $codigoIngresado)
+                                ->where('es_activo', 0)
+                                ->first();
 
-        if($empresa){
-            $registro->es_activo = 1;
-            $registro->save();
-            return redirect()->route('login');
-        }
-
-
+            
         if($registro){
-            return redirect()->route('empresa.create', ['ruc' => $registro->ruc, 'email' => $registro->correo]);
-            //return view('empresa.create', ['ruc' => $registro->ruc, 'email' => $registro->correo]);
-        }
-        else{
+
+            //$activacion = Activacion::where('codigo_activacion', $codigoIngresado)->first();    
+            $empresa = Empresas::where('ruc', $registro->ruc)->first();
+
+            if($empresa){
+                $registro->es_activo = 1;
+                $registro->save();
+                return redirect()->route('login')->with('message', 'La empresa y ha sido creada correctamente!');
+            }else{
+                return redirect()->route('empresa.create', ['ruc' => $registro->ruc, 'email' => $registro->correo]);
+            }
+        
+        }else{
             return back()->with('error', 'El código ingresado es incorrecto.');
-        }
+        }    
     }
 
     // public function obtenerCadenaConexion(){

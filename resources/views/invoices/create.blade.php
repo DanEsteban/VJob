@@ -21,7 +21,6 @@
     $fechaActual = Carbon::now();
     $fechaFormateada  = $fechaActual->locale('es_ES')->isoFormat('dddd, D [de] MMMM [de] YYYY');
     
-    const porc_iva = 0.12;
 ?>
 
     @if( Session::has('info') )
@@ -432,13 +431,13 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <style>
 
-        @media screen and (min-width: 950px) {
+        @media screen and (min-width:1200px) {
             .custom-paragraph {
                 font-size: 20px;
             }
         }
 
-        @media screen and (min-width: 720px) and (max-width: 949px) {
+        @media screen and (min-width: 900px) and (max-width: 1200px) {
             .custom-paragraph {
                 font-size: 14px;
             }
@@ -449,7 +448,6 @@
                 font-size: 12px;
             }
         }
-
 
         #PVP1,#PVP2,#PVP3, #PVP4 {
             color: #ffff;
@@ -526,6 +524,8 @@
             let pvp3_neto = parseFloat(tr.find('#pvp3_neto').val());
             let pvp4_neto = parseFloat(tr.find('#pvp4_neto').val());
 
+            console.log(pvp1_neto, pvp2_neto, pvp3_neto, pvp4_neto )
+
             if (pvp1_neto) {
                 pvp1_neto = pvp1_neto.toFixed(2);
                 var parrafo1 = $("<p></p>").addClass("custom-paragraph");
@@ -583,7 +583,6 @@
             }
         });        
     });
-
 
     function cambioFecha() {
         var fechaInput = $('#fecha_fact').val()
