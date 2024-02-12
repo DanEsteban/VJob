@@ -73,7 +73,8 @@ class OperationController extends Controller
 
     public function filtrarLinea(Request $request){
         
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD =  App::make('dataBase');
+        $dsn = "mysql:host=localhost;dbname=" . $nombreBD;
         $usuario = "root";
         $contrasena = "";
 

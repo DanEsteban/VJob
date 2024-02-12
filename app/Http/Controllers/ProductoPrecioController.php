@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Impuesto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use App\Http\Controllers\Controller;
+
+
 
 class ProductoPrecioController extends Controller
-{
+{   
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +19,7 @@ class ProductoPrecioController extends Controller
     public function index()
     {
         $nombreBD = App::make('dataBase');
-        //return $nombreBD;
+        
 
         $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
@@ -159,29 +162,11 @@ class ProductoPrecioController extends Controller
             echo "Error de conexión: " . $e->getMessage();
         }  
         
-        $dsn = "mysql:host=localhost;dbname=vjob";
-        $usuario = "root";
-        $contrasena = "";
-        
-        try {
 
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
-            $result= $conexion->query($consulta);
+        $p_impuestos = Impuesto::all(); 
+        return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos'));
 
-            $p_impuestos=[];
-            foreach ($result as $fila) {
-                $p_impuestos[]=[
-                    "id" => $fila['id'],
-                    "porcentaje" => $fila['porcentaje'],     
-                ];
-            }
-            return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos'));
 
-        } catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        }    
     }
 
     /**
@@ -202,33 +187,13 @@ class ProductoPrecioController extends Controller
      */
     public function store(Request $request)
     {   
-        $dsn = "mysql:host=localhost;dbname=vjob";
-        $usuario = "root";
-        $contrasena = "";
-        try {
-
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
-            $result= $conexion->query($consulta);
-
-            $p_impuestos=[];
-            foreach ($result as $fila) {
-                $p_impuestos[]=[
-                    "id" => $fila['id'],
-                    "porcentaje" => $fila['porcentaje'],     
-                ];
-            }
-
-            //return $p_impuestos[0]['id'];
-
-        } catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        }    
+        $p_impuestos = Impuesto::all();
+        
+        $nombreBD =  App::make('dataBase');
 
         try {
 
-            $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
+            $db = new \PDO('mysql:host=localhost;dbname='. $nombreBD, 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         
             // Itera sobre el array de productos
@@ -291,12 +256,6 @@ class ProductoPrecioController extends Controller
                                     $precio = strval($precio);
                                 }
                             }
-                            // if ($iva === "2") {
-                            //     $precio =  floatval($precio_iva/1.12);
-                            //     $precio = strval($precio);
-                            // }else{
-                            //     $precio = $precio_iva;
-                            // }
 
                             $desde = $price['cantidad'];
                             $hasta = ($desde_anterior != null) ? intval($desde_anterior) - 1 : 999999999;
@@ -446,9 +405,10 @@ class ProductoPrecioController extends Controller
      */
     public function destroy($id)
     {
+        $nombreBD =  App::make('dataBase');
         try {
 
-            $db = new \PDO('mysql:host=localhost;dbname=empresa1', 'root', '');       
+            $db = new \PDO('mysql:host=localhost;dbname=' . $nombreBD, 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
             
