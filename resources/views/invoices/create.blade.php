@@ -381,7 +381,7 @@
                                     <div class="form-group row modalGroup">
                                         <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
                                         <div class="col-sm-2">
-                                            <input onkeyup="calculoSaldo();" type="text" class="form-control" id="abono2" name="abono2" value="0.00" readonly>
+                                            <input onchange="calculoSaldo();" type="text" class="form-control" id="abono2" name="abono2" value="0.00" readonly>
                                         </div>
                                         <div class="col-sm-2">
                                             <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control">
@@ -981,25 +981,32 @@
     function calculoSaldo(){
         
         let apagar = parseFloat($('#apagar').val());
-        let abono1 = isNaN(parseFloat($('#abono1').val())) ? 0.00 : parseFloat($('#abono1').val());
-        let abono2 = isNaN(parseFloat($('#abono2').val())) ? 0.00 : parseFloat($('#abono2').val());
+        let abono1 = parseFloat($('#abono1').val()) || 0.00;
+        let abono2 = parseFloat($('#abono2').val()) || 0.00;
 
         let totalAbonos = abono1 + abono2; 
+
         if (abono1 > apagar) {
             showError("El Abono no puede ser mayor al valor TOTAL", '#abono1');
-        } else if (abono2 > apagar) {
+            abono1 = apagar;
+            abono2 = 0.00;
+        } else if (abono2 > apagar - abono1) {
             showError("El Abono 2 no puede ser mayor al valor TOTAL", '#abono2');
+            abono2 = apagar - abono1;
         } else if (totalAbonos > apagar) {
             showError("La Suma de los Abonos no puede ser mayor al valor TOTAL", '#saldo');
-        } else {
-            let resulFinal = apagar - abono1 - abono2;
-            $('#saldo').val(resulFinal.toFixed(2));
+            abono2 = apagar - abono1;
         }
 
-        if (apagar != abono1) {
-            $('#abono2').val(parseFloat(apagar-abono1).toFixed(2));
-            $('#saldo').val(0.00);
-        }  
+        let saldo = apagar - abono1 - abono2;
+        $('#abono1').val(abono1.toFixed(2));
+        $('#abono2').val(abono2.toFixed(2));
+        $('#saldo').val(saldo.toFixed(2));
+
+        // if (apagar != abono1) {
+        //     $('#abono2').val(parseFloat(apagar-abono1).toFixed(2));
+        //     $('#saldo').val(0.00);
+        // }  
 
         function showError(message, element) {
             Swal.fire({

@@ -459,10 +459,11 @@ class InvoiceController extends Controller
             $base0 = $request->baseCero;
             $base_iva = $request->baseIva;
             $total = $request->total;
+            $saldo = $request->saldo;
 
             $sql = "INSERT INTO invoices (number, tipo_documento, num_doc_sri, id_customer,
-            date, phone, subtotal, email, taxes,  base0, base_iva, total) VALUES (:number, :tipo_documento, 
-            :num_doc_sri, :id_cliente, :date, :phone, :subtotal, :email, :taxes,  :base0, :base_iva, :total)";
+            date, phone, subtotal, email, taxes,  base0, base_iva, total, saldo) VALUES (:number, :tipo_documento, 
+            :num_doc_sri, :id_cliente, :date, :phone, :subtotal, :email, :taxes,  :base0, :base_iva, :total, :saldo)";
             
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':number', $number, \PDO::PARAM_STR);
@@ -477,6 +478,7 @@ class InvoiceController extends Controller
             $stmt->bindParam(':base0', $base0, \PDO::PARAM_STR);
             $stmt->bindParam(':base_iva', $base_iva, \PDO::PARAM_STR);
             $stmt->bindParam(':total', $total, \PDO::PARAM_STR);
+            $stmt->bindParam(':saldo', $saldo, \PDO::PARAM_STR);
             $stmt->execute();
             
             $lastId_invoice = $db->lastInsertId();
