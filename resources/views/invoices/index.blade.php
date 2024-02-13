@@ -46,9 +46,7 @@
                     </thead>
                     <tbody>
     
-                        @foreach ($invoices as $invoice)
-    
-                            
+                        @foreach ($invoices as $invoice)  
                             <tr>
                                 <td role="button">{{$invoice["date"]}}</td>
                                 <td role="button">{{$invoice["number"]}}</td>
@@ -61,7 +59,6 @@
                                         <span class="visually-hidden">Toggle Dropdown</span>
                                         </button>
                                         <ul class="dropdown-menu">
-    
                                             {{-- <li hidden><a class="dropdown-item disabled" href="/invoices/{{$invoice->id}}/edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a></li> --}}
                                             <li><a class="dropdown-item" href="/invoices/{{$invoice['id']}}"><i class="fa-solid fa-file-lines"></i> XML</a></li>
                                             <li><a class="dropdown-item" href="/invoices/{{$invoice['id']}}"><i class="fa-solid fa-print"></i> Print</a></li>
@@ -96,47 +93,12 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $('#dTable').DataTable({
-            // fixedHeader: {
-            //     header: true,
-            //     footer: true
-            // },
-            // select: {
-            //     style: 'single'
-            // },
-            // "order": [[0, "desc"]],
-            // searching: true, 
-            // paging: true, 
-            // info: false
             "paging": true,
             "searching": false,
             "order": [[0, "desc"]],
             "info": false
         });
     });
-
-    function leerFilas() {
-        var table = $('#dTable').DataTable();
-        var filas = table.rows().nodes();
-        var filasConDatos = {};
-        
-        filas.each(function (rowNode, index) {
-            
-            var tr = $(rowNode);
-            var celdas = tr.find('td');   
-            var codigo = $(celdas[0].childNodes[1]).val();
-
-            if (codigo !== '') {
-                if (!filasConDatos[codigo]) {
-                    // Si no existe, crea un nuevo arreglo
-                    filasConDatos[codigo] = [];
-                }
-                filasConDatos[codigo].push(tr);
-            }
-        
-        }); 
-        
-        return filasConDatos;
-    }
 
     function eliminar(objeto) {
         let form = $(objeto).parent().parent();
