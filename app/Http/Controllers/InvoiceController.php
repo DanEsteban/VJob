@@ -728,7 +728,14 @@ class InvoiceController extends Controller
                 $datosEmp[$fila['name']] = $fila['value'];
             }
 
-            return view('invoices.show', compact('cabeceraInv', 'baseProductsInv', 'datosEmp'));
+            $consulta = "SELECT COUNT(*) as existe FROM documents WHERE doc_genera = :id";
+            $statement = $conexion->prepare($consulta);
+            $statement->bindParam(':id', $id, \PDO::PARAM_INT);
+            $statement->execute();
+            $existeNC = $statement->fetch(\PDO::FETCH_ASSOC);
+
+
+            return view('invoices.show', compact('cabeceraInv', 'baseProductsInv', 'datosEmp', 'existeNC'));
             
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();

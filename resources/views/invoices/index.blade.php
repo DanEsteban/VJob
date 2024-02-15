@@ -61,7 +61,7 @@
                                         <ul class="dropdown-menu">
                                             {{-- <li hidden><a class="dropdown-item disabled" href="/invoices/{{$invoice->id}}/edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a></li> --}}
                                             <li><a class="dropdown-item" href="/invoices/{{$invoice['id']}}"><i class="fa-solid fa-file-lines"></i> XML</a></li>
-                                            <li><a class="dropdown-item" href="/invoices/{{$invoice['id']}}"><i class="fa-solid fa-print"></i> Print</a></li>
+                                            <li><a class="dropdown-item" href="/invoices/{{$invoice['id']}}"><i class="fa-solid fa-print"></i> Show</a></li>
                                             <form action="/invoices/{{$invoice['id']}}" method="POST" id="invoiceForm">
                                                 @csrf
                                                 @method('DELETE')

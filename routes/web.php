@@ -23,6 +23,7 @@ use App\Http\Controllers\ProcessController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\DocumentsController;
 use App\Http\Controllers\ElementsController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\MovementsController;
@@ -53,6 +54,7 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 })->name('dashboard');
 
 Route::resource('empresa', EmpresasController::class);
+Route::resource('documents', DocumentsController::class);
 Route::resource('productoPrecio', ProductoPrecioController::class);
 
 Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
