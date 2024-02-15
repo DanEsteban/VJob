@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Show Nota Crédito')
+@section('title', 'Show Invoice')
 
 @section('plugins.Datatables', true)
 
@@ -52,7 +52,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
-                            <h4 class="invoice-color mb-2 mt-md-2">Factura #<?php echo $cabeceraInv['number']; ?></h4>
+                            <h4 class="invoice-color mb-2 mt-md-2">{{$titulo}} #<?php echo $cabeceraInv['num_doc_sri']; ?></h4>
                             <div class="text-right">
                                 <label for="fecha">Fecha:</label>
                                 <span>{{$fechaFormateada}}</span>
@@ -127,13 +127,13 @@
 
     <div class="row">
         <div class="col-md-6">
-            @if ($existeNC['existe'] != 1)
+            @if ($titulo != "NC")
                 @if ($cabeceraInv['numero_ident'] != "9999999999999") 
                     <button onclick="generarNC({{(int)($cabeceraInv['number'])}})"type="button" class="btn btn-sm btn-outline-success mr-2">
                         <i class="fas fa-door-open"></i> Generar N/C
                     </button>
-                @endif       
-            @endif            
+                @endif 
+            @endif
         </div>
         <div class="col-md-6">
             <div class="card">

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Invoices extends Model
 {
     use HasFactory;
-    protected $table = 'invoices';
+    protected $table = 'documents';
     protected $primaryKey = 'id';
     protected $fillable = [
         'id', 
