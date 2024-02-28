@@ -96,6 +96,7 @@ class CashierController extends Controller
 
     public function imprimirTicket(Request $request)
     {
+        //return $request;
         // Variables para la impresión
         $invoices = $request->invoices;
         $cobranzas = $request->cobranzas;

@@ -1267,6 +1267,8 @@ class OperationController extends Controller
 
     public function getCashier($fecha){
 
+        $nombreBD = App::make('dataBase');
+
         $totalPayment=0;
         $totalCash = 0;
         $totalTransfer = 0;
@@ -1274,7 +1276,7 @@ class OperationController extends Controller
         $inicioDelDia =$fecha;
 
 
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $dsn = "mysql:host=localhost;dbname=". $nombreBD;
         $usuario = "root";
         $contrasena = "";
         try {
@@ -1393,4 +1395,5 @@ class OperationController extends Controller
     //     }
     // }
 }
+
 

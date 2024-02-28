@@ -68,7 +68,7 @@ Route::post('/invoices/xml', [InvoiceController::class, 'generarXML'])->name('in
 
 Route::resource('cashier', CashierController::class)->except(['update', 'edit']);
 
-Route::get('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
+Route::post('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
 
 Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
 Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->name('element.order.row');
@@ -76,7 +76,7 @@ Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->n
 
 
 
-
+///////////////////////////////////////////////////////
 
 Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
 

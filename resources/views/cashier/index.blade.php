@@ -131,7 +131,6 @@
                         </tfoot>
                     </table>
                 </div>
-
                 {{-- <div class="cobranzaCredit-table">
                     <div class="text-left">
                         <h2><strong>Cobranza de Créditos</strong></h2>
