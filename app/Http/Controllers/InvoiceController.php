@@ -326,7 +326,7 @@ class InvoiceController extends Controller
             // Preparar la consulta para obtener los productos, proveedores, series de facturas, términos de pago y datos de la empresa
             $consulta = "SELECT id, item_name FROM products;
                         SELECT id, name FROM vendors;
-                        SELECT id, nombre, tipo_documento, establecimiento, punto_emision, secuencial FROM serie_factura;
+                        SELECT * FROM serie_factura  WHERE tipo_documento <> 4;
                         SELECT number FROM document_numbers WHERE type = 'Factura';
                         SELECT id, name FROM payment_terms;
                         SELECT name, value FROM parameters WHERE name LIKE 'emp_%';";

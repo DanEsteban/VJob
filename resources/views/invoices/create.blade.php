@@ -916,7 +916,6 @@
     function buscarPorRuc(object){
 
         let ruc = object.value;
-        console.log(ruc);
         if(ruc !== '9999999999999'){
             let url = "/invoices/buscarCliente/" + ruc;        
             $.ajax({
@@ -953,7 +952,7 @@
                 selectDoc(this);
                 return $(this).find("td:eq(1)").text() === nombreABuscar;
                 }).addClass("table-active");
-            }
+        }
     }
 
     function selectDoc(object){
