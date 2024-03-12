@@ -24,7 +24,8 @@ use Illuminate\Support\Facades\App;
 class ElementsController extends Controller
 {
     public function addRowPriceProduct(){
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $nombreBD =  App::make('dataBase');
+        $dsn = "mysql:host=localhost;dbname=" . $nombreBD;
         $usuario = "root";
         $contrasena = "";
 

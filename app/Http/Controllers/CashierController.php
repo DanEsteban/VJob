@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Mike42\Escpos\Printer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 date_default_timezone_set('America/Guayaquil');
@@ -16,6 +17,9 @@ class CashierController extends Controller
      */
     public function index()
     {
+
+        $nombreBD = App::make('dataBase');
+        
         $totalPayment=0;
         $totalP=0;
         $subtotal=0;
@@ -28,7 +32,7 @@ class CashierController extends Controller
         $total=0;
         $inicioDelDia = date('Y-m-d');
         //$inicioDelDia = '2023-12-18';
-        $dsn = "mysql:host=localhost;dbname=empresa1";
+        $dsn = "mysql:host=localhost;dbname=". $nombreBD;
         $usuario = "root";
         $contrasena = "";
 
@@ -87,7 +91,8 @@ class CashierController extends Controller
                  */
             }
             $totalPayment = $totalCash + $totalTransfer;
-            return view('cashier.index', compact('invoices', 'inicioDelDia','totalCash','totalTransfer','totalPayment'));
+            
+            return view('cashier.index', compact('invoices', 'inicioDelDia','totalCash','totalTransfer','totalPayment')); 
 
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();

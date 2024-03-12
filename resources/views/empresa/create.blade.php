@@ -38,7 +38,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <label for="cs_company" class="col-sm-4 col-form-label form-control-sm" align="left">Nombre:</label>
+                                            <label for="cs_company" class="col-sm-4 col-form-label form-control-sm" align="left">Nombre Empresa:</label>
                                             <input autocomplete="off" id="cs_company" name="cs_company" type="text" class="form-control form-control-sm" tabindex="1" required/>
                                         </div>
                                     </div>
@@ -91,6 +91,12 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group mb-3">
+                                            <label class="col-sm-4 col-form-label form-control-sm" for="logo">Logo Empresa</label>
+                                            <input type="file" class="form-control" id="logo" name="logo" accept="image/*" >
+                                        </div>
+                                    </div>
                                 </div>
                                 <br>
                                 <div class="row">
@@ -116,6 +122,8 @@
                 </div>                 
             </div> 
         </div> 
+        <br>
+        <br>
         <footer class="main-footer">
             <div class="ml-4 text-sm text-gray-500 sm:text-right sm:ml-0">
                 <img src="../img/ISOTIPO.png" width="30px" alt="isotipo_logo"> Copyright © 2022-2024 Visual Job. All rights reserved.

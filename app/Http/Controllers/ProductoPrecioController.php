@@ -19,7 +19,6 @@ class ProductoPrecioController extends Controller
     public function index()
     {
         $nombreBD = App::make('dataBase');
-        
 
         $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
         $usuario = "root";
@@ -154,7 +153,6 @@ class ProductoPrecioController extends Controller
                     "abbreviation" => $fila['abbreviation']   
                 ];
             }
-
             //return $resultados;
             //return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures'));
 
@@ -162,10 +160,8 @@ class ProductoPrecioController extends Controller
             echo "Error de conexión: " . $e->getMessage();
         }  
         
-
         $p_impuestos = Impuesto::all(); 
         return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos'));
-
 
     }
 
@@ -187,8 +183,8 @@ class ProductoPrecioController extends Controller
      */
     public function store(Request $request)
     {   
-        $p_impuestos = Impuesto::all();
-        
+       
+        $p_impuestos = Impuesto::all(); 
         $nombreBD =  App::make('dataBase');
 
         try {
@@ -208,6 +204,7 @@ class ProductoPrecioController extends Controller
                 $bar_code = $request->codigoBarras[$index];
                 $iva = $request->iva[$index];
                 $id_unit_measure = $request->medida[$index];
+
                 $notes = null;
                 $is_active = 1;
                 
@@ -238,12 +235,26 @@ class ProductoPrecioController extends Controller
                     // Ejecuta la consulta para insertar en la tabla "products"
                     $stmt->execute();
 
-                    $prices = [
-                        ['pvp' => $request->pvp4[$index], 'cantidad' => $request->cantidad4[$index], 'num' => 4],
-                        ['pvp' => $request->pvp3[$index], 'cantidad' => $request->cantidad3[$index], 'num' => 3],
-                        ['pvp' => $request->pvp2[$index], 'cantidad' => $request->cantidad2[$index], 'num' => 2],
-                        ['pvp' => $request->pvp1[$index], 'cantidad' => 1, 'num' => 1]
-                    ];
+                    $prices = [];
+                    if (isset($request->pvp4[$index]) && isset($request->cantidad4[$index])) {
+                        $prices[] = ['pvp' => $request->pvp4[$index], 'cantidad' => $request->cantidad4[$index], 'num' => 4];
+                    }
+                    if (isset($request->pvp3[$index]) && isset($request->cantidad3[$index])) {
+                        $prices[] = ['pvp' => $request->pvp3[$index], 'cantidad' => $request->cantidad3[$index], 'num' => 3];
+                    }
+                    if (isset($request->pvp2[$index]) && isset($request->cantidad2[$index])) {
+                        $prices[] = ['pvp' => $request->pvp2[$index], 'cantidad' => $request->cantidad2[$index], 'num' => 2];
+                    }
+                    if (isset($request->pvp1[$index])) {
+                        $prices[] = ['pvp' => $request->pvp1[$index], 'cantidad' => 1, 'num' => 1];
+                    }
+
+                    // $prices = [
+                    //     ['pvp' => $request->pvp4[$index], 'cantidad' => $request->cantidad4[$index], 'num' => 4],
+                    //     ['pvp' => $request->pvp3[$index], 'cantidad' => $request->cantidad3[$index], 'num' => 3],
+                    //     ['pvp' => $request->pvp2[$index], 'cantidad' => $request->cantidad2[$index], 'num' => 2],
+                    //     ['pvp' => $request->pvp1[$index], 'cantidad' => 1, 'num' => 1]
+                    // ];
                     $desde_anterior="";
 
                     foreach ($prices as $price) {
@@ -405,12 +416,14 @@ class ProductoPrecioController extends Controller
      */
     public function destroy($id)
     {
+
+    }
+
+    public function delete($id){
         $nombreBD =  App::make('dataBase');
         try {
-
             $db = new \PDO('mysql:host=localhost;dbname=' . $nombreBD, 'root', '');       
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            
             
             $sql = "DELETE FROM products WHERE id = :id";
             // Preparar la consulta
@@ -426,13 +439,12 @@ class ProductoPrecioController extends Controller
             $stmt2->bindParam(':id', $id, \PDO::PARAM_INT);
             $stmt2->execute();
             
-            return redirect()->route('productoPrecio.index');
-            
-            
+            return response()->json(['success' => true, 'message' => 'El registro se eliminó correctamente']);
+            //return redirect()->route('productoPrecio.index');
+    
         
         } catch (\PDOException $e) {
-            echo "Error al borrar el registro: " . $e->getMessage();
+            return response()->json(['success' => true, 'message' => 'El registro se eliminó correctamente']);
         }
-        //
     }
 }

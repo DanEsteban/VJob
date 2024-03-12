@@ -251,7 +251,7 @@
 
     function filtrar(objeto) {
 
-        let fecha = $(objeto).parent().parent().find('#fecha').val();
+        let fecha = $(objeto).parent().parent().find('#fecha').val(); 
         $('#tb_invoices tr').remove();
         $('#tf_invoices tr').remove();
         $('#tb_cobranzas tr').remove();

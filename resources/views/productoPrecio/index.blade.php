@@ -36,7 +36,7 @@
     @endphp
     <form action="/productoPrecio" method="POST" id="formulario">
         @csrf
-        
+
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -65,11 +65,7 @@
                             @foreach ($resultados as $resultado)                                               
                                 <tr id="tr_items">
                                     <td>
-                                        <form id="delete" action="/productoPrecio/{{$resultado['id']}}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
-                                        </form>
+                                        <button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>
                                     <td><button onclick="editRow(this);" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
                                     <td><input type="text" class="form-control form-control-sm" value="{{$resultado['id']}}" readonly></td>
@@ -136,13 +132,13 @@
                                             @endforeach
                                         </select>   
                                     </td>
-                                    <td><input type="text" id="pvp1" value="{{$resultado['pvp1']}}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad2" value="{{$resultado['cantidad2']}}" class="form-control form-control-sm" disabled></td>    
-                                    <td><input type="text" id="pvp2" value="{{$resultado['pvp2']}}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad3" value="{{$resultado['cantidad3']}}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="pvp3" value="{{$resultado['pvp3']}}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad4" value="{{$resultado['cantidad4']}}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="pvp4" value="{{$resultado['pvp4']}}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="pvp1" value="{{ number_format($resultado['pvp1'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad2" value="{{ number_format($resultado['cantidad2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>    
+                                    <td><input type="text" id="pvp2" value="{{ number_format($resultado['pvp2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad3" value="{{ number_format($resultado['cantidad3']) }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="pvp3" value="{{ number_format($resultado['pvp3'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad4" value="{{ number_format($resultado['cantidad4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="pvp4" value="{{ number_format($resultado['pvp4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
                                 </tr> 
                             @endforeach
                         </tbody>
@@ -154,7 +150,7 @@
         <div class="card">
             <div class="card-body">
                 <center>
-                    <button type="submit" class="btn btn-sm btn-outline-primary" style="width: 100px">Save</button>
+                    <button onclick="guardar();" type="button" class="btn btn-sm btn-outline-primary" style="width: 100px">Save</button>
                     <button onclick="salir();" type="button" class="btn btn-sm btn-outline-danger" style="width: 100px">Cancel</button>
                 </center>
             </div>
@@ -186,64 +182,31 @@
         });
     });
 
-    function newProduct() {
-        let url = "/elements/priceProduct/row";
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'html',
-            async: 'false',
-            data:{},
-            error: function (xhr, status, error) {
-                console.log(xhr.responseText);
-            },
-            success : function(data){
-                //$('#tb_items').append(data)
-                $('#tb_items').prepend(data);
-            }
-        });
-    }
+    function guardar() {
 
-    function filtrarLinea(object){
-        $.ajax({
-                type:'POST',
-                dataType: 'json',
-                url: '/operations/linea',
-                asinc: false,
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    nombre: object.value
-                },
-                error: function (xhr, status, error) {
-                    console.log(xhr.responseText);
-                },
-                success : function(data){
-                    let tr=$(object).parent().parent();
-                    let select=$(tr).find('td:eq(5)').find('select')[0];
-                    while (select.options.length > 0) {
-                        select.remove(0);
-                    }
-                    var optionIni = document.createElement("option");
-                    optionIni.value = "0";
-                    optionIni.text = "--Seleccione--";
-                    select.appendChild(optionIni);
-                    // Llenar el datalist con las opciones del array
-                    data.forEach(objeto => {
-                        var option = document.createElement("option");
-                        option.value = objeto.id;
-                        option.text = objeto.nombre;
-                        select.appendChild(option);
-                    });
-                }
+        var iva = $("#iva").val();
+        // Verificar si el valor actual del campo "iva" es 0
+        if (iva == 0) {
+            $("#iva").val("1");
+            //console.log($("#iva").val());
+        }
 
+        // Verificar si el campo "pvp1" no está vacío       
+        if($("#pvp1").val() != ""){
+            $("#formulario").submit();
+        }else{
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "No puede guardar un producto si no tiene un precio!",
             });
+        }
     }
 
     function comprobacionbarCode(objeto) {
 
         var tr = $(objeto).closest('tr')[0];
         var filaActual= $(tr).addClass('fila-Actual');
-        
         var tabla = $('#dTable').DataTable();
         var allRows = tabla.rows().nodes();
         var filasSinClase = $(allRows).filter('tr:not(.fila-Actual)');
@@ -251,8 +214,7 @@
 
         filasSinClase.each(function() {
             var fila = $(this);
-            var valorFila = fila.find('td:eq(8) input').val();
-            console.log(valorFila);
+            var valorFila = fila.find('td:eq(7) input').val();
             if (valorFila === valor) {
                 Swal.fire({
                     title: 'Ya existe ese codigo de Barras', 
@@ -271,17 +233,108 @@
 
     }
 
+    function newProduct() {
+        let url = "/elements/priceProduct/row";
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: 'false',
+            data:{},
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            },
+            success : function(data){
+                //$('#tb_items').append(data)
+                $('#tb_items').prepend(data);
+                
+            }
+        });
+    }
+
+    function filtrarLinea(object){
+        $.ajax({
+                type:'POST',
+                dataType: 'json',
+                url: '/operations/linea',
+                async: false,
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    nombre: object.value
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                },
+                success : function(data){
+                    //console.log(data)
+                    let tr=$(object).parent().parent();
+                    let select=$(tr).find('td:eq(5)').find('select')[0];
+                    while (select.options.length > 0) {
+                        select.remove(0);
+                    }
+                    var optionIni = document.createElement("option");
+                    optionIni.value = "0";
+                    optionIni.text = "--Seleccione--";
+                    select.appendChild(optionIni);
+                    // Llenar el datalist con las opciones del array
+                    data.forEach(objeto => {
+                        var option = document.createElement("option");
+                        option.value = objeto.id;
+                        option.text = objeto.nombre;
+                        select.appendChild(option);
+                    });
+                }
+
+        });
+    }
+
     function delRow(object) {
 
-        console.log($(object).closest('tr').find('td:eq(2) input').val());
+        var tr = $(object).closest('tr')
+        var id = $(object).closest('tr').find('td:eq(2) input').val();
+
         Swal.fire({
-        title: 'Esta seguro de borrar el Producto?',
-        showDenyButton: true,
-        confirmButtonText: 'Delete',
-        denyButtonText: `Cancelar`,
+            title: 'Esta seguro de borrar el Producto?',
+            showDenyButton: true,
+            confirmButtonText: 'Borrar',
+            denyButtonText: `Cancelar`,
         }).then((result) => {
-            if (result.isConfirmed) {
-                $('#delete').submit();
+            if (result.isConfirmed) { 
+                $.ajax({
+                    type:'POST',
+                    dataType: 'json',
+                    url: 'productoPrecio/delete/' + id,
+                    async: false,
+                    data: {
+                        "_token": "{{ csrf_token() }}"
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    },
+                    success : function(response){
+                        if (response.success) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "success",
+                                title: response.message
+                            }); 
+                            tr.remove();
+                        } else {
+                            alert(response.message); 
+                        }
+                    }
+
+                });
             }
         })
     }
@@ -290,7 +343,7 @@
         let tr = $(object).closest('tr'); 
         tr.find("td:not(:eq(2)) input, select").prop("disabled", false); // Habilita los <input> en todas las celdas excepto en la tercera
 
-        let nombres = ['','', 'id[]', 'producto[]', 'type[]', 'group[]','', 'iva[]', 'codigoBarras[]', 'medida[]', 'pvp1[]', 'cantidad2[]',
+        let nombres = ['','', 'id[]', 'producto[]', 'type[]', 'group[]', 'iva[]', 'codigoBarras[]', 'medida[]', 'pvp1[]', 'cantidad2[]',
         'pvp2[]', 'cantidad3[]', 'pvp3[]','cantidad4[]','pvp4[]']; // Lista de nombres diferentes
         let cadena = nombres.map(function(valor) {
             return "#" + valor ;
@@ -318,7 +371,7 @@
             valorIva.value = "0";
         }
 
-        console.log(valorIva.value);
+        //console.log(valorIva.value);
 
     }
 

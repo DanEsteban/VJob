@@ -47,6 +47,7 @@ class EmpresasController extends Controller
      */
     public function store(Request $request)
     {
+        //return $request;
         $palabras = explode(" ", $request->cs_company); // Divide el string en palabras
 
         $nombreBD = "";
@@ -63,7 +64,7 @@ class EmpresasController extends Controller
 
             $tablas = array(
 
-                "bills" => "id int(20) NOT NULL,
+                "bills" => "id int(20) NOT NULL AUTO_INCREMENT,
                     number varchar(20) NOT NULL,
                     id_vendor int(11) NOT NULL,
                     date date NOT NULL,
@@ -76,9 +77,10 @@ class EmpresasController extends Controller
                     status varchar(100) NOT NULL DEFAULT 'Pending',
                     active tinyint(1) NOT NULL DEFAULT 1,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "bills_items" => "id int(20) NOT NULL,
+                "bills_items" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_bill int(11) NOT NULL,
                     id_warehouse int(11) DEFAULT NULL,
                     id_item int(11) NOT NULL,
@@ -87,17 +89,19 @@ class EmpresasController extends Controller
                     unit varchar(50) DEFAULT NULL,
                     price decimal(8,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "contact_customers" => " id int(20) NOT NULL,
+                "contact_customers" => " id int(20) NOT NULL AUTO_INCREMENT,
                     id_customer int(11) NOT NULL,
                     name varchar(100) NOT NULL,
                     email varchar(100) NOT NULL,
                     phone varchar(20) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
                 
-                "customers" => "id int(20) NOT NULL,
+                "customers" => "id int(20) NOT NULL AUTO_INCREMENT,
                     tipo_ident varchar(2) NOT NULL,
                     numero_ident varchar(13) NOT NULL,
                     name varchar(200) DEFAULT NULL,
@@ -108,91 +112,25 @@ class EmpresasController extends Controller
                     balance decimal(8,2) DEFAULT 0.00,
                     is_active tinyint(1) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "customize_mails" => " id int(20) NOT NULL,
+                "customize_mails" => " id int(20) NOT NULL AUTO_INCREMENT,
                     type varchar(20) NOT NULL,
                     subject varchar(50) NOT NULL,
                     message varchar(255) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
                 
-                "delivery_methods" => "id int(20) NOT NULL,
+                "delivery_methods" => "id int(20) NOT NULL AUTO_INCREMENT,
                     name varchar(100) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "document_numbers" => "id int(20) NOT NULL,
-                    type varchar(50) NOT NULL,
-                    number int(11) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL", 
-                
-                "expenditures" => "id int(20) NOT NULL,
-                    number varchar(20) NOT NULL,
-                    comments varchar(255) DEFAULT NULL,
-                    date date NOT NULL,
-                    total decimal(8,2) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "expenditures_items" => "id int(20) NOT NULL,
-                    id_expenditure int(11) NOT NULL,
-                    id_item int(11) NOT NULL,
-                    id_size int(11) DEFAULT NULL,
-                    qty decimal(8,2) NOT NULL,
-                    unit varchar(50) DEFAULT NULL,
-                    cost decimal(8,2) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "groups" => "id int(20) NOT NULL,
-                    name varchar(150) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "image_products" => "id int(20) NOT NULL,
-                    id_product int(11) NOT NULL,
-                    image_name varchar(255) NOT NULL,
-                    image_folder varchar(255) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "incomes" => "id int(20) NOT NULL,
-                    number varchar(20) NOT NULL,
-                    comments varchar(255) NOT NULL,
-                    date date NOT NULL,
-                    total decimal(8,2) NOT NULL,
-                    tipo varchar(10) NOT NULL,
-                    clave varchar(50) DEFAULT NULL,
-                    autorizacion varchar(50) DEFAULT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "incomes_items" => "id int(20) NOT NULL,
-                    id_income int(11) NOT NULL,
-                    id_item int(11) NOT NULL,
-                    id_size int(11) DEFAULT NULL,
-                    qty decimal(8,2) NOT NULL,
-                    unit varchar(50) DEFAULT NULL,
-                    cost decimal(8,2) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-                    
-                "inventories" => "id int(20) NOT NULL,
-                    type varchar(255) NOT NULL,
-                    date date DEFAULT NULL,
-                    id_transaction int(11) NOT NULL,
-                    id_warehouse int(11) DEFAULT NULL,
-                    id_item int(11) NOT NULL,
-                    cost decimal(12,5) DEFAULT NULL,
-                    price decimal(8,2) NOT NULL,
-                    qty decimal(8,2) NOT NULL,
-                    created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
-
-                "invoices" => "id int(20) NOT NULL,
-                    number varchar(20) NOT NULL,
+                "documents" => "id int(11) NOT NULL AUTO_INCREMENT,
+                    number varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                     tipo_documento int(2) NOT NULL,
                     num_doc_sri varchar(20) NOT NULL,
                     id_customer int(11) NOT NULL,
@@ -206,16 +144,137 @@ class EmpresasController extends Controller
                     base0 decimal(12,2) NOT NULL,
                     base_iva decimal(12,2) NOT NULL,
                     total decimal(8,2) NOT NULL,
+                    saldo decimal(8,2) NOT NULL,
                     status varchar(100) NOT NULL DEFAULT 'Pending',
                     active tinyint(1) NOT NULL DEFAULT 1,
                     clave varchar(50) DEFAULT NULL,
                     autorizacion varchar(50) DEFAULT NULL,
                     fecha_autorizacion datetime DEFAULT NULL,
+                    doc_genera int(11) NOT NULL,
                     estado_sri varchar(20) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "invoices_items" => "id int(20) NOT NULL,
+                "documents_items" => "id int(11) NOT NULL AUTO_INCREMENT,
+                    id_document int(11) NOT NULL,
+                    id_warehouse int(11) DEFAULT NULL,
+                    id_item int(11) NOT NULL,
+                    id_taxes tinyint(1) NOT NULL,
+                    qty decimal(8,2) NOT NULL,
+                    unit varchar(50) DEFAULT NULL,
+                    precio_neto decimal(12,5) NOT NULL,
+                    pvp decimal(12,5) NOT NULL,
+                    num_precio int(11) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "document_numbers" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    type varchar(50) NOT NULL,
+                    number int(11) NOT NULL,
+                    PRIMARY KEY (id)", 
+                
+                "expenditures" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    number varchar(20) NOT NULL,
+                    comments varchar(255) DEFAULT NULL,
+                    date date NOT NULL,
+                    total decimal(8,2) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "expenditures_items" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    id_expenditure int(11) NOT NULL,
+                    id_item int(11) NOT NULL,
+                    id_size int(11) DEFAULT NULL,
+                    id_color int(11) DEFAULT NULL,
+                    qty decimal(8,2) NOT NULL,
+                    unit varchar(50) DEFAULT NULL,
+                    cost decimal(8,2) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "groups" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    id_type int(11) NOT NULL,
+                    name varchar(150) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "image_products" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    id_product int(11) NOT NULL,
+                    image_name varchar(255) NOT NULL,
+                    image_folder varchar(255) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "incomes" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    number varchar(20) NOT NULL,
+                    comments varchar(255) NOT NULL,
+                    date date NOT NULL,
+                    total decimal(8,2) NOT NULL,
+                    tipo varchar(10) NOT NULL,
+                    clave varchar(50) DEFAULT NULL,
+                    autorizacion varchar(50) DEFAULT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "incomes_items" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    id_income int(11) NOT NULL,
+                    id_item int(11) NOT NULL,
+                    id_size int(11) DEFAULT NULL,
+                    qty decimal(8,2) NOT NULL,
+                    unit varchar(50) DEFAULT NULL,
+                    cost decimal(8,2) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+                    
+                "inventories" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    type varchar(255) NOT NULL,
+                    date date DEFAULT NULL,
+                    id_transaction int(11) NOT NULL,
+                    id_warehouse int(11) DEFAULT NULL,
+                    id_item int(11) NOT NULL,
+                    cost decimal(12,5) DEFAULT NULL,
+                    price decimal(8,2) NOT NULL,
+                    qty decimal(8,2) NOT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "invoices" => "id int(20) NOT NULL AUTO_INCREMENT,
+                    number varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                    tipo_documento int(2) NOT NULL,
+                    num_doc_sri varchar(20) NOT NULL,
+                    id_customer int(11) NOT NULL,
+                    date date NOT NULL,
+                    phone varchar(100) DEFAULT NULL,
+                    email varchar(255) DEFAULT NULL,
+                    id_warehouse int(11) DEFAULT NULL,
+                    subtotal decimal(8,2) DEFAULT NULL,
+                    id_taxes int(11) DEFAULT NULL,
+                    taxes decimal(8,2) DEFAULT NULL,
+                    base0 decimal(12,2) NOT NULL,
+                    base_iva decimal(12,2) NOT NULL,
+                    total decimal(8,2) NOT NULL,
+                    saldo decimal(8,2) NOT NULL,
+                    status varchar(100) NOT NULL DEFAULT 'Pending',
+                    active tinyint(1) NOT NULL DEFAULT 1,
+                    clave varchar(50) DEFAULT NULL,
+                    autorizacion varchar(50) DEFAULT NULL,
+                    fecha_autorizacion datetime DEFAULT NULL,
+                    doc_genera int(11) NOT NULL,
+                    estado_sri varchar(20) DEFAULT NULL,
+                    created_at timestamp NULL DEFAULT NULL,
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
+
+                "invoices_items" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_invoice int(11) NOT NULL,
                     id_warehouse int(11) DEFAULT NULL,
                     id_item int(11) NOT NULL,
@@ -226,38 +285,43 @@ class EmpresasController extends Controller
                     pvp decimal(12,5) NOT NULL,
                     num_precio int(11) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "item_types" => "id int(20) NOT NULL,
+                "item_types" => "id int(20) NOT NULL AUTO_INCREMENT,
                     name varchar(255) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "migrations" => "id int(10) NOT NULL,
+                "migrations" => "id int(10) NOT NULL AUTO_INCREMENT,
                     migration varchar(255) NOT NULL,
-                    batch int(11) NOT NULL",
+                    batch int(11) NOT NULL,
+                    PRIMARY KEY (id)",
 
-                "notes_customers" => "id int(20) NOT NULL,
+                "notes_customers" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_customer int(11) NOT NULL,
                     note varchar(255) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "parameters" => "id int(11) NOT NULL,
+                "parameters" => "id int(11) NOT NULL AUTO_INCREMENT,
                     name varchar(100) NOT NULL,
                     type varchar(1) NOT NULL,
-                    value varchar(100) NOT NULL",
+                    value varchar(100) NOT NULL,
+                    PRIMARY KEY (id)",
 
-
-                "payment_customers" => "id int(20) NOT NULL,
+                "payment_customer" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_customer int(11) NOT NULL,
                     date date NOT NULL,
                     invoice varchar(20) NOT NULL,
                     amount decimal(12,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "payments_details" => "id int(20) NOT NULL,
+                "payment_details" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_payment int(20) NOT NULL,
                     date date NOT NULL,
                     id_term int(11) NOT NULL,
@@ -268,24 +332,27 @@ class EmpresasController extends Controller
                     exp_date varchar(5) DEFAULT NULL,
                     memo varchar(255) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
 
-                "payment_terms" => "id int(20) NOT NULL,
+                "payment_terms" => "id int(20) NOT NULL AUTO_INCREMENT,
                     name varchar(100) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "price_products" => "id int(20) NOT NULL,
+                "price_products" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_product int(11) NOT NULL,
                     num_precio int(11) NOT NULL,
                     precio decimal(10,5) DEFAULT NULL,
                     precio_iva decimal(10,5) NOT NULL,
                     desde int(10) NOT NULL,
-                    hasta int(10) NOT NULL",
+                    hasta int(10) NOT NULL,
+                    PRIMARY KEY (id)",
                 
 
-                "products" => "id int(20) NOT NULL,
+                "products" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_type int(11) NOT NULL,
                     id_group int(11) DEFAULT NULL,
                     item_name varchar(100) NOT NULL,
@@ -295,25 +362,28 @@ class EmpresasController extends Controller
                     notes varchar(255) DEFAULT NULL,
                     is_active tinyint(1) NOT NULL DEFAULT 1,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL", 
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)", 
 
-                "products__label_bars" => " id int(20) NOT NULL,
+                "products__label_bars" => " id int(20) NOT NULL AUTO_INCREMENT,
                     id_item int(11) NOT NULL,
                     code varchar(50) NOT NULL,
                     id_vendor int(11) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "product_balances" => "id int(11) NOT NULL,
+                "product_balances" => "id int(11) NOT NULL AUTO_INCREMENT,
                     id_item int(11) NOT NULL,
                     year varchar(4) NOT NULL,
                     month int(11) NOT NULL,
                     qty int(11) NOT NULL,
                     cost int(11) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "sales_orders" => "id int(20) NOT NULL,
+                "sales_orders" => "id int(20) NOT NULL AUTO_INCREMENT,
                     number varchar(20) NOT NULL,
                     id_customer int(11) NOT NULL,
                     date date NOT NULL,
@@ -330,9 +400,10 @@ class EmpresasController extends Controller
                     status varchar(100) NOT NULL DEFAULT 'Pending',
                     active tinyint(1) NOT NULL DEFAULT 1,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
                 
-                "sales_orders_items" => "id int(20) NOT NULL,
+                "sales_orders_items" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_order int(11) NOT NULL,
                     id_warehouse int(11) DEFAULT NULL,
                     id_item int(11) NOT NULL,
@@ -341,16 +412,18 @@ class EmpresasController extends Controller
                     unit varchar(50) DEFAULT NULL,
                     price decimal(8,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "serie_factura" => "id int(20) NOT NULL,
+                "serie_factura" => "id int(20) NOT NULL AUTO_INCREMENT,
                     nombre varchar(20) NOT NULL,
                     tipo_documento int(2) NOT NULL,
                     establecimiento varchar(3) NOT NULL,
                     punto_emision varchar(3) NOT NULL,
-                    secuencial int(9) NOT NULL",
+                    secuencial int(9) NOT NULL,
+                    PRIMARY KEY (id)",
 
-                "ship_to_customers" => "id int(20) NOT NULL,
+                "ship_to_customers" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_customer int(11) DEFAULT NULL,
                     name varchar(100) NOT NULL,
                     address varchar(255) NOT NULL,
@@ -359,21 +432,24 @@ class EmpresasController extends Controller
                     postal varchar(20) DEFAULT NULL,
                     state varchar(100) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "taxes" => "id int(20) NOT NULL,
+                "taxes" => "id int(20) NOT NULL AUTO_INCREMENT,
                     description varchar(20) NOT NULL,
                     percentage decimal(8,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "unit_measures" => "id int(20) NOT NULL,
+                "unit_measures" => "id int(20) NOT NULL AUTO_INCREMENT,
                     abbreviation varchar(50) NOT NULL,
                     description varchar(100) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
                 
-                "vendors" => "id int(20) NOT NULL,
+                "vendors" => "id int(20) NOT NULL AUTO_INCREMENT,
                     name varchar(200) NOT NULL,
                     contact varchar(100) DEFAULT NULL,
                     phone varchar(15) DEFAULT NULL,
@@ -386,18 +462,20 @@ class EmpresasController extends Controller
                     balance decimal(8,2) DEFAULT NULL,
                     is_active tinyint(1) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "vendor_orders" => "id int(20) NOT NULL,
+                "vendor_orders" => "id int(20) NOT NULL AUTO_INCREMENT,
                     date date NOT NULL,
                     number varchar(50) NOT NULL,
                     vendor_id int(11) NOT NULL,
                     total decimal(8,2) NOT NULL,
                     status varchar(50) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",    
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",    
                 
-                "vendor_order_items" => "id int(20) NOT NULL,
+                "vendor_order_items" => "id int(20) NOT NULL AUTO_INCREMENT,
                     order_id int(11) NOT NULL,
                     item_id int(11) NOT NULL,
                     qty decimal(8,2) NOT NULL,
@@ -405,9 +483,10 @@ class EmpresasController extends Controller
                     receive decimal(8,2) DEFAULT NULL,
                     balance decimal(8,2) DEFAULT NULL,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "warehouses" => "id int(20) NOT NULL,
+                "warehouses" => "id int(20) NOT NULL AUTO_INCREMENT,
                     wh_name varchar(50) NOT NULL,
                     direction varchar(250) NOT NULL,
                     phone varchar(10) NOT NULL,
@@ -415,18 +494,21 @@ class EmpresasController extends Controller
                     estab_pv varchar(6) NOT NULL,
                     is_active tinyint(1) NOT NULL DEFAULT 1,
                     created_at timestamp NULL DEFAULT NULL,
-                    updated_at timestamp NULL DEFAULT NULL",
+                    updated_at timestamp NULL DEFAULT NULL,
+                    PRIMARY KEY (id)",
 
-                "warehouse_document" => "id int(20) NOT NULL,
+                "warehouse_document" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_warehouse int(11) NOT NULL,
                     document_type varchar(2) NOT NULL,
-                    secuencial int(11) NOT NULL",
+                    secuencial int(11) NOT NULL,
+                    PRIMARY KEY (id)",
 
-                "warehouse_product" => "id int(20) NOT NULL,
+                "warehouse_product" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_warehouse int(11) NOT NULL,
                     id_product int(11) NOT NULL,
                     qty decimal(12,2) NOT NULL,
-                    cost decimal(12,5) NOT NULL",
+                    cost decimal(12,5) NOT NULL,
+                    PRIMARY KEY (id)",
             );
 
             // Crea una conexión
@@ -449,7 +531,7 @@ class EmpresasController extends Controller
                 }
         
                 $conn->select_db("$nombreBD");
-        
+                        
                 // Función para crear una tabla
                 function crearTabla($conn, $nombreTabla, $columnas) {
                     $sql = "CREATE TABLE $nombreTabla ($columnas)";
@@ -459,14 +541,146 @@ class EmpresasController extends Controller
                         echo "Error al crear la tabla '$nombreTabla': " . $conn->error . "<br>";
                     }
                 }
+
+                // Función para insertar datos iniciales en la tabla parameters
+                function insertarDatosInicialesParameters($conn, $datos) {
+                    $sql = "INSERT INTO parameters (id, name, type, value) VALUES $datos";
                 
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la tabla 'parameters' exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la tabla 'parameters': " . $conn->error . "<br>";
+                    }
+                }
+
+                function insertarDatosInicialesdocument_numbers($conn, $datos) {
+                    $sql = "INSERT INTO document_numbers (id, type, number) VALUES $datos";
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la otra tabla exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
+                    }
+                }
+
+                function insertarDatosInicialesserie_factura($conn, $datos) {
+                    $sql = "INSERT INTO serie_factura (id, nombre, tipo_documento, establecimiento, punto_emision, secuencial) VALUES $datos";
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la otra tabla exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
+                    }
+                }
+
+                function insertarDatosInicialespayment_terms($conn, $datos) {
+                    $sql = "INSERT INTO payment_terms (id, name) VALUES $datos";
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la otra tabla exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
+                    }
+                }
+                
+                
+                
+                // Array de datos para insertar en cada tabla
+                $datosInicialesParameters = array(
+                    "(1, 'PERIODO ACTIVO', 'N', '2023')",
+                    "(2, 'SERIE FACTURA', 'C', '001001')",
+                    "(3, 'emp_nombre', 'C', '{$request->cs_company}')",
+                    "(4, 'emp_ruc', 'N', '{$request->ruc}')",
+                    "(5, 'emp_dir', 'C', '{$request->direccion}')",
+                    "(6, 'emp_tel', 'C', '{$request->cs_phone}')",
+                    "(7, 'emp_email', 'N', '{$request->cs_mail}')",
+                    "(8, 'emp_firmaElec', 'N', '{$request->claveFirma}')"
+                );
+
+                $datosInicialesdocument_numbers = array(
+                    "('1', 'Orders', '1')",
+                    "('2', 'Factura', '0')",
+                    "('3', 'Discharges', '1')",
+                    "('4', 'Incomes', '1')",
+                );
+                
+
+                $datosInicialesserie_factura = array(
+                    "('1', 'Nota de Venta', '0', '999', '999', '1')",
+                    "('2', 'Factura', '1', '001', '001', '1')",
+                    "('3', 'Nota de Credito', '4', '001', '001', '1')",
+                );
+
+                $datosInicialespayment_terms = array(
+                    "('1', 'Efectivo')",
+                    "('2', 'Transferencia')",
+                );
+
                 // Itera a través del arreglo de definiciones de tablas y crea cada tabla
                 foreach ($tablas as $nombreTabla => $columnas) {
                     crearTabla($conn, $nombreTabla, $columnas);
+                    
+                    // Si la tabla es 'parameters', inserta los datos iniciales
+                    if ($nombreTabla === 'parameters') {
+                        foreach ($datosInicialesParameters as $datos) {
+                            insertarDatosInicialesParameters($conn, $datos);
+                        }
+                    }
+
+                    if ($nombreTabla === 'document_numbers') {
+                        foreach ($datosInicialesdocument_numbers as $datos) {
+                            insertarDatosInicialesdocument_numbers($conn, $datos);
+                        }
+                    }
+
+                    if ($nombreTabla === 'serie_factura') {
+                        foreach ($datosInicialesserie_factura as $datos) {
+                            insertarDatosInicialesserie_factura($conn, $datos);
+                        }
+                    }
+
+                    if ($nombreTabla === 'payment_terms') {
+                        foreach ($datosInicialespayment_terms as $datos) {
+                            insertarDatosInicialespayment_terms($conn, $datos);
+                        }
+                    }
                 }
                 // Cerrar la conexión
                 $conn->close();
             }
+
+            if ($_FILES['logo']['error'] === UPLOAD_ERR_OK && is_uploaded_file($_FILES['logo']['tmp_name'])) {
+                // Obtener la información del archivo
+                $nombreArchivo = $_FILES['logo']['name'];
+                // $tipoArchivo = $_FILES['logo']['type'];
+                // $tamanioArchivo = $_FILES['logo']['size'];
+                $archivoTemporal = $_FILES['logo']['tmp_name'];
+            
+                // Verificar si el archivo es una imagen
+                $esImagen = getimagesize($archivoTemporal);
+                if ($esImagen !== false) {
+                    // Definir la carpeta de destino con el nombre de la empresa
+                    $nombreEmpresa = $request->input('cs_company');
+                    $carpetaDestino = "img/" . $nombreEmpresa . "/";
+                    
+                    // Verificar si la carpeta de destino existe, si no, crearla
+                    if (!file_exists($carpetaDestino)) {
+                        if (!mkdir($carpetaDestino, 0777, true)) {
+                            die('Error al crear la carpeta de destino.');
+                        }
+                    }
+            
+                    // Mover el archivo a la carpeta de destino
+                    $rutaArchivo = $carpetaDestino . $nombreArchivo;
+                    if (move_uploaded_file($archivoTemporal, $rutaArchivo)) {
+                        echo "La imagen se ha subido correctamente.";
+                    } else {
+                        echo "Error al subir la imagen.";
+                    }
+                } else {
+                    echo "El archivo no es una imagen válida.";
+                }
+            } else {
+                echo "Error al subir el archivo.";
+            }
+
 
             $filename = $_FILES['rutaFirma']['name'];
             $directory = "firmas/".$request->input('cs_company')."/";

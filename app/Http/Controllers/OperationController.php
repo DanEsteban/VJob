@@ -422,7 +422,6 @@ class OperationController extends Controller
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
             $p_impuestos = Impuesto::select('id', 'porcentaje')->get();
-
             $consulta = "SELECT products.id, item_name, bar_code, iva, unit_measures.abbreviation, num_precio, precio, precio_iva, desde, hasta
                         FROM products
                         LEFT JOIN price_products ON products.id = price_products.id_product

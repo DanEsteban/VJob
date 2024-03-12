@@ -524,7 +524,7 @@
             let pvp3_neto = parseFloat(tr.find('#pvp3_neto').val());
             let pvp4_neto = parseFloat(tr.find('#pvp4_neto').val());
 
-            console.log(pvp1_neto, pvp2_neto, pvp3_neto, pvp4_neto )
+            //console.log(pvp1_neto, pvp2_neto, pvp3_neto, pvp4_neto )
 
             if (pvp1_neto) {
                 pvp1_neto = pvp1_neto.toFixed(2);
@@ -676,7 +676,7 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
-                    console.log(data)
+                    //console.log(data)
                     tr.find('#items').val(data[0]['id']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
@@ -732,7 +732,7 @@
                     console.log(xhr.error);
                 },
                 success : function(data){ 
-                    console.log(data) 
+                    //console.log(data) 
                     tr.find('#items').val(data[0]['id']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
@@ -957,7 +957,7 @@
 
     function selectDoc(object){
 
-        console.log(object);
+        //console.log(object);
         $('tr').removeClass('table-active');
         $(object).addClass('table-active');
 

@@ -55,11 +55,15 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 
 Route::resource('empresa', EmpresasController::class);
 Route::resource('documents', DocumentsController::class);
+
 Route::resource('productoPrecio', ProductoPrecioController::class);
+Route::post('/productoPrecio/delete/{id}', [ProductoPrecioController::class, 'delete'])->name('productoPrecio.delete');
+
 
 Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->name('operation.linea');
 Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
 Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
+Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
 
 Route::resource('invoices', InvoiceController::class);
 Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');
@@ -181,7 +185,6 @@ Route::post('/operations/group/update/{id}', [OperationController::class, 'updat
 Route::get('/operations/group/delete/{id}', [OperationController::class, 'deleteGroup'])->middleware(['auth:sanctum', 'verified'])->name('operation.group.delete');
 
 Route::get('/operations/item/{id}', [OperationController::class, 'getItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.id');
-Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
 Route::get('/operations/item/delete/{id}', [OperationController::class, 'delItem'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.delete');
 Route::get('/operations/item/image/{id}', [OperationController::class, 'getImage'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.getimage');
 Route::get('/operations/item/comparer/delete/{id}', [OperationController::class, 'deleteItemComparer'])->middleware(['auth:sanctum', 'verified'])->name('operation.item.comparer.delete');
