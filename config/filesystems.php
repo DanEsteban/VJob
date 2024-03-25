@@ -30,9 +30,16 @@ return [
 
     'disks' => [
 
+        // Asi tenia al inicio ! 'local' => [
+        //     'driver' => 'local',
+        //     'root' => storage_path('app'),
+        // ],
+
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app'),
+            'root' => 'D:\firma',
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
         ],
 
         'public' => [

@@ -12,6 +12,7 @@ use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Storage;
 use PDO;
 use PDOException;
 
@@ -580,8 +581,6 @@ class EmpresasController extends Controller
                     }
                 }
                 
-                
-                
                 // Array de datos para insertar en cada tabla
                 $datosInicialesParameters = array(
                     "(1, 'PERIODO ACTIVO', 'N', '2023')",
@@ -601,7 +600,6 @@ class EmpresasController extends Controller
                     "('4', 'Incomes', '1')",
                 );
                 
-
                 $datosInicialesserie_factura = array(
                     "('1', 'Nota de Venta', '0', '999', '999', '1')",
                     "('2', 'Factura', '1', '001', '001', '1')",
@@ -681,28 +679,28 @@ class EmpresasController extends Controller
                 echo "Error al subir el archivo.";
             }
 
+            //FIRMA ARCHIVO.P12
 
-            $filename = $_FILES['rutaFirma']['name'];
-            $directory = "firmas/".$request->input('cs_company')."/";
-            if(!file_exists($directory)){
-                mkdir($directory, 0777);
-            } 
-            $dir = opendir($directory);
+            $file = $request->file('rutaFirma');
+            $nuevoNombre = $request->ruc.'.p12';
 
-            if(copy($_FILES['rutaFirma']['tmp_name'], $directory.$filename)){
+            $carpeta = '';
+            $filePath = Storage::disk('local')->put($carpeta . '/' . $nuevoNombre, file_get_contents($file));
+            //return $filePath;
+            if (Storage::disk('local')->exists($carpeta . '/' . $nuevoNombre)) {
                 $empresa = Empresas::create([
-                        'nombre' => $request->cs_company,
-                        'ruc' => $request->ruc,
-                        'direccion' => $request->direccion,
-                        'telefono' => $request->cs_phone,
-                        'correo' => $request->cs_mail,
-                        'id_tipo_contribuyente' => $request->tipoContribuyente,
-                        'base_datos' => $nombreBD,
-                        'cadena_conexion' => $cadena_conexion,
-                        'ruta_firma' => $directory,
-                        'clave_firma' => $request->claveFirma,
-                        'fecha_creacion' => date("Y-m-d")
-                    ]);
+                    'nombre' => $request->cs_company,
+                    'ruc' => $request->ruc,
+                    'direccion' => $request->direccion,
+                    'telefono' => $request->cs_phone,
+                    'correo' => $request->cs_mail,
+                    'id_tipo_contribuyente' => $request->tipoContribuyente,
+                    'base_datos' => $nombreBD,
+                    'cadena_conexion' => $cadena_conexion,
+                    'ruta_firma' => $filePath,
+                    'clave_firma' => $request->claveFirma,
+                    'fecha_creacion' => date("Y-m-d")
+                ]);
 
                 $user = User::create([
                     'id_empresa' => $empresa->id_empresa,
@@ -719,7 +717,46 @@ class EmpresasController extends Controller
                 ]);
                 
             }
-            closedir($dir);
+            /*
+                $filename = $_FILES['rutaFirma']['name'];
+                $directory = "firmas/".$request->input('cs_company')."/";
+                if(!file_exists($directory)){
+                    mkdir($directory, 0777);
+                } 
+                $dir = opendir($directory);
+
+                if(copy($_FILES['rutaFirma']['tmp_name'], $directory.$filename)){
+                    $empresa = Empresas::create([
+                            'nombre' => $request->cs_company,
+                            'ruc' => $request->ruc,
+                            'direccion' => $request->direccion,
+                            'telefono' => $request->cs_phone,
+                            'correo' => $request->cs_mail,
+                            'id_tipo_contribuyente' => $request->tipoContribuyente,
+                            'base_datos' => $nombreBD,
+                            'cadena_conexion' => $cadena_conexion,
+                            'ruta_firma' => $directory,
+                            'clave_firma' => $request->claveFirma,
+                            'fecha_creacion' => date("Y-m-d")
+                        ]);
+
+                    $user = User::create([
+                        'id_empresa' => $empresa->id_empresa,
+                        'name' => 'admin',
+                        'email' => $request->cs_mail,
+                        'password' => bcrypt($request->ruc),
+                        'role_id' => 1,             
+                    ]);    
+
+                    ModelHasRole::create([
+                        'role_id' => $user->role_id,  
+                        'model_type' => 'App\Models\User',  
+                        'model_id' => $user->id
+                    ]);
+                    
+                }
+                closedir($dir);
+            */
             
             $rol_activacion = Activacion::where('ruc', $request->ruc)->first();
             $rol_activacion->es_activo = 1;

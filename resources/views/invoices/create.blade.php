@@ -327,7 +327,7 @@
                                             <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
                                                 <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
                                                 <td id="tipoDoc">{{$serie['nombre']}}</td>
-                                                <td id="serie">{{$serie['punto_emision']}}-{{$serie['establecimiento']}}</td>
+                                                <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
                                                 <td id="secuencial">{{$serie['secuencial']}}</td>
                                             </tr>
                                         @endforeach
