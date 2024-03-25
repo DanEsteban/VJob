@@ -45,7 +45,7 @@ class InvoiceController extends Controller
 {
     public function generarXML($emp_nombre, $emp_ruc, $emp_dir, $emp_tel, $emp_email,
     $emp_firmaElec, $name, $numero_ident, $tipo_ident, $phone, $email, $direccion,
-    $num_doc_sri, $tipo_documento, $subtotal, $taxes, $base0, $base_iva, $total, $detalles, $date)    
+    $num_doc_sri, $tipo_documento, $subtotal, $taxes, $total, $detalles, $date)    
     {
         $fechaFormateada = date("d-m-Y", strtotime($date));
         $fechaformateadaXML = date("d/m/Y", strtotime($date));
@@ -54,12 +54,12 @@ class InvoiceController extends Controller
         $tipo_emision = "2";
         
         $ultimosOchoDigitos = substr($num_doc_sri, -8);
-
-    
-        //dump($num_doc_sri);
         $numero = $fecha."0".$tipo_documento.$emp_ruc.$tipo_emision.$num_doc_sri.$ultimosOchoDigitos."1";
-        //$secuencial = 
-        
+        $secuencialXML = substr($num_doc_sri, -9);
+        //dump($num_doc_sri);
+        $establecimiento = substr($num_doc_sri, 0, 3);
+        $ptoEmision = substr($num_doc_sri, 3, 3);
+
         $digitoVerificador = $this->modulo11($numero);
         // Datos a guardar
         $clave = $numero.$digitoVerificador;
@@ -68,8 +68,6 @@ class InvoiceController extends Controller
             $tipoDoc = "FC";
         }
         $estado = "GENERAR";
-        //$rucEmpresa = "1723529259001";
-
         //dump($estado);
         try
         {       
@@ -103,14 +101,14 @@ class InvoiceController extends Controller
             $infoTributaria->appendChild(createElement($xmlDoc, 'ruc', $emp_ruc));
             $infoTributaria->appendChild(createElement($xmlDoc, 'claveAcceso', $clave));
             $infoTributaria->appendChild(createElement($xmlDoc, 'codDoc', '01'));
-            $infoTributaria->appendChild(createElement($xmlDoc, 'estab', '002'));
-            $infoTributaria->appendChild(createElement($xmlDoc, 'ptoEmi', '001'));
-            $infoTributaria->appendChild(createElement($xmlDoc, 'secuencial', '1'));
+            $infoTributaria->appendChild(createElement($xmlDoc, 'estab', $establecimiento));
+            $infoTributaria->appendChild(createElement($xmlDoc, 'ptoEmi', $ptoEmision));
+            $infoTributaria->appendChild(createElement($xmlDoc, 'secuencial', $secuencialXML));
             $infoTributaria->appendChild(createElement($xmlDoc, 'dirMatriz', $emp_dir));
             
             // Crear elementos para infoFactura
             $infoFactura = $xmlDoc->createElement('infoFactura');
-            $infoFactura->appendChild(createElement($xmlDoc, 'fechaEmision', $fechaFormateada));
+            $infoFactura->appendChild(createElement($xmlDoc, 'fechaEmision', $fechaformateadaXML));
             $infoFactura->appendChild(createElement($xmlDoc, 'dirEstablecimiento', $direccion));
             $infoFactura->appendChild(createElement($xmlDoc, 'obligadoContabilidad', 'NO'));
             $infoFactura->appendChild(createElement($xmlDoc, 'tipoIdentificacionComprador', $tipo_ident));
@@ -128,6 +126,8 @@ class InvoiceController extends Controller
             $totalImpuesto->appendChild(createElement($xmlDoc, 'valor', $taxes));
             $totalConImpuestos->appendChild($totalImpuesto);
 
+            $infoFactura->appendChild($totalConImpuestos);
+
             $infoFactura->appendChild(createElement($xmlDoc, 'propina', '0.00'));
             $infoFactura->appendChild(createElement($xmlDoc, 'importeTotal', $total));
             $infoFactura->appendChild(createElement($xmlDoc, 'moneda', 'DOLAR'));
@@ -140,9 +140,24 @@ class InvoiceController extends Controller
             $pago->appendChild(createElement($xmlDoc, 'unidadTiempo', 'DIAS'));
             $pagos->appendChild($pago);
 
+            $infoFactura->appendChild($pagos);
+
+            
             $detallesXML = $xmlDoc->createElement('detalles');
             foreach($detalles as $dt)
             { 
+                $baseImponible = floatval($dt['precioUnitario']) * floatVal($dt['qty']);
+                $porcentaje = isset($dt['porcentaje']) ? floatval($dt['porcentaje']) : 0.00;
+                $codigo_impuesto = isset($dt['codigo_impuesto']) ? $dt['codigo_impuesto'] : ''; 
+                $codigo_tarifa = isset($dt['codigo_tarifa']) ? $dt['codigo_tarifa'] : ''; // o puedes asignar otro valor por defecto
+
+                if ($porcentaje) {
+                    // Calcula el valor utilizando el porcentaje
+                    $valor = number_format($baseImponible * (floatval($dt['porcentaje']) / 100), 2);
+                } else {
+                    $valor = number_format($baseImponible, 2);
+                }
+                
                 // Crear elementos para detalles         
                 $detalle = $xmlDoc->createElement('detalle');
                 $detalle->appendChild(createElement($xmlDoc, 'codigoPrincipal', $dt['codigo']));
@@ -152,30 +167,15 @@ class InvoiceController extends Controller
                 $detalle->appendChild(createElement($xmlDoc, 'precioUnitario',  $dt['precioUnitario']));
                 $detalle->appendChild(createElement($xmlDoc, 'descuento', '0.00'));
                 $detalle->appendChild(createElement($xmlDoc, 'precioTotalSinImpuesto', $dt['precioTotalSinImpuesto']));
+                
                 $impuestos = $xmlDoc->createElement('impuestos');
                 $impuesto = $xmlDoc->createElement('impuesto');
-                $impuesto->appendChild(createElement($xmlDoc, 'codigo', '2'));
-                if($dt['codigo_iva'] === '1')
-                {
-                    $impuesto->appendChild(createElement($xmlDoc, 'codigoPorcentaje', '1'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'tarifa', '0.00'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'baseImponible', (floatval($dt['precioUnitario']) * floatVal($dt['qty']))));
-                    $impuesto->appendChild(createElement($xmlDoc, 'valor', ((floatval($dt['precioUnitario']) * floatVal($dt['qty'])))));
-                }
-                else if($dt['codigo_iva'] === '2')
-                {
-                    $impuesto->appendChild(createElement($xmlDoc, 'codigoPorcentaje', '2'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'tarifa', '12.00'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'baseImponible', (floatval($dt['precioUnitario']) * floatVal($dt['qty']))));
-                    $impuesto->appendChild(createElement($xmlDoc, 'valor', ((floatval($dt['precioUnitario']) * floatVal($dt['qty']))*(0.12))));
-                }
-                else if($dt['codigo_iva'] === '3')
-                {
-                    $impuesto->appendChild(createElement($xmlDoc, 'codigoPorcentaje', '3'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'tarifa', '15.00'));
-                    $impuesto->appendChild(createElement($xmlDoc, 'baseImponible', (floatval($dt['precioUnitario']) * floatVal($dt['qty']))));
-                    $impuesto->appendChild(createElement($xmlDoc, 'valor', ((floatval($dt['precioUnitario']) * floatVal($dt['qty']))*(0.15))));
-                }
+                $impuesto->appendChild(createElement($xmlDoc, 'codigo', $codigo_impuesto));
+                $impuesto->appendChild(createElement($xmlDoc, 'codigoPorcentaje', $codigo_tarifa));
+                $impuesto->appendChild(createElement($xmlDoc, 'tarifa', number_format($porcentaje, 2)));
+                $impuesto->appendChild(createElement($xmlDoc, 'baseImponible', $baseImponible));
+                $impuesto->appendChild(createElement($xmlDoc, 'valor', $valor));
+        
 
                 $impuestos->appendChild($impuesto);
                 $detalle->appendChild($impuestos);
@@ -206,23 +206,22 @@ class InvoiceController extends Controller
 
             $campoRegimenRIMPE = $xmlDoc->createElement('campoAdicional');
             $campoRegimenRIMPE->setAttribute('nombre', 'Contribuyente Regimen RIMPE');
-            $campoRegimenRIMPE->appendChild($xmlDoc->createTextNode(''));
+            $campoRegimenRIMPE->appendChild($xmlDoc->createTextNode(' ')); // Agrega un espacio en blanco
             $infoAdicional->appendChild($campoRegimenRIMPE);
 
             // Agregar elementos al documento principal
             $factura->appendChild($infoTributaria);
             $factura->appendChild($infoFactura);
-            $infoFactura->appendChild($totalConImpuestos);
-            $infoFactura->appendChild($pagos);
             $factura->appendChild($detallesXML);
             $factura->appendChild($infoAdicional);
+
             // Convertir el documento XML a una cadena
             $xmlString = $xmlDoc->saveXML();
 
             // echo "<pre>";
             //     var_dump($xmlString);
             // echo "<pre/>";
-
+            
             $sql = "INSERT INTO doc_electro (tipo, clave, empresaContrasena, estado, identificacion, nombre, email, emailCliente, num_doc, fechaDoc, rucEmpresa, fileXML) 
             VALUES (:tipo, :clave, :empresaContrasena, :estado, :identificacion, :nombre, :email, :emailCliente, :num_doc, :fechaDoc, :rucEmpresa, :fileXML)";
             $stmt = $db->prepare($sql);
@@ -394,6 +393,7 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
+        //return $request;
         $nombreBD = App::make('dataBase');
 
         try {
@@ -410,8 +410,7 @@ class InvoiceController extends Controller
             $direccion = $request->direccion;
             $id_vendedor = $request->vendedor;
             $balance = $request->saldo;
-            if($id_cliente !== null){
-                
+            if($id_cliente !== null){   
                 $sql = "UPDATE customers 
                         SET tipo_ident = :tipo_ident,     
                             numero_ident = :numero_ident,
@@ -423,11 +422,8 @@ class InvoiceController extends Controller
                             balance = :balance
                         WHERE id = :id_cliente ";
                 $stmt = $db->prepare($sql);
-                $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);
-                                
-
+                $stmt->bindParam(':id_cliente', $id_cliente, \PDO::PARAM_STR);                             
             }else{
-
                 $sql = "INSERT INTO customers 
                     (tipo_ident, numero_ident, name, phone,
                     email, direccion, id_vendedor, balance)
@@ -520,6 +516,7 @@ class InvoiceController extends Controller
 
             //Invoice Items
             $id_invoice = $lastId_invoice;
+
             $qty = 0;
             $lastId_invoiceItem = '';
             $itemRepetido = (object) array(
@@ -542,16 +539,18 @@ class InvoiceController extends Controller
             $stmt_insert_update_item = $db->prepare($sql_insert_update_item);
 
             $db->beginTransaction();
-
-
+            //return $request->items;
             foreach ($request->items as $index => $item) {
+                
                 if ($item !== null) {  
                     $id_item = $item;
                     $qty = intval($request->cantidad[$index]);
                     $precio_neto = $request->pvp0_neto[$index];
                     $pvp = $request->subtotal[$index];
-                    $num_precio = $request->num_precio[$index];   
-
+                    $num_precio = $request->num_precio[$index]; 
+                    $iva = $request->iva[$index]; 
+                    $impuesto = Impuesto::where('id', $iva)->first();
+                    
                     // Ejecutar consulta para obtener el nombre del producto
                     $stmt_select_product->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
                     $stmt_select_product->execute();
@@ -572,7 +571,10 @@ class InvoiceController extends Controller
                         'descripcion' => $item_name,
                         'qty' => $qty,
                         'precioUnitario' => floatval($precio_neto) / floatval($qty),
-                        'precioTotalSinImpuesto' => $precio_neto
+                        'precioTotalSinImpuesto' => $precio_neto,
+                        'codigo_impuesto' => $impuesto->codigo_impuesto,
+                        'porcentaje' => $impuesto->porcentaje,
+                        'codigo_tarifa' =>  $impuesto->codigo_tarifa
                     ];
 
                     // Actualizar objeto $itemRepetido
@@ -587,21 +589,9 @@ class InvoiceController extends Controller
                         $itemRepetido->qty[] = $qty;
                     }
                 }
-            }
-
-            $p_impuestos = Impuesto::all();
-
-            foreach ($request->iva as $index => $item) {
-                if ($item !== null) {  
-
-                    Impuesto::where('id', $item)->first();
-                    $detalles[$item] += [
-                        'codigo_iva' => $item,
-                    ];
-                }
-            }
-
-            return $request;
+            }      
+            
+            //return $detalles;
 
             $db->commit();
 
@@ -623,7 +613,7 @@ class InvoiceController extends Controller
             $lastId_payment = $db->lastInsertId();
             
             // Payment_Details
-            //$id_payment = $lastId_payment;
+            $id_payment = $lastId_payment;
             $id_term = $request->formaPago1;
             $valor = floatval($request->abono1);
             $reference = $request->numTransfer1;
@@ -695,29 +685,26 @@ class InvoiceController extends Controller
             $emp_firmaElec = $datos['emp_firmaElec'];
 
             if($tipo_ident != '7' || $tipo_documento !== "0"){     
-                    //return $num_doc_sri;
-                    $this->generarXML($emp_nombre, $emp_ruc, $emp_dir, $emp_tel,
-                        $emp_email,
-                        $emp_firmaElec,
-                        $name,
-                        $numero_ident,
-                        $tipo_ident,
-                        $phone,
-                        $email,
-                        $direccion,
-                        $num_doc_sri,
-                        $tipo_documento,
-                        $subtotal,
-                        $taxes,
-                        $base0,
-                        $base_iva,
-                        $total,
-                        $detalles,
-                        $date
-                    );
+                //return $num_doc_sri;
+                $this->generarXML($emp_nombre, $emp_ruc, $emp_dir, $emp_tel,
+                    $emp_email,
+                    $emp_firmaElec,
+                    $name,
+                    $numero_ident,
+                    $tipo_ident,
+                    $phone,
+                    $email,
+                    $direccion,
+                    $num_doc_sri,
+                    $tipo_documento,
+                    $subtotal,
+                    $taxes,
+                    $total,
+                    $detalles,
+                    $date
+                );
                 
             }   
-                    
             return redirect()->route('invoices.show', $id_invoice);
         
         } catch (\PDOException $e) {
@@ -733,7 +720,7 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-
+        //return $id;
         $nombreBD = App::make('dataBase');
 
         $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
@@ -743,10 +730,8 @@ class InvoiceController extends Controller
         try
         {
             $p_impuestos = Impuesto::pluck('porcentaje', 'id')->toArray();
-
             $conexion = new \PDO($dsn, $usuario, $contrasena);
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
             $consulta = "SELECT 
                     invoices.number, invoices.date, invoices.subtotal, invoices.taxes, invoices.base0, 
                     invoices.base_iva, invoices.total, 
@@ -774,6 +759,8 @@ class InvoiceController extends Controller
             $statement->bindParam(':id', $id, \PDO::PARAM_INT);
             $statement->execute();
             $cabeceraInv = $statement->fetch(\PDO::FETCH_ASSOC);
+
+            //return $cabeceraInv;
 
             $statement2 = $conexion->prepare($consulta2);
             $statement2->bindParam(':id', $id, \PDO::PARAM_INT);
@@ -804,7 +791,7 @@ class InvoiceController extends Controller
             $statement->execute();
             $existeNC = $statement->fetch(\PDO::FETCH_ASSOC);
 
-
+            
             return view('invoices.show', compact('cabeceraInv', 'baseProductsInv', 'datosEmp', 'existeNC'));
             
         }catch (\PDOException $e) {
