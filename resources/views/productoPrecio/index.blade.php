@@ -11,13 +11,13 @@
 @section('content_header')
     <div class="container-fluid bg-white shadow" style="min-height: 5rem;">
         <div class="row align-items-center">
-            <div class="col-12 col-md-8 mt-3">
+            <div class="col-12 col-md-8 mt-3 mb-3">
                 <div class="bg-white">
                     <h2>Producto-Precio</h2>
                 </div>
             </div>
 
-            <div class="col-12 col-md-4 mt-3">
+            <div class="col-12 col-md-4 mt-3 mb-3">
                 <button onclick="newProduct();" type="button" class="btn btn-outline-danger btn-block mb-3">
                     <i class="fa fa-plus"></i> Nuevo Producto
                 </button>

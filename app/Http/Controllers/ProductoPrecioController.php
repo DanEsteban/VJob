@@ -25,7 +25,6 @@ class ProductoPrecioController extends Controller
         try
         {
             $conexion = new \PDO($dsn, $usuario, $contrasena);
-
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $consulta2 = "SELECT * FROM item_types"; 

@@ -560,6 +560,15 @@ class EmpresasController extends Controller
                         echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
                     }
                 }
+
+                function insertarDatosInicialesitem_types($conn, $datos) {
+                    $sql = "INSERT INTO item_types (id, name) VALUES $datos";
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la otra tabla exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
+                    }
+                }
                 
                 // Array de datos para insertar en cada tabla
                 $datosInicialesParameters = array(
@@ -591,6 +600,13 @@ class EmpresasController extends Controller
                     "('2', 'Transferencia')",
                 );
 
+                $datosInicialesitem_types = array(
+                    "('1', 'Servicio')",
+                    "('2', 'ParteInventario')",
+                    "('3', 'No-ParteInventario')",
+                );
+
+
                 // Itera a través del arreglo de definiciones de tablas y crea cada tabla
                 foreach ($tablas as $nombreTabla => $columnas) {
                     crearTabla($conn, $nombreTabla, $columnas);
@@ -616,7 +632,13 @@ class EmpresasController extends Controller
 
                     if ($nombreTabla === 'payment_terms') {
                         foreach ($datosInicialespayment_terms as $datos) {
-                            insertarDatosInicialespayment_terms($conn, $datos);
+                            insertarDatosInicialesitem_types($conn, $datos);
+                        }
+                    }
+
+                    if ($nombreTabla === 'item_types') {
+                        foreach ($datosInicialesitem_types as $datos) {
+                            insertarDatosInicialesitem_types($conn, $datos);
                         }
                     }
                 }
