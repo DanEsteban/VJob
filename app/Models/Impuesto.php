@@ -31,3 +31,4 @@ class Impuesto extends Model
     public $timestamps = false;
 }
 
+

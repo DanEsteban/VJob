@@ -6,8 +6,7 @@ use App\Models\Impuesto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
-
-
+use Carbon\Carbon;
 
 class ProductoPrecioController extends Controller
 {   
@@ -53,6 +52,7 @@ class ProductoPrecioController extends Controller
                 g.name AS product_group,
                 p.item_name AS product_name,
                 p.bar_code AS product_bar_code,
+                p.si_iva AS product_si_iva,
                 p.iva AS product_iva,
                 u.id AS id_unit_measure,
                 u.abbreviation AS product_unit_measure,
@@ -66,7 +66,6 @@ class ProductoPrecioController extends Controller
             LEFT JOIN groups AS g ON p.id_group = g.id
             LEFT JOIN unit_measures AS u ON p.id_unit_measure = u.id
             ORDER BY p.id DESC, pp.num_precio DESC";
-
 
             $resultados = [];
             $currentProduct = null;
@@ -86,6 +85,7 @@ class ProductoPrecioController extends Controller
                         "group" => $row['product_group'],
                         "item_name" => $row['product_name'],
                         "bar_code" => $row['product_bar_code'],
+                        "si_iva" => $row['product_si_iva'],
                         "iva" => $row['product_iva'],
                         "id_unit_measure" => $row['id_unit_measure'],
                         "unit_measure" => $row['product_unit_measure'],
@@ -153,15 +153,21 @@ class ProductoPrecioController extends Controller
                     "abbreviation" => $fila['abbreviation']   
                 ];
             }
-            //return $resultados;
+            //return $item_types;
             //return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures'));
 
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         }  
         
-        $p_impuestos = Impuesto::all(); 
-        return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos'));
+        $p_impuestos = Impuesto::all();
+        $fechaActual = Carbon::now()->toDateString(); 
+        $impuestoActual = Impuesto::where('desde', '<=', $fechaActual)
+                                ->where('hasta', '>=', $fechaActual)
+                                ->first();
+        //return $p_impuestos;
+
+        return view('productoPrecio.index', compact('resultados', 'item_types', 'groups', 'unit_measures', 'p_impuestos', 'impuestoActual'));
 
     }
 
@@ -183,8 +189,13 @@ class ProductoPrecioController extends Controller
      */
     public function store(Request $request)
     {   
-       
+        return $request;
         $p_impuestos = Impuesto::all(); 
+        
+        $fechaActual = Carbon::now()->toDateString(); 
+        $impuestoActual = Impuesto::where('desde', '<=', $fechaActual)
+                                ->where('hasta', '>=', $fechaActual)
+                                ->first();
         $nombreBD =  App::make('dataBase');
 
         try {
@@ -202,18 +213,32 @@ class ProductoPrecioController extends Controller
                 $id_group = $request->group[$index];
                 $item_name = $producto;
                 $bar_code = $request->codigoBarras[$index];
-                $iva = $request->iva[$index];
-                $id_unit_measure = $request->medida[$index];
+                $siIva = $request->siIva[$index];
+                $iva = $request->iva[$index] ?? 1;
+                
+                
+                if($siIva == 1 && ($iva == 0 || $iva == 1) ){
+                    $iva = 1;
+                }
 
+
+                if($siIva == 1 && $iva == $impuestoActual->id){
+                    $iva = 1;
+                }
+                
+                //return $iva;
+                $id_unit_measure = $request->medida[$index];
                 $notes = null;
                 $is_active = 1;
+
                 
-                if (!is_null($id) || $id != "") {    
+                if (!is_null($id) || $id != "") {  
                     $sql = "UPDATE products 
                     SET id_type = :id_type, 
                         id_group = :id_group, 
                         item_name = :item_name, 
                         bar_code = :bar_code,
+                        si_iva = :si_iva,
                         iva = :iva, 
                         id_unit_measure = :id_unit_measure, 
                         notes = :notes, 
@@ -227,6 +252,7 @@ class ProductoPrecioController extends Controller
                     $stmt->bindParam(':id_group', $id_group, \PDO::PARAM_INT);
                     $stmt->bindParam(':item_name', $item_name, \PDO::PARAM_STR);
                     $stmt->bindParam(':bar_code', $bar_code, \PDO::PARAM_STR);
+                    $stmt->bindParam(':si_iva', $siIva, \PDO::PARAM_STR);
                     $stmt->bindParam(':iva', $iva, \PDO::PARAM_STR);
                     $stmt->bindParam(':id_unit_measure', $id_unit_measure, \PDO::PARAM_INT);
                     $stmt->bindParam(':notes', $notes, \PDO::PARAM_NULL);
@@ -256,6 +282,10 @@ class ProductoPrecioController extends Controller
                     //     ['pvp' => $request->pvp1[$index], 'cantidad' => 1, 'num' => 1]
                     // ];
                     $desde_anterior="";
+
+                    if($siIva == 1 && $iva == 1){
+                        $iva = $impuestoActual->id;
+                    }
 
                     foreach ($prices as $price) {
                         if ($price['pvp'] != null) {
@@ -301,25 +331,29 @@ class ProductoPrecioController extends Controller
                     }
 
                 }else{
-
+    
                     // Prepara la consulta SQL con marcadores de posición
-                    $sql = "INSERT INTO products (id_type, id_group, item_name, bar_code, iva, id_unit_measure, notes, is_active)
-                    VALUES (:id_type, :id_group, :item_name, :bar_code, :iva, :id_unit_measure, :notes, :is_active)";
+                    $sql = "INSERT INTO products (id_type, id_group, item_name, bar_code, si_iva, iva, id_unit_measure, notes, is_active)
+                    VALUES (:id_type, :id_group, :item_name, :bar_code, :si_iva, :iva, :id_unit_measure, :notes, :is_active)";
                     $stmt = $db->prepare($sql);
+
+                    if($iva === $impuestoActual->id){
+                        $iva = 1;
+                    }
 
                     // Vincula los valores a los marcadores de posición
                     $stmt->bindParam(':id_type', $id_type, \PDO::PARAM_INT);
                     $stmt->bindParam(':id_group', $id_group, \PDO::PARAM_INT);
                     $stmt->bindParam(':item_name', $item_name, \PDO::PARAM_STR);
                     $stmt->bindParam(':bar_code', $bar_code, \PDO::PARAM_STR);
+                    $stmt->bindParam(':si_iva', $siIva, \PDO::PARAM_STR);
                     $stmt->bindParam(':iva', $iva, \PDO::PARAM_STR);
                     $stmt->bindParam(':id_unit_measure', $id_unit_measure, \PDO::PARAM_INT);
                     $stmt->bindParam(':notes', $notes, \PDO::PARAM_NULL);
                     $stmt->bindParam(':is_active', $is_active, \PDO::PARAM_INT);
             
-                    // Ejecuta la consulta para insertar en la tabla "products"
                     $stmt->execute();
-                    
+
                     // Obtiene el ID del registro insertado
                     $lastInsertedId = $db->lastInsertId();
         
@@ -331,17 +365,22 @@ class ProductoPrecioController extends Controller
                         ['pvp' => $request->pvp1[$index], 'cantidad' => 1, 'num' => 1]
                     ];
                     $desde_anterior="";
+
+                    if($siIva == 1 && $iva == 1){
+                        $iva = $impuestoActual->id;
+                    }
+                    //return $iva;
                     
                     foreach ($prices as $price) {
                         if ($price['pvp'] != null) {
                             $num_precio = $price['num'];
                             $precio_iva = $price['pvp'];
-                            //return [$iva, $p_impuestos[1]['id']];
                             for ($i=0; $i < count($p_impuestos); $i++) { 
                                 
                                 if ($iva == strval($p_impuestos[$i]['id'])) {
                                     $precio =  floatval($precio_iva/(1+(floatval($p_impuestos[$i]['porcentaje'])/100)));
                                     $precio = strval($precio);
+                                    //return $precio;
                                 }
                             }
                             

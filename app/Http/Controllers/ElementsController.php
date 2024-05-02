@@ -12,6 +12,7 @@ use App\Models\InvoicesItems;
 use App\Models\AssamblyItems;
 use App\Models\Expenditures;
 use App\Models\ExpendituresItems;
+use App\Models\Impuesto;
 use App\Models\Incomes;
 use App\Models\IncomesItems;
 use App\Models\Inventories;
@@ -59,38 +60,21 @@ class ElementsController extends Controller
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
+        
+        $p_impuestos = Impuesto::all();
 
-        $dsn = "mysql:host=localhost;dbname=vjob";
-        $usuario = "root";
-        $contrasena = "";
-
-        try {
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $consulta = "SELECT id, porcentaje FROM p_impuestos"; 
-            $result= $conexion->query($consulta);
-
-            $p_impuestos=[];
-            foreach ($result as $fila) {
-                $p_impuestos[]=[
-                    "id" => $fila['id'],
-                    "porcentaje" => $fila['porcentaje'],     
-                ];
-            }
-        } catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        }
-
-                $row = '<tr id="tr_items">'.
+        $row = '<tr id="tr_items">'.
                 '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
                 <td><button onclick="editRow(this);" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
                 <td><input type="text" name="id[]" class="form-control form-control-sm" readonly></td>
                 <td><input type="text" name="producto[]" style="width:auto" class="form-control form-control-sm"></td>
                 <td>
                     <select onchange="filtrarLinea(this);" id="type" name="type[]" class="form-control form-control-sm">
-                        <option value="0">--Seleccione--</option>';
-                        foreach ($item_types as $item) {
-                            $row .= '<option value="' . $item["id"] . '">' . $item["name"] . '</option>';
+                        <option value="0" style="display: none;">--Seleccione--</option>';
+                        for ($i = 0; $i < count($item_types); $i++){
+                            if ($i > 0) {
+                                $row .= '<option value="' . $item_types[$i]['id'] . '">' . $item_types[$i]['name'] . '</option>';
+                            }
                         }
         $row .=     '</select>
                 </td>
@@ -99,9 +83,14 @@ class ElementsController extends Controller
                         <option value="0">--Seleccione--</option>
                     </select>
                 </td>
-                
+                <td class="text-center">
+                    <input id="siIvafront" onclick="actualizarEstado(this)" type="checkbox">
+                </td>
+                <td hidden>
+                    <input type="hidden" id="siIva" name="siIva[]" value="0">                    
+                </td> 
                 <td>
-                    <select id="iva" name="iva[]" class="form-control form-control-sm">
+                    <select id="iva" name="iva[]" class="form-control form-control-sm" disabled>
                         <option value="0">--Seleccione--</option>';
                         foreach ($p_impuestos as $item) {
                             $row .= '<option value="' . $item["id"] . '">' . $item["porcentaje"] . '</option>';
@@ -119,11 +108,11 @@ class ElementsController extends Controller
         $row .=     '</select>
                 </td>
                 <td><input type="text" id="pvp1" name="pvp1[]" class="form-control form-control-sm"></td>
-                <td><input type="text" id="cantidad2" name="cantidad2[]" class="form-control form-control-sm"></td>    
+                <td><input type="text" id="cantidad2" onchange="cambioCantidad(this);" name="cantidad2[]" class="form-control form-control-sm"></td>    
                 <td><input type="text" id="pvp2" name="pvp2[]" class="form-control form-control-sm"></td>
-                <td><input type="text" id="cantidad3" name="cantidad3[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="cantidad3" onchange="cambioCantidad(this);" name="cantidad3[]" class="form-control form-control-sm"></td>
                 <td><input type="text" id="pvp3" name="pvp3[]" class="form-control form-control-sm"></td>
-                <td><input type="text" id="cantidad4" name="cantidad4[]" class="form-control form-control-sm"></td>
+                <td><input type="text" id="cantidad4" onchange="cambioCantidad(this);" name="cantidad4[]" class="form-control form-control-sm"></td>
                 <td><input type="text" id="pvp4" name=pvp4[] class="form-control form-control-sm"></td>
 
             </tr>';

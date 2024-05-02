@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             
                 //Accede al valor del campo id_empresa
                 $idEmpresa = $usuarioAutenticado->id_empresa;
-            
+                //return $idEmpresa;
                 if ($idEmpresa) {
                         $datos = Empresas::Select('base_datos')->Where('id_empresa', $idEmpresa)->Where('es_activo', 1)->first();                   
                         return  $datos->base_datos;

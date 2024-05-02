@@ -36,6 +36,7 @@ use App\Models\PaymentsDetails;
 use App\Models\Activacion;
 use App\Models\Empresas;
 use App\Models\Impuesto;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -402,9 +403,18 @@ class OperationController extends Controller
         
         return;
     }
+    
 
+    //Items Operation
+    public function getIva(){
+        $fechaActual = Carbon::now()->toDateString(); 
+        $p_impuestos = Impuesto::where('desde', '<=', $fechaActual)
+                                ->where('hasta', '>=', $fechaActual)
+                                ->first();
 
-     //Items Operation
+        return response()->json($p_impuestos);
+    }
+    
     public function getItem($id){
         $product = Products::find($id);
         $name_unit_measure = UnitMeasure::where('id', $product->id_unit_measure)->value('abbreviation');
