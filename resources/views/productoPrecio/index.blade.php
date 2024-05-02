@@ -285,10 +285,9 @@
     }
 
     function newProduct() {
-
-        let primerTd = $("#dTable tbody tr:first td:nth-child(3) input").val().trim()
-
-        if (primerTd !== '') {
+        
+        if ($("#dTable tbody tr").prop('innerText') == 'No data available in table') {
+            $("#dTable tbody tr").remove();
             let url = "/elements/priceProduct/row";
             $.ajax({
                 type: 'GET',
@@ -303,12 +302,32 @@
                     $('#tb_items').prepend(data);
                 }
             });
-        } else {
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "Solo se puede ingresar un producto a la vez!",
-            });
+        }
+        else{
+            let primerTd = $("#dTable tbody tr:first td:nth-child(3) input").val().trim()
+
+            if (primerTd !== '') {
+                let url = "/elements/priceProduct/row";
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    dataType: 'html',
+                    async: 'false',
+                    data: {},
+                    error: function(xhr, status, error) {
+                        console.log(xhr.responseText);
+                    },
+                    success: function(data) {
+                        $('#tb_items').prepend(data);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "Solo se puede ingresar un producto a la vez!",
+                });
+            }
         }
     }
 

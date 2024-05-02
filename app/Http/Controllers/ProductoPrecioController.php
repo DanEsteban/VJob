@@ -189,7 +189,7 @@ class ProductoPrecioController extends Controller
      */
     public function store(Request $request)
     {   
-        return $request;
+        //return $request;
         $p_impuestos = Impuesto::all(); 
         
         $fechaActual = Carbon::now()->toDateString(); 
