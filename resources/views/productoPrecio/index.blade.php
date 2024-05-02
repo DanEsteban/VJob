@@ -32,6 +32,7 @@
 
     @php
         use App\Models\Customers;
+        use App\Models\Impuesto;
         $anteriorID = null;
     @endphp
     <form action="/productoPrecio" method="POST" id="formulario">
@@ -49,6 +50,8 @@
                                 <th>Producto</th>
                                 <th>Linea</th>
                                 <th>Familia</th>
+                                <th>Si IVA</th>
+                                <th hidden></th>
                                 <th>IVA</th>
                                 <th>Codigo Barras</th>
                                 <th>U.M.</th>
@@ -94,25 +97,35 @@
                                             @endif 
                                             
                                         </select>
-                                    </td>      
+                                    </td>
+                                    <td class="text-center">
+                                        <input id="siIvafront" onclick="actualizarEstado(this)" type="checkbox"  {{ $resultado['si_iva'] ? 'checked' : '' }} disabled>
+                                    </td> 
+                                    <td hidden>
+                                        <input id="siIva" type="hidden" value={{$resultado['iva']}}>  
+                                    </td>     
                                     <td>
                                         <select id="iva" class="form-control form-control-sm" disabled>
-                                            @if(isset($resultado['iva']))
+
+                                            @if($resultado['si_iva'] == 1 && $resultado['iva'] == 1)
+                                                <option value="{{ $impuestoActual['id'] }}">{{ $impuestoActual['porcentaje'] }}</option>
                                                 @foreach ($p_impuestos as $impuesto)
-                                                    @if ($resultado['iva'] === $impuesto['id'])
+                                                    @if ($impuestoActual['id'] != $impuesto['id'])
                                                         <option value="{{ $impuesto['id'] }}">{{ $impuesto['porcentaje'] }}</option>
                                                     @endif
                                                 @endforeach
                                             @else
-                                                <option value="0">--Seleccione--</option>                                             
-                                            @endif 
+                                                @php
+                                                    $porcentaje = Impuesto::where('id', $resultado['iva'])->value('porcentaje');
+                                                @endphp
+                                                <option value="{{ $resultado['iva'] }}">{{ $porcentaje }}</option>
+                                                @foreach ($p_impuestos as $impuesto)
+                                                    @if ($resultado['iva'] != $impuesto['id'])
+                                                        <option value="{{ $impuesto['id'] }}">{{ $impuesto['porcentaje'] }}</option>
+                                                    @endif
+                                                @endforeach 
+                                            @endif
 
-                                            @foreach ($p_impuestos as $impuesto)
-                                                @if ($resultado['iva'] != $impuesto['id'])
-                                                    <option value="{{ $impuesto['id'] }}">{{ $impuesto['porcentaje'] }}</option>
-                                                @endif
-                                            @endforeach
-                                            
                                         </select>
                                     </td>
                                     
@@ -133,11 +146,11 @@
                                         </select>   
                                     </td>
                                     <td><input type="text" id="pvp1" value="{{ number_format($resultado['pvp1'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad2" value="{{ number_format($resultado['cantidad2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>    
+                                    <td><input type="text" id="cantidad2" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>    
                                     <td><input type="text" id="pvp2" value="{{ number_format($resultado['pvp2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad3" value="{{ number_format($resultado['cantidad3']) }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad3" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad3']) }}" class="form-control form-control-sm" disabled></td>
                                     <td><input type="text" id="pvp3" value="{{ number_format($resultado['pvp3'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad4" value="{{ number_format($resultado['cantidad4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad4" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
                                     <td><input type="text" id="pvp4" value="{{ number_format($resultado['pvp4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
                                 </tr> 
                             @endforeach
@@ -182,40 +195,78 @@
         });
     });
 
+    function cambioCantidad(input) {
+        // Obtener el valor del campo de cantidad
+        var cantidad = $(input).val();
+        
+        // Obtener el valor del campo adyacente (pvp)
+        var pvpInput  = $(input).closest('td').next().find('input[type="text"]');
+        
+        // Obtener el valor del campo adyacente (pvp)
+        var pvp = pvpInput.val();
+
+        if (pvp.trim() === '') {
+            Swal.fire({
+                icon: "warning",
+                text: "No puede haber una cantidad sin su respectivo precio!",
+                didClose: function() {
+                    // Establecer nuevamente el foco en el campo de PVP
+                    pvpInput.focus();
+                }
+            });
+        } else {
+            // Establecer el foco en el campo de PVP si no hay problemas
+            pvpInput.focus();
+        }
+
+    }
+
     function guardar() {
 
-        var iva = $("#iva").val();
-        // Verificar si el valor actual del campo "iva" es 0
-        if (iva == 0) {
-            $("#iva").val("1");
-            //console.log($("#iva").val());
-        }
+        $('#tb_items tr td input[name="siIva[]"]').each(function() {
+            var $input = $(this);
+            var $td = $input.closest('td');
+            if ($input.val() == 0) {                
+                var $iva = $td.next().find('select[name="iva[]"]');
+                $iva.prop("disabled", false);
+            }
 
-        // Verificar si el campo "pvp1" no está vacío       
-        if($("#pvp1").val() != ""){
-            $("#formulario").submit();
-        }else{
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "No puede guardar un producto si no tiene un precio!",
-            });
-        }
+            var $codigoBarra =  $td.next().next().find('input');
+            var $pvp1 =  $td.next().next().next().next().find('input');
+            console.log($codigoBarra.val());
+            if ($codigoBarra.val() != "") {
+
+                if($pvp1.val() != "" ){
+                    $("#formulario").submit();
+                }else{
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "No puede guardar un producto si no tiene un precio!",
+                    });
+                }  
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "No puede guardar un producto sin un codigo de barras",
+                });
+            }
+        });
     }
 
     function comprobacionbarCode(objeto) {
-
+        console.log(objeto)
         var tr = $(objeto).closest('tr')[0];
         var filaActual= $(tr).addClass('fila-Actual');
         var tabla = $('#dTable').DataTable();
         var allRows = tabla.rows().nodes();
         var filasSinClase = $(allRows).filter('tr:not(.fila-Actual)');
         var valor = objeto.value;
-
         filasSinClase.each(function() {
             var fila = $(this);
-            var valorFila = fila.find('td:eq(7) input').val();
-            if (valorFila === valor) {
+            var valorFila = fila.find('td:eq(9) input').val();
+            if (valorFila === valor && valorFila != "") {
                 Swal.fire({
                     title: 'Ya existe ese codigo de Barras', 
                     confirmButtonText: 'OK',
@@ -224,32 +275,41 @@
                         //var producto = $(tr).find('td:eq(3) input');
                         //producto.val("");
                         objeto.value = "";
+                        objeto.focus();
                     }
                 });
             }
         });
 
         let removerClaseFila= $(allRows).filter('tr.fila-Actual').removeClass('fila-Actual');
-
     }
 
     function newProduct() {
-        let url = "/elements/priceProduct/row";
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'html',
-            async: 'false',
-            data:{},
-            error: function (xhr, status, error) {
-                console.log(xhr.responseText);
-            },
-            success : function(data){
-                //$('#tb_items').append(data)
-                $('#tb_items').prepend(data);
-                
-            }
-        });
+
+        let primerTd = $("#dTable tbody tr:first td:nth-child(3) input").val().trim()
+
+        if (primerTd !== '') {
+            let url = "/elements/priceProduct/row";
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'html',
+                async: 'false',
+                data: {},
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                },
+                success: function(data) {
+                    $('#tb_items').prepend(data);
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Solo se puede ingresar un producto a la vez!",
+            });
+        }
     }
 
     function filtrarLinea(object){
@@ -343,7 +403,7 @@
         let tr = $(object).closest('tr'); 
         tr.find("td:not(:eq(2)) input, select").prop("disabled", false); // Habilita los <input> en todas las celdas excepto en la tercera
 
-        let nombres = ['','', 'id[]', 'producto[]', 'type[]', 'group[]', 'iva[]', 'codigoBarras[]', 'medida[]', 'pvp1[]', 'cantidad2[]',
+        let nombres = ['','', 'id[]', 'producto[]', 'type[]', 'group[]', '', 'siIva[]', 'iva[]', 'codigoBarras[]', 'medida[]', 'pvp1[]', 'cantidad2[]',
         'pvp2[]', 'cantidad3[]', 'pvp3[]','cantidad4[]','pvp4[]']; // Lista de nombres diferentes
         let cadena = nombres.map(function(valor) {
             return "#" + valor ;
@@ -360,18 +420,39 @@
         
     }
 
-    function siIva(object) {
-        let tr = $(object).closest('tr');
-        let valorIva = tr.find("td input#valorIva")[0];
-        
-        var valor = object.checked;
-        if (valor) {
-            valorIva.value = "1";
-        }else{
-            valorIva.value = "0";
-        }
+    function actualizarEstado(object) {
 
-        //console.log(valorIva.value);
+        let fila = $(object).closest('tr') 
+        let si_iva = fila.find('#siIva')
+        let iva = fila.find('#iva')
+
+        if(object.checked){
+            //console.log('si entra')
+            si_iva.val('1')
+            iva.prop("disabled", false)
+            
+            let url = "/operations/iva";
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                async: 'false',
+                data:{},
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                },
+                success : function(data){
+                    //console.log(data)
+                    iva.val(data.id)
+                }
+            });
+
+        }else{
+            //console.log('si entra al desclick')
+            si_iva.val('0');
+            iva.val('1');
+            iva.prop("disabled", true);
+        }
 
     }
 

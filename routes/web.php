@@ -64,6 +64,8 @@ Route::post('/operations/linea', [OperationController::class, 'filtrarLinea'])->
 Route::post('/operations/item/description', [OperationController::class, 'getItemByDescription'])->name('operation.item.description');
 Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
 Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
+Route::get('/operations/iva', [OperationController::class, 'getIva'])->name('operation.iva');
+
 
 Route::resource('invoices', InvoiceController::class);
 Route::get('/invoices/buscarCliente/{ruc}', [InvoiceController::class, 'verificarCliente'])->name('invoice.buscarCliente');
@@ -76,7 +78,6 @@ Route::post('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
 
 Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
 Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->name('element.order.row');
-
 
 
 

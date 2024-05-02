@@ -358,6 +358,7 @@ class EmpresasController extends Controller
                     id_group int(11) DEFAULT NULL,
                     item_name varchar(100) NOT NULL,
                     bar_code varchar(100) DEFAULT NULL,
+                    si_iva tinyint(1) NOT NULL,
                     iva tinyint(1) NOT NULL,
                     id_unit_measure int(11) DEFAULT NULL,
                     notes varchar(255) DEFAULT NULL,
