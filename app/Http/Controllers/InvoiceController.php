@@ -36,6 +36,7 @@ use App\Models\Sizes;
 use App\Models\UnitMeasure;
 use App\Models\TicketSetItems;
 use App\Models\Warehouses;
+use DateTime;
 use Illuminate\Http\Request;
 use DOMDocument;
 use Illuminate\Support\Facades\App;
@@ -527,8 +528,18 @@ class InvoiceController extends Controller
             $resultados = [];
             
             $detalles = [];
-            
-            // Preparar consulta SQL para obtener el nombre del producto
+
+
+            //Inventories
+            $type = 'Invoice';
+            $dateObject = new DateTime($date);
+            $year = $dateObject->format('Y');
+            $month = $dateObject->format('m');
+
+
+            $sql_select_product_cost = "SELECT cost FROM product_balances WHERE id_item = :id_item AND year = :year AND month = :month";
+            $stmt_select_product_cost = $db->prepare($sql_select_product_cost);
+
             $sql_select_product = "SELECT item_name FROM products WHERE id = :id_item";
             $stmt_select_product = $db->prepare($sql_select_product);
 
@@ -538,8 +549,15 @@ class InvoiceController extends Controller
                                         ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty)";
             $stmt_insert_update_item = $db->prepare($sql_insert_update_item);
 
+            $sql_insert_inventories = "INSERT INTO inventories (type, date, id_transaction, id_item, cost, price, qty) 
+                                        VALUES (:type, :date, :id_transaction, :id_item, :cost, :price, :qty)
+                                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty)";
+            $stmt_insert_inventories = $db->prepare($sql_insert_inventories);
+
             $db->beginTransaction();
             //return $request->items;
+
+            
             foreach ($request->items as $index => $item) {
                 
                 if ($item !== null) {  
@@ -556,6 +574,12 @@ class InvoiceController extends Controller
                     $stmt_select_product->execute();
                     $item_name = $stmt_select_product->fetchColumn();
 
+                    $stmt_select_product_cost->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
+                    $stmt_select_product_cost->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_select_product_cost->bindParam(':month', $month, \PDO::PARAM_STR);
+                    $stmt_select_product_cost->execute();
+                    $product_cost = $stmt_select_product_cost->fetchColumn() ?? '0';
+
                     // Ejecutar consulta para insertar o actualizar elementos de la factura
                     $stmt_insert_update_item->bindParam(':id_invoice', $id_invoice, \PDO::PARAM_STR);
                     $stmt_insert_update_item->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
@@ -564,6 +588,16 @@ class InvoiceController extends Controller
                     $stmt_insert_update_item->bindParam(':pvp', $pvp, \PDO::PARAM_STR);
                     $stmt_insert_update_item->bindParam(':num_precio', $num_precio, \PDO::PARAM_STR);
                     $stmt_insert_update_item->execute();
+
+                    // Ejecutar consulta para insertar o actualizar inventories
+                    $stmt_insert_inventories->bindParam(':type', $type, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':date', $date, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':id_transaction', $id_invoice, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':cost', $product_cost, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':price', $precio_neto, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':qty', $qty, \PDO::PARAM_INT);
+                    $stmt_insert_inventories->execute();
 
                     // Guardar detalles del producto
                     $detalles[$id_item] = [
@@ -704,7 +738,8 @@ class InvoiceController extends Controller
                     $date
                 );
                 
-            }   
+            } 
+            
             return redirect()->route('invoices.show', $id_invoice);
         
         } catch (\PDOException $e) {
