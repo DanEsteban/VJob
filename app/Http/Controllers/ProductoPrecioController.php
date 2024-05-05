@@ -216,13 +216,7 @@ class ProductoPrecioController extends Controller
                 $siIva = $request->siIva[$index];
                 $iva = $request->iva[$index] ?? 1;
                 
-                
-                if($siIva == 1 && ($iva == 0 || $iva == 1) ){
-                    $iva = 1;
-                }
-
-
-                if($siIva == 1 && $iva == $impuestoActual->id){
+                if (($siIva == 1 && ($iva == 0 || $iva == 1)) || ($siIva == 1 && $iva == $impuestoActual->id) || $siIva == 0) {
                     $iva = 1;
                 }
                 

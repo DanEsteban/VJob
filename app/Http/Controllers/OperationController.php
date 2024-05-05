@@ -432,7 +432,13 @@ class OperationController extends Controller
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
             $p_impuestos = Impuesto::select('id', 'porcentaje')->get();
-            $consulta = "SELECT products.id, item_name, bar_code, iva, unit_measures.abbreviation, num_precio, precio, precio_iva, desde, hasta
+
+            $fechaActual = Carbon::now()->toDateString(); 
+            $impuestoActual = Impuesto::where('desde', '<=', $fechaActual)
+                                ->where('hasta', '>=', $fechaActual)
+                                ->first();
+
+            $consulta = "SELECT products.id, item_name, bar_code, si_iva, iva, unit_measures.abbreviation, num_precio, precio, precio_iva, desde, hasta
                         FROM products
                         LEFT JOIN price_products ON products.id = price_products.id_product
                         LEFT JOIN unit_measures ON products.id_unit_measure = unit_measures.id
@@ -445,17 +451,25 @@ class OperationController extends Controller
             $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $productos = [];
+            $porcentajeIva = null;
             
             $currentProduct = null;
 
             foreach ($resultados as $row) {
                 $productId = $row['id'];
-                for ($i=0; $i < count($p_impuestos); $i++) { 
+                if ($row['si_iva'] == 1 && $row['iva'] == 1) {
+                    $porcentajeIva = $impuestoActual->porcentaje;
+                }
+
+                else{
+                    for ($i=0; $i < count($p_impuestos); $i++) { 
                                 
-                    if ($row['iva'] == strval($p_impuestos[$i]['id'])) {
-                        $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                        if ($row['iva'] == strval($p_impuestos[$i]['id'])) {
+                            $porcentajeIva = $p_impuestos[$i]['porcentaje'];
+                        }
                     }
                 }
+                
 
                 if ($currentProduct === null || $currentProduct['id'] !== $productId) {
                     if ($currentProduct !== null) {
