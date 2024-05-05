@@ -19,7 +19,8 @@ use App\Models\Products_LabelBar;
 use App\Models\Products_Warehouses;
 use App\Models\Warehouses;
 use App\Models\Transactions;
-
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\App;
 
 class MovementsController extends Controller
 {
@@ -30,8 +31,39 @@ class MovementsController extends Controller
      */
     public function index()
     {
-        $expenditures = Expenditures::all();
-        $incomes = Incomes::all();
+        $nombreBD = App::make('dataBase');
+        
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
+
+        try{
+
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT * FROM movements";
+            $result= $conexion->query($consulta);
+            
+            $movements = [];
+            foreach ($result as $fila) {
+                $movements[]=[
+                    "id" => $fila['id'],
+                    "number" => $fila['number'],
+                    "comments" => $fila['comments'],
+                    "date" => $fila['date'],
+                    "total" => $fila['total'],
+                    "tipo" => $fila['tipo'],
+                    "clave" => $fila['clave'],
+                    "autorizacion" => $fila['autorizacion'],   
+                ];
+            }
+
+            //return $movements;
+            return view('movements.index', compact('movements')); 
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+
         return view('movements.index', compact('expenditures','incomes')); 
     }
 
@@ -42,13 +74,49 @@ class MovementsController extends Controller
      */
     public function create()
     {
-        $items = Products::where('is_active', 1)->where('id_type', 2)->get()->toArray();
-        $types = ItemTypes::find(2);
-        $warehouses = Warehouses::where('is_active', 1)->get();
-        $order_numberD = DocumentNumbers::where('type', 'Discharges')->value('number');
-        $order_numberI = DocumentNumbers::where('type', 'Incomes')->value('number');
+        $nombreBD = App::make('dataBase');
+        
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
 
-        return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'types', 'warehouses'));
+        try{
+
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            // Asi deberia ser la consulta $consulta = "SELECT * FROM movements WHERE is_active = 1 AND id_type = 2";
+            $consulta = "SELECT * FROM movements WHERE is_active = 1";
+            $result= $conexion->query($consulta);
+            $items = $result->fetchAll(\PDO::FETCH_ASSOC);
+            
+            return $items;
+            $movements = [];
+            foreach ($result as $fila) {
+                $movements[]=[
+                    "id" => $fila['id'],
+                    "number" => $fila['number'],
+                    "comments" => $fila['comments'],
+                    "date" => $fila['date'],
+                    "total" => $fila['total'],
+                    "tipo" => $fila['tipo'],
+                    "clave" => $fila['clave'],
+                    "autorizacion" => $fila['autorizacion'],   
+                ];
+            }
+
+            //return $movements;
+            return view('movements.index', compact('movements')); 
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+
+        // $items = Products::where('is_active', 1)->where('id_type', 2)->get()->toArray();
+        // $types = ItemTypes::find(2);
+        // $warehouses = Warehouses::where('is_active', 1)->get();
+        // $order_numberD = DocumentNumbers::where('type', 'Discharges')->value('number');
+        // $order_numberI = DocumentNumbers::where('type', 'Incomes')->value('number');
+
+        // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'types', 'warehouses'));
     }
 
     /**
