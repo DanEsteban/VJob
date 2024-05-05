@@ -7,14 +7,17 @@
 @section('plugins.Select.DataTable', true)
 
 @section('content_header')
-<div class="container-fluid bg-white shadow"  style="min-height: 5rem;">
+<div class="container-fluid bg-white shadow" style="min-height: 5rem;">
     <div class="row align-items-center">
-        <div class="col-12 col-md-8 mt-3 mb-3">
+        <div class="col-12 col-md-8 mt-3">
             <h2>Centro de Movimientos</h2>
         </div>
 
         <div class="col-12 col-md-4 mt-3 mb-3">
-            <a class="btn btn-outline-danger" href="/movements/create"><i class="fa fa-plus"></i> Nuevo Movimiento</a>
+            {{-- <a onclick="newMovement();" class="btn btn-outline-danger" href="/movements/create"><i class="fa fa-plus"></i> Nuevo Movimiento</a> --}}
+            <button type="button" class="btn btn-outline-danger" onclick="newMovement();" >
+                <i class="fa fa-plus"></i> Nuevo Movimiento
+            </button>
         </div>
     </div>
 </div>
@@ -86,18 +89,33 @@
         });
     });
 
-    $(document).ready(function () {
-        $('#iTable2').DataTable({
-            fixedHeader: {
-                header: true,
-                footer: true
-            },
-            select: {
-                style: 'single'
-            },
-            "order": [[0, "desc"], [1, "desc"]]
-        });
-    });
+    function newMovement(){
+
+        let url = "/operations/product";
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                async: 'false',
+                data:{},
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                },
+                success : function(data){
+                    console.log(data)
+                    if(data == 1){
+                        window.location.href = '/movements/create';
+                    }else{
+                        Swal.fire({
+                            title: "Resultado",
+                            text: "No puede crear un movimiento, si no tiene un producto!",
+                            icon: "error"
+                        });
+                    }
+                    
+                }
+            });
+    }
 
     function eliminar(objeto) {
         let form = $(objeto).parent().parent();

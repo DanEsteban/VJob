@@ -414,6 +414,35 @@ class OperationController extends Controller
 
         return response()->json($p_impuestos);
     }
+
+    public function getProduct(){
+        $nombreBD = App::make('dataBase');
+        
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
+
+        try{
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $consulta = "SELECT COUNT(*) as total FROM products";
+
+            $resultado = $conexion->query($consulta);
+            $total_registros = $resultado->fetchColumn();
+
+
+            return $total_registros;
+            // Verificar si hay al menos un registro
+
+            // if ($total_registros > 0) {
+            //     return response()->json(['message' => 'Hay al menos un registro en la tabla products.']);
+            // } else {
+            //     return response()->json(['message' => 'No hay registros en la tabla de productos.']);            }
+
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
+    }
     
     public function getItem($id){
         $product = Products::find($id);
@@ -436,7 +465,8 @@ class OperationController extends Controller
                         FROM products
                         LEFT JOIN price_products ON products.id = price_products.id_product
                         LEFT JOIN unit_measures ON products.id_unit_measure = unit_measures.id
-                        WHERE products.id = :code OR bar_code = :code
+                        -- WHERE products.id = :code OR bar_code = :code
+                        WHERE products.id = :code
                         ORDER BY products.id DESC, price_products.num_precio DESC";
 
             $stmt = $db->prepare($consulta);

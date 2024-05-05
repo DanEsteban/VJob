@@ -65,6 +65,7 @@ Route::post('/operations/item/description', [OperationController::class, 'getIte
 Route::post('/operations/verificarCodigo', [OperationController::class, 'verificarCodigo'])->name('operation.verificarCodigo');
 Route::get('/operations/item/code/{code}', [OperationController::class, 'getItemByCode'])->name('operation.item.code');
 Route::get('/operations/iva', [OperationController::class, 'getIva'])->name('operation.iva');
+Route::get('/operations/product', [OperationController::class, 'getProduct'])->name('operation.product');
 
 
 Route::resource('invoices', InvoiceController::class);

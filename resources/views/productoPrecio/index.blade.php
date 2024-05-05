@@ -256,7 +256,7 @@
     }
 
     function comprobacionbarCode(objeto) {
-        console.log(objeto)
+       // console.log(objeto)
         var tr = $(objeto).closest('tr')[0];
         var filaActual= $(tr).addClass('fila-Actual');
         var tabla = $('#dTable').DataTable();

@@ -85,27 +85,29 @@ class MovementsController extends Controller
             $conexion = new \PDO($dsn, $usuario, $contrasena);
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             // Asi deberia ser la consulta $consulta = "SELECT * FROM movements WHERE is_active = 1 AND id_type = 2";
-            $consulta = "SELECT * FROM movements WHERE is_active = 1";
-            $result= $conexion->query($consulta);
-            $items = $result->fetchAll(\PDO::FETCH_ASSOC);
-            
-            return $items;
-            $movements = [];
-            foreach ($result as $fila) {
-                $movements[]=[
-                    "id" => $fila['id'],
-                    "number" => $fila['number'],
-                    "comments" => $fila['comments'],
-                    "date" => $fila['date'],
-                    "total" => $fila['total'],
-                    "tipo" => $fila['tipo'],
-                    "clave" => $fila['clave'],
-                    "autorizacion" => $fila['autorizacion'],   
-                ];
-            }
+            $consulta = "SELECT * FROM products WHERE is_active = 1";
+            $consulta2 = "SELECT * FROM item_types WHERE id = 2";
+            $consulta3 = "SELECT * FROM warehouses WHERE is_active = 1";
+            $consulta4 = "SELECT number FROM document_numbers WHERE type = 'Discharges' ";
+            $consulta5 = "SELECT number FROM document_numbers WHERE type = 'Incomes' ";
 
-            //return $movements;
-            return view('movements.index', compact('movements')); 
+            
+            $result= $conexion->query($consulta);
+            $result2= $conexion->query($consulta2);
+            $result3= $conexion->query($consulta3);
+            $result4= $conexion->query($consulta4);
+            $result5= $conexion->query($consulta5);
+
+            $items = $result->fetchAll(\PDO::FETCH_ASSOC);
+            $types = $result2->fetchAll(\PDO::FETCH_ASSOC);
+            $warehouses =  $result3->fetchAll(\PDO::FETCH_ASSOC);
+            $order_numberD = $result4->fetchAll(\PDO::FETCH_ASSOC);
+            $order_numberI = $result5->fetchAll(\PDO::FETCH_ASSOC); 
+
+            //return  $items;
+            //return $order_numberD[0]['number']; 
+
+            return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'types', 'warehouses'));
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
