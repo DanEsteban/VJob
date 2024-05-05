@@ -352,7 +352,7 @@ class InvoiceController extends Controller
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             // Preparar la consulta para obtener los productos, proveedores, series de facturas, términos de pago y datos de la empresa
-            $consulta = "SELECT id, item_name FROM products;
+            $consulta = "SELECT * FROM products WHERE is_active = 1;
                         SELECT id, name FROM vendors;
                         SELECT * FROM serie_factura  WHERE tipo_documento <> 4;
                         SELECT number FROM document_numbers WHERE type = 'Factura';
@@ -379,6 +379,7 @@ class InvoiceController extends Controller
                 $datosEmp[$fila['name']] = $fila['value'];
             }
 
+            //return $items;
             return view('invoices.create', compact('items','vendors','seriesFact','numFact', 'payment_terms', 'datosEmp'));
             
         }catch (\PDOException $e) {

@@ -1,6 +1,6 @@
 @extends('adminlte::page') 
 
-@section('title', 'Register Inventory Movement')
+@section('title', 'Movimientos de Inventario')
 
 @section('plugins.Sweetalert2', true)
 
@@ -10,24 +10,22 @@
 
 @php
     $length = 9;
-    $numberD = str_pad($order_numberD, $length,"0", STR_PAD_LEFT);
-    $numberI = str_pad($order_numberI, $length,"0", STR_PAD_LEFT);
+    $numberD = str_pad($order_numberD[0]['number'], $length,"0", STR_PAD_LEFT);
+    $numberI = str_pad($order_numberI[0]['number'], $length,"0", STR_PAD_LEFT);
 @endphp
 
 @section('content')
     <br>
     <form action="{{route('movements.store')}}" enctype="multipart/form-data" method="POST" id="doc_form">
         @csrf
-        <div class="container-fluid bg-white shadow"  style="height: 5rem;">
+        <div class="container-fluid bg-white shadow" style="min-height: 5rem;">
             <div class="row align-items-center">
-                <div class="bg-white col-md-8 mt-3">
-                    <h2>Register Inventory Movement</h2>
-                    <p>V.1.0</p>
+                <div class="col-12 col-md-8 mt-3">
+                    <h2>Movimientos de Inventario</h2>
                 </div>
-                <div class="col-md-3">
-                    <div class="input-group mt-4">
-                        <label for="" class="col-sm-2 col-form-label form-control-sm" style="font-size: 25px">#</label>
-
+                <div class="col-12 col-md-4 mt-3">
+                    <div class="input-group">
+                        <label for="" style="font-size: 25px">#</label>
                         <input id="number" name="number" type="text" class="form-control" style="border: 0; font-size: 25px">
                     </div>
                 </div>
@@ -41,26 +39,26 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <label for="select_move" class="col-sm-5 col-form-label form-control-sm">Type:</label>
-                                    <select id="select_move" onchange="typenumber(this);" name="mov_transaction" style="width:100px;" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="2">
-                                        <option value="none" selected disabled>Select Movement</option>
-                                        <option value="1">Discharge</option>
-                                        <option value="2">Income</option>
+                                    <label for="select_move" class="col-sm-3 col-form-label form-control-sm">Tipo:</label>
+                                    <select id="select_move" onchange="typenumber(this);" name="mov_transaction" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="2">
+                                        <option value="none" selected disabled>Seleccione Movimiento</option>
+                                        <option value="1">Egresos</option>
+                                        <option value="2">Ingresos</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <label for="" class="col-sm-5 col-form-label form-control-sm">Date:</label>
-                                    <input name="date" type="date" class="form-control form-control-sm" value="{{date('Y-m-d')}}" width="300px">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <label for="" class="col-sm-4 col-form-label form-control-sm">Wh:</label>
-                                    <Select id="select_warehouse" name="select_warehouse" class="form-select form-select-sm" style="width:170px;" aria-label=".form-select-sm" tabindex="13">
+                                    <label for="" class="col-sm-3 col-form-label form-control-sm">Fecha:</label>
+                                    <input name="date" type="date" class="form-control form-control-sm" value="{{date('Y-m-d')}}" width="300px">
+                                </div>
+                            </div>
+                            <div hidden class="col-md-4">
+                                <div class="input-group">
+                                    <label for="" class="col-sm-3 col-form-label form-control-sm">Wh:</label>
+                                    <Select id="select_warehouse" name="select_warehouse" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="13">
                                         @foreach ($warehouses as $wh)
-                                        <option value="{{$wh->id}}" <?php echo (old('select_warehouse')) ? ' selected="selected"' : '';?>>{{$wh->wh_name}}</option>
+                                            <option value="{{$wh['id']}}" <?php echo (old('select_warehouse')) ? ' selected="selected"' : '';?>>{{$wh['wh_name']}}</option>
                                         @endforeach
                                     </Select>
                                 </div>
@@ -70,7 +68,7 @@
                         <div class="row">
                             <div class="col-md-11">
                                 <div class="input-group">
-                                    <label for="" class="col-sm-2 col-form-label form-control-sm">Comments:</label>
+                                    <label for="" class="col-sm-2 col-form-label form-control-sm">Comentarios:</label>
                                     <textarea name="comments" id="comments" class="form-control form-control-sm" cols="30" rows="2" style="resize:none"></textarea>
                                 </div>
                             </div>
@@ -98,11 +96,12 @@
                         @for ($i = 0; $i < 3; $i++)
                             <tr id="tr_items">
                                 <td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
+                                
                                 <td>
-                                    <input onchange="changeItemMov(this, {{json_encode($items)}}, {{json_encode($types)}})" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
+                                    <input onchange="changeItemMov(this, {{json_encode($items)}}, {{json_encode($types)}})" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList" >
                                     <datalist id="itemsList">
                                         @foreach ($items as $item)
-                                            <option value="{{$item['item_name']}}"></option>
+                                            <option value="{{$item['bar_code']}}"></option>
                                         @endforeach
                                     </datalist>
                                 </td>
@@ -118,18 +117,18 @@
                 <hr>
                 <center>
                     <div class="row">                        
-                        <div class="col-md-3">
+                        <div class="col-md-5">
                             <div class="input-group">
-                                <label for="" class="col-sm-3 col-form-label form-control-sm">Stock:</label>
+                                <label for="" class="col-sm-4 col-form-label form-control-sm">Stock:</label>
                                 @if (old('qty'))
-                                    <input id="stock" name="stock" style="width:10%; font-size: 17px; font-weight: bold; background-color:yellow;" type="text" class="form-control form-control-sm" value="{{old('qyt')}}">
+                                    <input id="stock" name="stock" style="font-size: 17px; font-weight: bold; background-color:yellow;" type="text" class="form-control form-control-sm" value="{{old('qyt')}}">
                                 @else
-                                    <input id="stock" name="stock" style="width:10%; font-size: 17px; font-weight: bold; background-color:yellow;" type="text" class="form-control form-control-sm">
+                                    <input id="stock" name="stock" style="font-size: 17px; font-weight: bold; background-color:yellow;" type="text" class="form-control form-control-sm">
                                 @endif
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <button onclick="addRow3();" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus"></i> Row</button>
+                        <div class="col-md-3">
+                            <button onclick="addRow3();" type="button" class="btn btn-sm btn-outline-primary mt-3"><i class="fa-solid fa-plus"></i> Row</button>
                         </div>
                         
                     </div>
@@ -162,16 +161,16 @@
 
     <!--- Toast --->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-            <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-              <div class="toast-header">
+        <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
                 <img src="/img/logo.png" width="30px" class="rounded me-2" alt="...">
                 <strong class="me-auto">Flowerist</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-              </div>
-              <div class="toast-body">
-                Added a new record.
-              </div>
             </div>
+            <div class="toast-body">
+                Added a new record.
+            </div>
+        </div>
     </div> 
 @stop
 
@@ -220,10 +219,10 @@
     function changeItemMov(objeto, items) {
         let div_next = $(objeto).parent().parent().next();
         let code = $(objeto).val();
-        var selectedWarehouse = $('#select_warehouse option:selected').val();
+        //var selectedWarehouse = $('#select_warehouse option:selected').val();
 
         function isMatch(item) {
-            return item.item_name === code;
+            return item.bar_code === code;
         }
         
         code = items.find(isMatch);
@@ -258,46 +257,47 @@
             });
         }
         else{
-            code = $(objeto).val();
-            if(code){
-                $.ajax({
-                    type:'GET',
-                    dataType:'json',
-                    url:'/operations/item/codebar/' +  code,
-                    async:false,
-                    data:{},
-                    error: function (xhr, status, error) {
-                        console.log(xhr.error);
-                    },
-                    success : function(any){
-                        tr.find('#description').val(any['sales_description']);
-                        tr.find('#unit').val(any['id_unit_measure']);
-                        $("#stock").val(any['qty']);
-                        tr.find('#qty').val("1");
-                        tr.find('#price').val(any['price']);
-                        tr.find('#amt').val(any['price']);
-                        $(div_next).find('#collapse_container div').remove();
-                        $(div_next).find('#collapse_container hr').remove();
-                        calcularMov();
-                    }
-                });
-            }
-            else{
-                let td_button = $(objeto).parent().prev().prev();
-                let td_false = $(objeto).parent().prev().prev().prev();
-                $(td_false).removeAttr('hidden');
-                $(td_button).attr('hidden', true);
-                $(div_next).collapse("hide");
-                $(td_button).removeClass("btnminus");
-                $(td_button).addClass("btnplus");
+            console.log("Hasta aqui si llega")
+            // code = $(objeto).val();
+            // if(code){
+            //     $.ajax({
+            //         type:'GET',
+            //         dataType:'json',
+            //         url:'/operations/item/codebar/' +  code,
+            //         async:false,
+            //         data:{},
+            //         error: function (xhr, status, error) {
+            //             console.log(xhr.error);
+            //         },
+            //         success : function(any){
+            //             tr.find('#description').val(any['sales_description']);
+            //             tr.find('#unit').val(any['id_unit_measure']);
+            //             $("#stock").val(any['qty']);
+            //             tr.find('#qty').val("1");
+            //             tr.find('#price').val(any['price']);
+            //             tr.find('#amt').val(any['price']);
+            //             $(div_next).find('#collapse_container div').remove();
+            //             $(div_next).find('#collapse_container hr').remove();
+            //             calcularMov();
+            //         }
+            //     });
+            // }
+            // else{
+            //     let td_button = $(objeto).parent().prev().prev();
+            //     let td_false = $(objeto).parent().prev().prev().prev();
+            //     $(td_false).removeAttr('hidden');
+            //     $(td_button).attr('hidden', true);
+            //     $(div_next).collapse("hide");
+            //     $(td_button).removeClass("btnminus");
+            //     $(td_button).addClass("btnplus");
         
-                tr.find('#description').val(" ");
-                tr.find('#qty').val(" ");
-                tr.find('#unit').val(" ");
-                tr.find('#price').val(" ");
-                tr.find('#amt').val(" ");
-                calcularMov();
-            }
+            //     tr.find('#description').val(" ");
+            //     tr.find('#qty').val(" ");
+            //     tr.find('#unit').val(" ");
+            //     tr.find('#price').val(" ");
+            //     tr.find('#amt').val(" ");
+            //     calcularMov();
+            // }
         }
     }
 
@@ -310,7 +310,7 @@
         if(tipo == "Select Movement"){
             Swal.fire(
                 'Warning',
-                'Select a type of movement',
+                'Seleccione un tipo de movimiento',
                 'warning'
             )
             aprobado++;
@@ -326,7 +326,7 @@
         if (rows < 1 && aprobado == 0) {
             Swal.fire(
                     'Warning',
-                    'Please choose products and add them to the list',
+                    'Por favor elija los productos y añádalos a la lista',
                     'warning'
             )
             aprobado++;

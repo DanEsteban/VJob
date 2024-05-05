@@ -104,15 +104,15 @@
                                     <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                                 <td>
-                                    <input onchange="changeItem(this);" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
+                                    <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
                                     <datalist id="itemsList">
                                         @foreach ($items as $item)
-                                            <option value="{{$item['id']}}"></option> 
+                                            <option value="{{$item['bar_code']}}"></option> 
                                         @endforeach
                                     </datalist>
                                 </td>
                                 <td>
-                                    <input onchange="changeDescription(this)" id="description" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemDesList">
+                                    <input onchange="changeDescription(this, {{json_encode($items)}})" id="description" type="text" autocomplete="off" class="form-control form-control-sm" list="itemDesList">
                                     <datalist id="itemDesList">
                                         @foreach ($items as $item)
                                             <option value="{{$item['item_name']}}"></option>
@@ -187,7 +187,7 @@
                                 <label for="canalVenta">Canal Venta:</label>
                             </div>
                             <div class="col-9">
-                                <input autocomplete="off" onchange="changeDescription(this)" id="canalVenta" type="text" class="form-control form-control-sm" width="300px" list="canalVtaList">
+                                <input autocomplete="off" id="canalVenta" type="text" class="form-control form-control-sm" width="300px" list="canalVtaList">
                                 <datalist id="canalVtaList">
                                     <option value="--SELECCIONAR--"></option>
                                 </datalist>
@@ -661,11 +661,18 @@
         return filasConDatos;
     }
 
-    function changeItem(objeto) { 
+    function changeItem(objeto, items) { 
         let code = $(objeto).val();
+        
+        function isMatch(item) {
+            return item.bar_code === code;
+        }
+        
+        code = items.find(isMatch);
         let tr = $(objeto).parent().parent();
+
         if(code){
-            let url = "/operations/item/code/" + code;        
+            let url = "/operations/item/code/" + code.id;        
             $.ajax({
                 type: 'GET',
                 url: url,
@@ -676,8 +683,8 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
-                    //console.log(data)
-                    tr.find('#items').val(data[0]['id']);
+                    console.log(data)
+                    tr.find('#items').val(data[0]['bar_code']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
                     tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
@@ -709,16 +716,31 @@
                     } 
                 }
             });
-            
 
             var filasConDatos = leerFilas();
             numeroRegistros(filasConDatos);
             calcular(filasConDatos);
+
+        }else{
+            Swal.fire({
+                title: "Error",
+                text: "Por favor seleccione un producto existente",
+                icon: "warning"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tr.find('input').val('');
+                    tr.find('td').eq(1).find('input').focus();
+                } 
+            });
         }
     }
 
-    function changeDescription(objeto) {
+    function changeDescription(objeto, items) {
         let descripcion = $(objeto).val();
+        function isMatch(item) {
+            return item.item_name === descripcion;
+        }
+        descripcion = items.find(isMatch);
         let tr = $(objeto).parent().parent();
         if(descripcion){
             let url = "/operations/item/description";    
@@ -727,13 +749,13 @@
                 url: url,
                 dataType: 'json',
                 async: false,
-                data:{"_token": "{{ csrf_token() }}", descripcion: descripcion },
+                data:{"_token": "{{ csrf_token() }}", descripcion: descripcion.item_name },
                 error: function (xhr, status, error) {
                     console.log(xhr.error);
                 },
                 success : function(data){ 
                     //console.log(data) 
-                    tr.find('#items').val(data[0]['id']);
+                    tr.find('#items').val(data[0]['bar_code']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
                     tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
@@ -769,6 +791,17 @@
             var filasConDatos = leerFilas();
             numeroRegistros(filasConDatos);
             calcular(filasConDatos);
+        }else{
+            Swal.fire({
+                title: "Error",
+                text: "Por favor seleccione un producto existente",
+                icon: "warning"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tr.find('input').val('');
+                    tr.find('td').eq(2).find('input').focus();
+                } 
+            });
         }
     }
 
