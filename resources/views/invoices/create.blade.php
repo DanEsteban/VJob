@@ -313,7 +313,7 @@
                                     </div>
                                 </div>
                                 <hr class="my-4">
-                                <table id="modal-tabla" class="table table-xl" style="max-height: 350px;">
+                                <table id="modal-tabla" class="table table-responsive" style="max-height: 350px;">
                                     <thead class="table-dark">
                                         <tr>
                                             <th hidden></th>
@@ -683,7 +683,7 @@
                     console.log(xhr.error);
                 },
                 success : function(data){
-                    console.log(data)
+                    //console.log(data)
                     tr.find('#items').val(data[0]['bar_code']);
                     tr.find('#description').val(data[0]['item_name']);
                     tr.find('#cantidad').val("1");
@@ -989,7 +989,6 @@
     }
 
     function selectDoc(object){
-
         //console.log(object);
         $('tr').removeClass('table-active');
         $(object).addClass('table-active');

@@ -158,20 +158,6 @@
         </div>
         <br>
     </form>
-
-    <!--- Toast --->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <img src="/img/logo.png" width="30px" class="rounded me-2" alt="...">
-                <strong class="me-auto">Flowerist</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                Added a new record.
-            </div>
-        </div>
-    </div> 
 @stop
 
 @section('css')
@@ -182,7 +168,7 @@
 
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
-<script type="text/javascript" src="/js/orders.actions.js"></script>
+{{-- <script type="text/javascript" src="/js/orders.actions.js"></script> --}}
 <script type="text/javascript">
 
     $(document).ready(function() {
@@ -198,7 +184,23 @@
             $("#addrow").hide();
             }
         });
-    });    
+    });   
+    
+    function changeQty(objeto) {
+        let tr = $(objeto).parent().parent();
+        let qty = parseFloat($(objeto).val()) * 1;
+        let price = parseFloat(tr.find('#price').val()) * 1;
+        let subtotal = 0;
+        if(qty && price){
+            subtotal = qty * price;
+            tr.find('#amt').val(subtotal.toFixed(2));
+            calcularMov();
+        }
+        else{
+            tr.find('#amt').val("0.00");
+            calcularMov();
+        }
+    }
 
     function calcularMov() {
         var subtotal = 0;
@@ -210,95 +212,138 @@
         })
 
         var resultado = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD',}).format(subtotal);
-        //$('#order_total').val(resultado);
-        console.log(resultado);
-        $("#order_total").val(subtotal.toFixed(2));
+        //console.log(resultado);
+        $("#order_total").val(resultado);
 
     }
     
     function changeItemMov(objeto, items) {
-        let div_next = $(objeto).parent().parent().next();
-        let code = $(objeto).val();
-        //var selectedWarehouse = $('#select_warehouse option:selected').val();
+        let code = $(objeto).val().trim();
+        let tr = $(objeto).closest('tr');
+        let firstDuplicateRow = false;
+        let duplicateRowIndex = -1;
 
-        function isMatch(item) {
-            return item.bar_code === code;
-        }
-        
-        code = items.find(isMatch);
-        let tr = $(objeto).parent().parent();
+        let itemData = items.find(item => item.bar_code === code);
+        if (itemData) {
+            // Verificar si el código del producto ya está presente en la tabla
+            $('table tbody tr').each(function(index) {
+                if ($(this)[0] !== tr[0]) {
+                    let existingValue = $(this).find('#items').val().trim();
+                    if (existingValue === code) {
+                        firstDuplicateRow = $(this);
+                        duplicateRowIndex = index;
+                        return false; // Salir del bucle each cuando se encuentra el primer duplicado
+                    }
+                }
+            });
 
-        if(code){
-            console.log(code['id']);
-            let url = "/operations/item/code/" + code['id'];        
-            $.ajax({
-                type: 'GET',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{selectedWarehouse:selectedWarehouse},
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){
-                    console.log(data);
-                    tr.find('#description').val(data['sales_description']);
-                    tr.find('#unit').val(data['id_unit_measure']);
-                    $("#stock").val(data['qty']);
-                    tr.find('#qty').val("1");
-                    tr.find('#price').val(data['price']);
-                    tr.find('#amt').val(data['price']);
-                
-                    $(div_next).find('#collapse_container div').remove();
-                    $(div_next).find('#collapse_container hr').remove();
-                    
-                    calcularMov();  
+            if (firstDuplicateRow) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Ya existe este producto en la tabla",
+                    icon: "question"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        firstDuplicateRow.find('#items').val(''); // Limpiar el campo de entrada en la fila duplicada
+                        $('table tbody tr').eq(duplicateRowIndex).find('#items').focus(); // Establecer foco en el campo de entrada en la fila duplicada
+                    }
+                });
+            } else {
+                let url = "/operations/item/code/" + itemData.id;
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    dataType: 'json',
+                    error: function(xhr, status, error) {
+                        console.log(xhr.error);
+                        Swal.fire({
+                            title: "Error",
+                            text: "Ha ocurrido un error al cargar la información del producto.",
+                            icon: "error"
+                        });
+                    },
+                    success: function(data) {
+                        //console.log(data[0]);
+                        tr.find('#description').val(data[0]['item_name']);
+                        tr.find('#unit').val((data[0]['abbreviation'] == null) ? 0 : data[0]['abbreviation']);
+                        tr.find('#qty').val("1");
+                        let precio = parseFloat(data[0]['pvp1']);
+                        tr.find('#price').val(precio.toFixed(2));
+                        tr.find('#amt').val(precio.toFixed(2));
+
+                        calcularMov();
+                    }
+                });
+            }
+        } else {
+            Swal.fire({
+                title: "Error",
+                text: "Por favor seleccione un producto existente",
+                icon: "warning"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tr.find('input').val('');
+                    tr.find('td').eq(1).find('input').focus();
                 }
             });
         }
-        else{
-            console.log("Hasta aqui si llega")
-            // code = $(objeto).val();
-            // if(code){
-            //     $.ajax({
-            //         type:'GET',
-            //         dataType:'json',
-            //         url:'/operations/item/codebar/' +  code,
-            //         async:false,
-            //         data:{},
-            //         error: function (xhr, status, error) {
-            //             console.log(xhr.error);
-            //         },
-            //         success : function(any){
-            //             tr.find('#description').val(any['sales_description']);
-            //             tr.find('#unit').val(any['id_unit_measure']);
-            //             $("#stock").val(any['qty']);
-            //             tr.find('#qty').val("1");
-            //             tr.find('#price').val(any['price']);
-            //             tr.find('#amt').val(any['price']);
-            //             $(div_next).find('#collapse_container div').remove();
-            //             $(div_next).find('#collapse_container hr').remove();
-            //             calcularMov();
-            //         }
-            //     });
-            // }
-            // else{
-            //     let td_button = $(objeto).parent().prev().prev();
-            //     let td_false = $(objeto).parent().prev().prev().prev();
-            //     $(td_false).removeAttr('hidden');
-            //     $(td_button).attr('hidden', true);
-            //     $(div_next).collapse("hide");
-            //     $(td_button).removeClass("btnminus");
-            //     $(td_button).addClass("btnplus");
-        
-            //     tr.find('#description').val(" ");
-            //     tr.find('#qty').val(" ");
-            //     tr.find('#unit').val(" ");
-            //     tr.find('#price').val(" ");
-            //     tr.find('#amt').val(" ");
-            //     calcularMov();
-            // }
-        }
+
+
+        // if (firstDuplicateRow) {
+        //     Swal.fire({
+        //         title: "Error",
+        //         text: "Ya existe este producto en la tabla",
+        //         icon: "question"
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             firstDuplicateRow.find('#items').val(''); // Limpiar el campo de entrada en la fila duplicada
+        //             firstDuplicateRow.find('#items').focus(); // Establecer foco en el campo de entrada en la fila duplicada
+        //         }
+        //     });
+        //     return;
+        // }
+
+
+        // let itemData = items.find(item => item.bar_code === code);
+
+        // if (itemData) {
+        //     let url = "/operations/item/code/" + itemData.id;        
+        //     $.ajax({
+        //         type: 'GET',
+        //         url: url,
+        //         dataType: 'json',
+        //         error: function (xhr, status, error) {
+        //             console.log(xhr.error);
+        //             Swal.fire({
+        //                 title: "Error",
+        //                 text: "Ha ocurrido un error al cargar la información del producto.",
+        //                 icon: "error"
+        //             });
+        //         },
+        //         success: function(data) {
+        //             //console.log(data[0]);
+        //             tr.find('#description').val(data[0]['item_name']);
+        //             tr.find('#unit').val((data[0]['abbreviation'] == null) ? 0 : data[0]['abbreviation']);
+        //             tr.find('#qty').val("1");
+        //             let precio = parseFloat(data[0]['pvp1']);
+        //             tr.find('#price').val(precio.toFixed(2));                    
+        //             tr.find('#amt').val(precio.toFixed(2)); 
+                    
+        //             calcularMov();  
+        //         }
+        //     });
+        // } else {
+        //     Swal.fire({
+        //         title: "Error",
+        //         text: "Por favor seleccione un producto existente",
+        //         icon: "warning"
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             tr.find('input').val('');
+        //             tr.find('td').eq(1).find('input').focus();
+        //         } 
+        //     });
+        // }
     }
 
     function save(){

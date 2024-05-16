@@ -146,11 +146,11 @@
                                         </select>   
                                     </td>
                                     <td><input type="text" id="pvp1" value="{{ number_format($resultado['pvp1'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad2" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>    
+                                    <td><input type="text" id="cantidad2" value="{{ number_format($resultado['cantidad2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>    
                                     <td><input type="text" id="pvp2" value="{{ number_format($resultado['pvp2'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad3" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad3']) }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad3" value="{{ number_format($resultado['cantidad3']) }}" class="form-control form-control-sm" disabled></td>
                                     <td><input type="text" id="pvp3" value="{{ number_format($resultado['pvp3'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
-                                    <td><input type="text" id="cantidad4" onchange="cambioCantidad(this);" value="{{ number_format($resultado['cantidad4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
+                                    <td><input type="text" id="cantidad4" value="{{ number_format($resultado['cantidad4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
                                     <td><input type="text" id="pvp4" value="{{ number_format($resultado['pvp4'], 2, '.', '') }}" class="form-control form-control-sm" disabled></td>
                                 </tr> 
                             @endforeach
@@ -194,32 +194,6 @@
             "info": false
         });
     });
-
-    function cambioCantidad(input) {
-        // Obtener el valor del campo de cantidad
-        var cantidad = $(input).val();
-        
-        // Obtener el valor del campo adyacente (pvp)
-        var pvpInput  = $(input).closest('td').next().find('input[type="text"]');
-        
-        // Obtener el valor del campo adyacente (pvp)
-        var pvp = pvpInput.val();
-
-        if (pvp.trim() === '') {
-            Swal.fire({
-                icon: "warning",
-                text: "No puede haber una cantidad sin su respectivo precio!",
-                didClose: function() {
-                    // Establecer nuevamente el foco en el campo de PVP
-                    pvpInput.focus();
-                }
-            });
-        } else {
-            // Establecer el foco en el campo de PVP si no hay problemas
-            pvpInput.focus();
-        }
-
-    }
 
     function guardar() {
 

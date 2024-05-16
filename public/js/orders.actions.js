@@ -468,22 +468,22 @@ function changePrice(objeto) {
     }
 }
 
-function changeQty(objeto) {
-    let tr = $(objeto).parent().parent();
-    let qty = parseFloat($(objeto).val()) * 1;
-    let price = parseFloat(tr.find('#price').val()) * 1;
-    let subtotal = 0;
-    if(qty && price){
-        subtotal = qty * price;
-        tr.find('#amt').val(subtotal.toFixed(3));
-        calcular();
-    }
-    else{
-        tr.find('#amt').val("0.00");
-        calcular();
-    }
+// function changeQty(objeto) {
+//     let tr = $(objeto).parent().parent();
+//     let qty = parseFloat($(objeto).val()) * 1;
+//     let price = parseFloat(tr.find('#price').val()) * 1;
+//     let subtotal = 0;
+//     if(qty && price){
+//         subtotal = qty * price;
+//         tr.find('#amt').val(subtotal.toFixed(2));
+//         calcular();
+//     }
+//     else{
+//         tr.find('#amt').val("0.00");
+//         calcular();
+//     }
 
-}
+// }
 
 function newCustomer() {
     var seleccion = $('#select_customer').val();

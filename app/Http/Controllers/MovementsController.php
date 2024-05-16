@@ -111,14 +111,6 @@ class MovementsController extends Controller
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
-
-        // $items = Products::where('is_active', 1)->where('id_type', 2)->get()->toArray();
-        // $types = ItemTypes::find(2);
-        // $warehouses = Warehouses::where('is_active', 1)->get();
-        // $order_numberD = DocumentNumbers::where('type', 'Discharges')->value('number');
-        // $order_numberI = DocumentNumbers::where('type', 'Incomes')->value('number');
-
-        // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'types', 'warehouses'));
     }
 
     /**
@@ -129,285 +121,383 @@ class MovementsController extends Controller
      */
     public function store(Request $request)
     {
-        $expenditure = null;
-        $length = 9;
-        $total = "";
-        $total = str_replace("$", " ", $request->order_total);
-        $total = str_replace(",", "", $total);
-        $secuencial = $request->number;
+        //return $request;
         
-        $sales_number = "";
-        $if_exists=0;
-  
-
-        if($request->mov_transaction == 1){
-
-            do {
-                $if_exists = Expenditures::where('number', $secuencial)->exists();
-                if($if_exists == 1){  
-                    $number = intval($secuencial);     
-                    $number += 1;
-                    $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
-                    $sales_number = $secuencial;
-                }
-                else {
-                    $sales_number = $secuencial;
-                }
-    
-            } while ($if_exists == 1);
-
-            $expenditure = Expenditures::firstOrCreate([
-                'id_warehouse' => $request->select_warehouse,
-                'number' => $sales_number,
-                'date' => $request->date,
-                'comments' => $request->comments,
-                'total' => $total
-            ]);
-
-            $count = count($request->items);
-            $index = 0;
-            for ($i=0; $i < $count; $i++) { 
-            
-                    if ($request->items[$i] != null) {
-                        $size = null;
-                        $color = null;
+        $nombreBD = App::make('dataBase');
         
-                        if(isset($request->select_size[$index])){
-                            $size = $request->select_size[$index];
-                        }
-        
-                        if (isset($request->select_color[$index])) {
-                            $color = $request->select_color[$index];
-                        }
-                        
-                        $type =  Products::where('item_name', $request->items[$i])->value('id_type');
-                        if ($type == 4) {
-                            $id_item = Products::where('item_name', $request->items[$i])->value('id');
-                            if(!$id_item){
-                                $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-                            }                            
-                            $items_production = AssamblyItems::where('id_item_main', $id_item)->get();
-        
-                            $items = ExpendituresItems::create([
-                                'id_expenditure' => $expenditure->id,
-                                'id_warehouse' => $request->select_warehouse,
-                                'id_item' => $id_item,
-                                'id_size' => $size,
-                                'id_color' => $color,
-                                'qty' => $request->qty[$i],
-                                'unit' => $request->unit[$i],
-                                'cost' => $request->price[$i],
-                            ]);
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
+        try{
 
-                            //Actualiza el stock en el balance del producto.
-                            if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-                                $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-                                $warehouse_balance_item->qty_balance -= $request->qty[$i];
-                                $warehouse_balance_item->save();
-                            }
-                            else{
-                                $warehouse_balance_item = Products_Warehouses::create([
-                                    'id_item'=>$id_item,
-                                    'id_warehouse'=>$request->select_warehouse,
-                                    'qty_balance'=>$request->qty[$i]
-                                ]);
-                            }
-                            
-                            foreach ($items_production as $itm) {
-                                $id_unit = Products::where('id', $itm->id_item)->value('id_unit_measure');
-                                $unit = UnitMeasure::where('id', $id_unit)->value('abbreviation');
-                                $cost = Products::where('id', $itm->id_item)->value('cost_avg');
-
-                                $response=Products::where('id',$itm->id_item)->first();
-                                $response->qty  -= $itm->qty;
-                                $response->save();
-
-                                Inventories::create([
-                                    'type' => 'Discharge',
-                                    'id_transaction' => $expenditure->id,
-                                    'id_warehouse' => $request->select_warehouse,
-                                    'id_item' => $itm->id_item,
-                                    'id_size' => $size,
-                                    'id_color' => $color,
-                                    'cost' => $cost,
-                                    'qty' => $itm->qty
-                                ]);    
-                            
-                                $index++;
-                            }
-                        } 
-                        else {
-
-                            $id_item = Products::where('item_name', $request->items[$i])->value('id');
-
-                            if(!$id_item){
-                                $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-                            }
-                            $items = ExpendituresItems::create([
-                                'id_expenditure' => $expenditure->id,
-                                'id_warehouse' => $request->select_warehouse,
-                                'id_item' => $id_item,
-                                'id_size' => $size,
-                                'id_color' => $color,
-                                'qty' => $request->qty[$i],
-                                'unit' => $request->unit[$i],
-                                'cost' => $request->price[$i],
-                            ]);
-
-                            $response=Products::where('id',$id_item)->first();
-                            $response->qty  -= $request->qty[$i];
-                            $response->save();
-
-                              //Actualiza el stock en el balance del producto.
-                            if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-                                $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-                                $warehouse_balance_item->qty_balance -= $request->qty[$i];
-                                $warehouse_balance_item->save();
-                            }
-                            else{
-                                $warehouse_balance_item = Products_Warehouses::create([
-                                    'id_item'=>$id_item,
-                                    'id_warehouse'=>$request->select_warehouse,
-                                    'qty_balance'=>$request->qty[$i]
-                                ]);
-                            }
-                            
-
-                            Inventories::create([
-                                'type' => 'Discharge',
-                                'id_transaction' => $expenditure->id,
-                                'id_warehouse' => $request->select_warehouse,
-                                'id_item' =>  $id_item,
-                                'id_size' => $size,
-                                'id_color' => $color,
-                                'cost' => Products::where('item_name', $request->items[$i])->value('cost_avg'),
-                                'price' => $request->price[$i],
-                                'qty' => $request->qty[$i]
-                            ]);
-                            $index++;
-                        }
-                    }
-                        
+            $length = 9;
+            $total = "";
+            $total = str_replace("$", " ", $request->order_total);
+            $total = str_replace(",", "", $total);
+            $secuencial = $request->number;
+            $mov_transac = $request->mov_transaction;
+            if($mov_transac == 1){
+                $mov_transac = "Ingreso" ;
+            }else{
+                $mov_transac = "Egreso" ;
             }
-    
-                $document_number = DocumentNumbers::where('type', 'Discharges')->first();
-                $number = intval($sales_number) + 1;
-                $document_number->number = $number;
-                $document_number->save();
-
-                return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
-        }
-        else{
             
+            $sales_number = "";
+            $if_exists = 0;
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             do {
-                $if_exists = Incomes::where('number', $secuencial)->exists();
-                if($if_exists == 1){  
+
+                $consulta = "SELECT COUNT(*) AS count FROM movements WHERE number = :number";
+                $stmt = $conexion->prepare($consulta);
+                $stmt->bindParam(':number', $secuencial, \PDO::PARAM_STR);
+                $stmt->execute();
+                $if_exists = $stmt->fetchColumn();
+            
+                if ($if_exists == 1) {  
                     $number = intval($secuencial);     
                     $number += 1;
-                    $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
+                    $secuencial = str_pad($number, $length, "0", STR_PAD_LEFT);
+                    $sales_number = $secuencial;
+                } else {
                     $sales_number = $secuencial;
                 }
-                else {
-                    $sales_number = $secuencial;
-                }
-                    
             } while ($if_exists == 1);
 
-            $income = Incomes::firstOrCreate([
-                'id_warehouse' => $request->select_warehouse,
-                'number' => $sales_number,
-                'date' => $request->date,
-                'comments' => $request->comments,
-                'total' => $total
-            ]);
-            $index = 0;
-            $count = count($request->items);
-            for ($i=0; $i < $count; $i++) { 
+            $comments = $request->comments ?? null;
+            $date = $request->date;
+
+            $consulta = "INSERT INTO movements (number, comments, date, total, tipo) VALUES (:number, :comments, :date, :total, :tipo)";
+            $stmt = $conexion->prepare($consulta);
+            $stmt->bindParam(':number', $sales_number, \PDO::PARAM_INT);
+            $stmt->bindParam(':comments', $comments, \PDO::PARAM_STR);
+            $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
+            $stmt->bindParam(':total', $total, \PDO::PARAM_STR);
+            $stmt->bindParam(':tipo', $mov_transac, \PDO::PARAM_STR);
+            $stmt->execute();
+
+            $lastId_movements = $conexion->lastInsertId();
+
+            $id_movement = intval($lastId_movements);
+
+            // Preparar consulta SQL para insertar o actualizar elementos de la factura
+
+            $sql_insert_update_item = "INSERT INTO movements_items (id_movement, id_item, qty, unit, cost) 
+                            VALUES (:id_movement, :id_item, :qty, :unit, :cost)";
+
+            
+            $stmt_insert_update_item = $conexion->prepare($sql_insert_update_item);           
+            
+            foreach ($request->items as $index => $item) {
                 
-                if ($request->items[$i] != null) {
-                        $size = null;
-                        $color = null;
+                if ($item !== null) {  
         
-                        if(isset($request->select_size[$index])){
-                            $size = $request->select_size[$index];
-                        }
-        
-                        if (isset($request->select_color[$index])) {
-                            $color = $request->select_color[$index];
-                        }
-                        
-                        $id_item = Products::where('item_name', $request->items[$i])->value('id');
-                        if(!$id_item){
-                            $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-                        }
+                    $id_item = intval($item) ?? 0;
+                    $qty = intval($request->qty[$index]) ?? 0;
+                    $unit = $request->unit[$index] ?? 0;
+                    $cost = $request->price[$index] ?? 0;
 
-                        $items = IncomesItems::create([
-                            'id_income' => $income->id,
-                            'id_warehouse' => $request->select_warehouse,
-                            'id_item' => $id_item,
-                            'id_size' => $size,
-                            'id_color' => $color,
-                            'qty' => $request->qty[$i],
-                            'unit' => $request->unit[$i],
-                            'cost' => $request->price[$i],
-                        ]);
-                        $response=Products::where('id',$id_item)->first();
+                    // Ejecutar consulta para insertar o actualizar elementos de la factura
+                    $stmt_insert_update_item->bindParam(':id_movement', $id_movement, \PDO::PARAM_INT);
+                    $stmt_insert_update_item->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_insert_update_item->bindParam(':qty', $qty, \PDO::PARAM_INT);
+                    $stmt_insert_update_item->bindParam(':unit', $unit, \PDO::PARAM_STR);
+                    $stmt_insert_update_item->bindParam(':cost', $cost, \PDO::PARAM_STR);
+                    
+                    $stmt_insert_update_item->execute();
+                    //var_dump($stmt_insert_update_item->execute());
+                    // // Guardar detalles del producto
+                    // $detalles[$id_item] = [
+                    //     'codigo' => $id_item,
+                    //     'qty' => $qty,
+                    // ];
 
-                        //Actualiza el stock en el balance del producto.
-                        if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-                            $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-                            $warehouse_balance_item->qty_balance += $request->qty[$i];
-                            $warehouse_balance_item->save();
-                        }
-                        else{
-                            $warehouse_balance_item = Products_Warehouses::create([
-                                'id_item'=>$id_item,
-                                'id_warehouse'=>$request->select_warehouse,
-                                'qty_balance'=>$request->qty[$i]
-                            ]);
-                        }
-                        
-                        $qty_total = $response->qty+$request->qty[$i];
-                        if ($qty_total==0) {
-                            $cost_prom=0;
-                            Transactions::create([
-                                'number' => $sales_number,
-                                'type' => 'Income', 
-                                'date' => $request->date
-                            ]);
-                        }
-                        else{$cost_prom=(($response->cost_avg*$response->qty)+($request->qty[$i]*$request->price[$i]))/($qty_total);
-                        }
-                        
-                        $response->qty  += $request->qty[$i];
-                        $response->save();
-
-                        $product = Products::where('item_name', $request->items[$i])->first();
-                        $product->cost = $request->price[$i];
-                        $product->cost_avg = $cost_prom;
-                        $product->save();
-                        Inventories::create([
-                            'type' => 'Income',
-                            'id_transaction' => $income->id,
-                            'id_warehouse' => $request->select_warehouse,
-                            'id_item' =>  $id_item,
-                            'id_size' => $size,
-                            'id_color' => $color,
-                            'price' => $request->price[$i],
-                            'cost' => $cost_prom,
-                            'qty' => $request->qty[$i]
-                        ]);
+                    // // Actualizar objeto $itemRepetido
+                    // if (!isset($resultados[$id_item])) {
+                    //     $resultados[$id_item] = [
+                    //         'qty' => $qty,
+                    //         'lastId_movementItem' => $conexion->lastInsertId()
+                    //     ];
+                    // } else {
+                    //     $itemRepetido->id_item[] = $id_item;
+                    //     $itemRepetido->lastId_movementItem[] = $resultados[$id_item]['lastId_movementItem'];
+                    //     $itemRepetido->qty[] = $qty;
+                    // }
                 }
-                        
-            }
+            }   
+            return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
     
-                $document_number = DocumentNumbers::where('type', 'Incomes')->first();
-                $number = intval($sales_number) + 1;
-                $document_number->number = $number;
-                $document_number->save();
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
 
-                return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
-        }
+        // if($request->mov_transaction == 1){
+        //     do {
+        //         $if_exists = Expenditures::where('number', $secuencial)->exists();
+        //         if($if_exists == 1){  
+        //             $number = intval($secuencial);     
+        //             $number += 1;
+        //             $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
+        //             $sales_number = $secuencial;
+        //         }
+        //         else {
+        //             $sales_number = $secuencial;
+        //         }
+    
+        //     } while ($if_exists == 1);
+
+        //     $expenditure = Expenditures::firstOrCreate([
+        //         'id_warehouse' => $request->select_warehouse,
+        //         'number' => $sales_number,
+        //         'date' => $request->date,
+        //         'comments' => $request->comments,
+        //         'total' => $total
+        //     ]);
+
+        //     $count = count($request->items);
+        //     $index = 0;
+        //     for ($i=0; $i < $count; $i++) { 
+            
+        //             if ($request->items[$i] != null) {
+        //                 $size = null;
+        //                 $color = null;
+        
+        //                 if(isset($request->select_size[$index])){
+        //                     $size = $request->select_size[$index];
+        //                 }
+        
+        //                 if (isset($request->select_color[$index])) {
+        //                     $color = $request->select_color[$index];
+        //                 }
+                        
+        //                 $type =  Products::where('item_name', $request->items[$i])->value('id_type');
+        //                 if ($type == 4) {
+        //                     $id_item = Products::where('item_name', $request->items[$i])->value('id');
+        //                     if(!$id_item){
+        //                         $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
+        //                     }                            
+        //                     $items_production = AssamblyItems::where('id_item_main', $id_item)->get();
+        
+        //                     $items = ExpendituresItems::create([
+        //                         'id_expenditure' => $expenditure->id,
+        //                         'id_warehouse' => $request->select_warehouse,
+        //                         'id_item' => $id_item,
+        //                         'id_size' => $size,
+        //                         'id_color' => $color,
+        //                         'qty' => $request->qty[$i],
+        //                         'unit' => $request->unit[$i],
+        //                         'cost' => $request->price[$i],
+        //                     ]);
+
+        //                     //Actualiza el stock en el balance del producto.
+        //                     if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
+        //                         $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
+        //                         $warehouse_balance_item->qty_balance -= $request->qty[$i];
+        //                         $warehouse_balance_item->save();
+        //                     }
+        //                     else{
+        //                         $warehouse_balance_item = Products_Warehouses::create([
+        //                             'id_item'=>$id_item,
+        //                             'id_warehouse'=>$request->select_warehouse,
+        //                             'qty_balance'=>$request->qty[$i]
+        //                         ]);
+        //                     }
+                            
+        //                     foreach ($items_production as $itm) {
+        //                         $id_unit = Products::where('id', $itm->id_item)->value('id_unit_measure');
+        //                         $unit = UnitMeasure::where('id', $id_unit)->value('abbreviation');
+        //                         $cost = Products::where('id', $itm->id_item)->value('cost_avg');
+
+        //                         $response=Products::where('id',$itm->id_item)->first();
+        //                         $response->qty  -= $itm->qty;
+        //                         $response->save();
+
+        //                         Inventories::create([
+        //                             'type' => 'Discharge',
+        //                             'id_transaction' => $expenditure->id,
+        //                             'id_warehouse' => $request->select_warehouse,
+        //                             'id_item' => $itm->id_item,
+        //                             'id_size' => $size,
+        //                             'id_color' => $color,
+        //                             'cost' => $cost,
+        //                             'qty' => $itm->qty
+        //                         ]);    
+                            
+        //                         $index++;
+        //                     }
+        //                 } 
+        //                 else {
+
+        //                     $id_item = Products::where('item_name', $request->items[$i])->value('id');
+
+        //                     if(!$id_item){
+        //                         $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
+        //                     }
+        //                     $items = ExpendituresItems::create([
+        //                         'id_expenditure' => $expenditure->id,
+        //                         'id_warehouse' => $request->select_warehouse,
+        //                         'id_item' => $id_item,
+        //                         'id_size' => $size,
+        //                         'id_color' => $color,
+        //                         'qty' => $request->qty[$i],
+        //                         'unit' => $request->unit[$i],
+        //                         'cost' => $request->price[$i],
+        //                     ]);
+
+        //                     $response=Products::where('id',$id_item)->first();
+        //                     $response->qty  -= $request->qty[$i];
+        //                     $response->save();
+
+        //                       //Actualiza el stock en el balance del producto.
+        //                     if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
+        //                         $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
+        //                         $warehouse_balance_item->qty_balance -= $request->qty[$i];
+        //                         $warehouse_balance_item->save();
+        //                     }
+        //                     else{
+        //                         $warehouse_balance_item = Products_Warehouses::create([
+        //                             'id_item'=>$id_item,
+        //                             'id_warehouse'=>$request->select_warehouse,
+        //                             'qty_balance'=>$request->qty[$i]
+        //                         ]);
+        //                     }
+                            
+
+        //                     Inventories::create([
+        //                         'type' => 'Discharge',
+        //                         'id_transaction' => $expenditure->id,
+        //                         'id_warehouse' => $request->select_warehouse,
+        //                         'id_item' =>  $id_item,
+        //                         'id_size' => $size,
+        //                         'id_color' => $color,
+        //                         'cost' => Products::where('item_name', $request->items[$i])->value('cost_avg'),
+        //                         'price' => $request->price[$i],
+        //                         'qty' => $request->qty[$i]
+        //                     ]);
+        //                     $index++;
+        //                 }
+        //             }
+                        
+        //     }
+    
+        //         $document_number = DocumentNumbers::where('type', 'Discharges')->first();
+        //         $number = intval($sales_number) + 1;
+        //         $document_number->number = $number;
+        //         $document_number->save();
+
+        //         return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
+        // }
+        // else{
+            
+        //     do {
+        //         $if_exists = Incomes::where('number', $secuencial)->exists();
+        //         if($if_exists == 1){  
+        //             $number = intval($secuencial);     
+        //             $number += 1;
+        //             $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
+        //             $sales_number = $secuencial;
+        //         }
+        //         else {
+        //             $sales_number = $secuencial;
+        //         }
+                    
+        //     } while ($if_exists == 1);
+
+        //     $income = Incomes::firstOrCreate([
+        //         'id_warehouse' => $request->select_warehouse,
+        //         'number' => $sales_number,
+        //         'date' => $request->date,
+        //         'comments' => $request->comments,
+        //         'total' => $total
+        //     ]);
+        //     $index = 0;
+        //     $count = count($request->items);
+        //     for ($i=0; $i < $count; $i++) { 
+                
+        //         if ($request->items[$i] != null) {
+        //                 $size = null;
+        //                 $color = null;
+        
+        //                 if(isset($request->select_size[$index])){
+        //                     $size = $request->select_size[$index];
+        //                 }
+        
+        //                 if (isset($request->select_color[$index])) {
+        //                     $color = $request->select_color[$index];
+        //                 }
+                        
+        //                 $id_item = Products::where('item_name', $request->items[$i])->value('id');
+        //                 if(!$id_item){
+        //                     $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
+        //                 }
+
+        //                 $items = IncomesItems::create([
+        //                     'id_income' => $income->id,
+        //                     'id_warehouse' => $request->select_warehouse,
+        //                     'id_item' => $id_item,
+        //                     'id_size' => $size,
+        //                     'id_color' => $color,
+        //                     'qty' => $request->qty[$i],
+        //                     'unit' => $request->unit[$i],
+        //                     'cost' => $request->price[$i],
+        //                 ]);
+        //                 $response=Products::where('id',$id_item)->first();
+
+        //                 //Actualiza el stock en el balance del producto.
+        //                 if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
+        //                     $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
+        //                     $warehouse_balance_item->qty_balance += $request->qty[$i];
+        //                     $warehouse_balance_item->save();
+        //                 }
+        //                 else{
+        //                     $warehouse_balance_item = Products_Warehouses::create([
+        //                         'id_item'=>$id_item,
+        //                         'id_warehouse'=>$request->select_warehouse,
+        //                         'qty_balance'=>$request->qty[$i]
+        //                     ]);
+        //                 }
+                        
+        //                 $qty_total = $response->qty+$request->qty[$i];
+        //                 if ($qty_total==0) {
+        //                     $cost_prom=0;
+        //                     Transactions::create([
+        //                         'number' => $sales_number,
+        //                         'type' => 'Income', 
+        //                         'date' => $request->date
+        //                     ]);
+        //                 }
+        //                 else{$cost_prom=(($response->cost_avg*$response->qty)+($request->qty[$i]*$request->price[$i]))/($qty_total);
+        //                 }
+                        
+        //                 $response->qty  += $request->qty[$i];
+        //                 $response->save();
+
+        //                 $product = Products::where('item_name', $request->items[$i])->first();
+        //                 $product->cost = $request->price[$i];
+        //                 $product->cost_avg = $cost_prom;
+        //                 $product->save();
+        //                 Inventories::create([
+        //                     'type' => 'Income',
+        //                     'id_transaction' => $income->id,
+        //                     'id_warehouse' => $request->select_warehouse,
+        //                     'id_item' =>  $id_item,
+        //                     'id_size' => $size,
+        //                     'id_color' => $color,
+        //                     'price' => $request->price[$i],
+        //                     'cost' => $cost_prom,
+        //                     'qty' => $request->qty[$i]
+        //                 ]);
+        //         }
+                        
+        //     }
+    
+        //         $document_number = DocumentNumbers::where('type', 'Incomes')->first();
+        //         $number = intval($sales_number) + 1;
+        //         $document_number->number = $number;
+        //         $document_number->save();
+
+        //         return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
+        // }
 
 
     }

@@ -103,7 +103,7 @@
                 },
                 success : function(data){
                     console.log(data)
-                    if(data == 1){
+                    if(data){
                         window.location.href = '/movements/create';
                     }else{
                         Swal.fire({

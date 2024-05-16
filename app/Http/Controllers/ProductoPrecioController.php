@@ -192,6 +192,8 @@ class ProductoPrecioController extends Controller
         $p_impuestos = Impuesto::all(); 
         
         $fechaActual = Carbon::now()->toDateString(); 
+        
+        //return $fechaActual;
         $impuestoActual = Impuesto::where('desde', '<=', $fechaActual)
                                 ->where('hasta', '>=', $fechaActual)
                                 ->first();
@@ -396,6 +398,23 @@ class ProductoPrecioController extends Controller
                             $stmtPrice->execute();
                         }
                     }
+
+                    $year = Carbon::now()->year;
+                    $qty = 0;
+                    $cost = 0;
+                    for($month = 1; $month <= 12 ; $month ++){
+                        $sql = "INSERT INTO product_balances (id_item, year, month, qty, cost)
+                        VALUES (:id_item, :year, :month, :qty, :cost)";
+                        
+                        $stmtPrice = $db->prepare($sql);
+                        $stmtPrice->bindParam(':id_item', $lastInsertedId, \PDO::PARAM_INT);
+                        $stmtPrice->bindParam(':year', $year, \PDO::PARAM_INT);
+                        $stmtPrice->bindParam(':month', $month, \PDO::PARAM_STR);
+                        $stmtPrice->bindParam(':qty', $qty, \PDO::PARAM_STR);
+                        $stmtPrice->bindParam(':cost', $cost, \PDO::PARAM_STR);
+            
+                        $stmtPrice->execute();
+                    }
                 }
             }
             
@@ -458,11 +477,8 @@ class ProductoPrecioController extends Controller
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
             $sql = "DELETE FROM products WHERE id = :id";
-            // Preparar la consulta
             $stmt = $db->prepare($sql);
-            // Vincular el valor del ID
             $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-            // Ejecutar la consulta
             $stmt->execute();
 
 
@@ -470,6 +486,12 @@ class ProductoPrecioController extends Controller
             $stmt2 = $db->prepare($sql2);
             $stmt2->bindParam(':id', $id, \PDO::PARAM_INT);
             $stmt2->execute();
+
+            $sql3= "DELETE FROM product_balances WHERE id_item = :id";
+            $stmt3 = $db->prepare($sql3);
+            $stmt3->bindParam(':id', $id, \PDO::PARAM_INT);
+            $stmt3->execute();
+
             
             return response()->json(['success' => true, 'message' => 'El registro se eliminó correctamente']);
             //return redirect()->route('productoPrecio.index');
