@@ -225,7 +225,7 @@
 
         let itemData = items.find(item => item.bar_code === code);
         if (itemData) {
-            // Verificar si el código del producto ya está presente en la tabla
+
             $('table tbody tr').each(function(index) {
                 if ($(this)[0] !== tr[0]) {
                     let existingValue = $(this).find('#items').val().trim();
@@ -241,13 +241,14 @@
                 Swal.fire({
                     title: "Error",
                     text: "Ya existe este producto en la tabla",
-                    icon: "question"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        firstDuplicateRow.find('#items').val(''); // Limpiar el campo de entrada en la fila duplicada
-                        $('table tbody tr').eq(duplicateRowIndex).find('#items').focus(); // Establecer foco en el campo de entrada en la fila duplicada
-                    }
-                });
+                    icon: "question",
+                })
+
+                tr.find('#items').val('');
+                var qty = firstDuplicateRow.find('#qty').val();  
+                firstDuplicateRow.find('#qty').val((parseInt(qty)+1));   
+                
+
             } else {
                 let url = "/operations/item/code/" + itemData.id;
                 $.ajax({
@@ -275,6 +276,7 @@
                     }
                 });
             }
+            
         } else {
             Swal.fire({
                 title: "Error",
@@ -287,7 +289,6 @@
                 }
             });
         }
-
 
         // if (firstDuplicateRow) {
         //     Swal.fire({
