@@ -20,6 +20,7 @@ use App\Models\Products_Warehouses;
 use App\Models\Warehouses;
 use App\Models\Transactions;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 
 class MovementsController extends Controller
@@ -88,26 +89,28 @@ class MovementsController extends Controller
             $consulta = "SELECT * FROM products WHERE is_active = 1";
             $consulta2 = "SELECT * FROM item_types WHERE id = 2";
             $consulta3 = "SELECT * FROM warehouses WHERE is_active = 1";
-            $consulta4 = "SELECT number FROM document_numbers WHERE type = 'Discharges' ";
-            $consulta5 = "SELECT number FROM document_numbers WHERE type = 'Incomes' ";
-
+            $consulta4 = "SELECT * FROM document_numbers";
+            // $consulta4 = "SELECT number FROM document_numbers WHERE type = 'Egreso'";
+            // $consulta5 = "SELECT number FROM document_numbers WHERE type = 'Ingreso'";
             
             $result= $conexion->query($consulta);
             $result2= $conexion->query($consulta2);
             $result3= $conexion->query($consulta3);
             $result4= $conexion->query($consulta4);
-            $result5= $conexion->query($consulta5);
+            // $result5= $conexion->query($consulta5);
 
             $items = $result->fetchAll(\PDO::FETCH_ASSOC);
-            $types = $result2->fetchAll(\PDO::FETCH_ASSOC);
-            $warehouses =  $result3->fetchAll(\PDO::FETCH_ASSOC);
-            $order_numberD = $result4->fetchAll(\PDO::FETCH_ASSOC);
-            $order_numberI = $result5->fetchAll(\PDO::FETCH_ASSOC); 
+            //$types = $result2->fetchAll(\PDO::FETCH_ASSOC);
+            $warehouses = $result3->fetchAll(\PDO::FETCH_ASSOC);
+            $document_numbers =  $result4->fetchAll(\PDO::FETCH_ASSOC);
+            // $order_numberD = $result4->fetchAll(\PDO::FETCH_ASSOC);
+            // $order_numberI = $result5->fetchAll(\PDO::FETCH_ASSOC); 
 
-            //return  $items;
+            //return  $document_numbers;
             //return $order_numberD[0]['number']; 
 
-            return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'types', 'warehouses'));
+            // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'warehouses'));
+            return view('movements.create', compact('items', 'document_numbers', 'warehouses'));
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
@@ -129,47 +132,68 @@ class MovementsController extends Controller
         $usuario = "root";
         $contrasena = "";
         try{
-
             $length = 9;
-            $total = "";
             $total = str_replace("$", " ", $request->order_total);
             $total = str_replace(",", "", $total);
             $secuencial = $request->number;
             $mov_transac = $request->mov_transaction;
-            if($mov_transac == 1){
-                $mov_transac = "Ingreso" ;
-            }else{
-                $mov_transac = "Egreso" ;
-            }
-            
-            $sales_number = "";
-            $if_exists = 0;
+            $mov_transac_str = '';
+
             $conexion = new \PDO($dsn, $usuario, $contrasena);
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            do {
 
-                $consulta = "SELECT COUNT(*) AS count FROM movements WHERE number = :number";
-                $stmt = $conexion->prepare($consulta);
-                $stmt->bindParam(':number', $secuencial, \PDO::PARAM_STR);
-                $stmt->execute();
-                $if_exists = $stmt->fetchColumn();
-            
-                if ($if_exists == 1) {  
-                    $number = intval($secuencial);     
-                    $number += 1;
-                    $secuencial = str_pad($number, $length, "0", STR_PAD_LEFT);
-                    $sales_number = $secuencial;
-                } else {
-                    $sales_number = $secuencial;
-                }
-            } while ($if_exists == 1);
+
+            $mov_transac_str = ($mov_transac == 3) ? "Egreso" : "Ingreso";
+
+            // Función para obtener un número secuencial único
+            function getUniqueSecuencial($conexion, $secuencial, $length, $mov_transac_str) {
+                do {
+                    $consulta = "SELECT COUNT(*) AS count FROM movements WHERE number = :number AND tipo = :mov_transac";
+                    $stmt = $conexion->prepare($consulta);
+                    $stmt->bindParam(':number', $secuencial, \PDO::PARAM_STR);
+                    $stmt->bindParam(':mov_transac', $mov_transac_str, \PDO::PARAM_STR);
+                    $stmt->execute();
+                    $if_exists = $stmt->fetchColumn();
+        
+                    if ($if_exists == 1) {
+                        $number = intval($secuencial);     
+                        $number += 1;
+                        $secuencial = str_pad($number, $length, "0", STR_PAD_LEFT);
+                    }
+                } while ($if_exists == 1);
+        
+                return $secuencial;
+            }
+        
+            // Llamada a la función para obtener un número único
+            $sales_number = getUniqueSecuencial($conexion, $secuencial, $length, $mov_transac_str);
+        
+            // Obtener el valor entero del número secuencial final para actualizarlo
+            $final_number = intval($sales_number) + 1;
+        
+            // Actualiza el número en la tabla document_numbers
+            $consulta2 = "UPDATE document_numbers SET number = :final_number WHERE type = :mov_transac_str";
+            $stmt2 = $conexion->prepare($consulta2);
+            $stmt2->bindParam(':final_number', $final_number, \PDO::PARAM_INT);
+            $stmt2->bindParam(':mov_transac_str', $mov_transac_str, \PDO::PARAM_STR);
+            $stmt2->execute();
+
+            $fechaActual = Carbon::now()->toDateString(); 
+            $fechaPartsActual = explode('-', $fechaActual);
+            $yearActual = $fechaPartsActual[0]; //Year
+            $monthActual = $fechaPartsActual[1]; // Mes
 
             $comments = $request->comments ?? null;
             $date = $request->date;
+            $formatoFecha = explode('-', $date);
+            $year = $formatoFecha[0];
+            $month = $formatoFecha[1];
+
+            
 
             $consulta = "INSERT INTO movements (number, comments, date, total, tipo) VALUES (:number, :comments, :date, :total, :tipo)";
             $stmt = $conexion->prepare($consulta);
-            $stmt->bindParam(':number', $sales_number, \PDO::PARAM_INT);
+            $stmt->bindParam(':number', $sales_number, \PDO::PARAM_STR);
             $stmt->bindParam(':comments', $comments, \PDO::PARAM_STR);
             $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
             $stmt->bindParam(':total', $total, \PDO::PARAM_STR);
@@ -177,52 +201,109 @@ class MovementsController extends Controller
             $stmt->execute();
 
             $lastId_movements = $conexion->lastInsertId();
-
             $id_movement = intval($lastId_movements);
+            //return $id_movement;
 
-            // Preparar consulta SQL para insertar o actualizar elementos de la factura
-
-            $sql_insert_update_item = "INSERT INTO movements_items (id_movement, id_item, qty, unit, cost) 
+            // Preparar consulta SQL para insertar o actualizar elementos de movimientos
+            $sql_insert_item = "INSERT INTO movements_items (id_movement, id_item, qty, unit, cost) 
                             VALUES (:id_movement, :id_item, :qty, :unit, :cost)";
+            $stmt_insert_item = $conexion->prepare($sql_insert_item);           
+            
+            // Preparar consulta SQL para insertar o actualizar elementos de product balance
+            $sql_get_future_costs = " SELECT cost, qty, avg_cost 
+                FROM product_balances 
+                WHERE id_item = :id_item 
+                AND year = :year 
+                AND month = :month";
 
+            $stmt_get_future_costs = $conexion->prepare($sql_get_future_costs);
             
-            $stmt_insert_update_item = $conexion->prepare($sql_insert_update_item);           
-            
+            $sql_insert_inventories = "INSERT INTO inventories (type, date, id_transaction, id_item, cost, price, qty) 
+            VALUES (:mov_transac_str, :date, :id_transaction, :id_item, :cost, :price, :qty)";
+            $stmt_insert_inventories = $conexion->prepare($sql_insert_inventories);
+
+
+            $precio_neto=0;
             foreach ($request->items as $index => $item) {
-                
                 if ($item !== null) {  
-        
                     $id_item = intval($item) ?? 0;
                     $qty = intval($request->qty[$index]) ?? 0;
                     $unit = $request->unit[$index] ?? 0;
                     $cost = $request->price[$index] ?? 0;
+    
+                    // Ejecutar consulta para insertar elementos del movimiento
+                    $stmt_insert_item->bindParam(':id_movement', $id_movement, \PDO::PARAM_INT);
+                    $stmt_insert_item->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_insert_item->bindParam(':qty', $qty, \PDO::PARAM_INT);
+                    $stmt_insert_item->bindParam(':unit', $unit, \PDO::PARAM_STR);
+                    $stmt_insert_item->bindParam(':cost', $cost, \PDO::PARAM_STR); 
+                    $stmt_insert_item->execute();
 
-                    // Ejecutar consulta para insertar o actualizar elementos de la factura
-                    $stmt_insert_update_item->bindParam(':id_movement', $id_movement, \PDO::PARAM_INT);
-                    $stmt_insert_update_item->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
-                    $stmt_insert_update_item->bindParam(':qty', $qty, \PDO::PARAM_INT);
-                    $stmt_insert_update_item->bindParam(':unit', $unit, \PDO::PARAM_STR);
-                    $stmt_insert_update_item->bindParam(':cost', $cost, \PDO::PARAM_STR);
-                    
-                    $stmt_insert_update_item->execute();
-                    //var_dump($stmt_insert_update_item->execute());
-                    // // Guardar detalles del producto
-                    // $detalles[$id_item] = [
-                    //     'codigo' => $id_item,
-                    //     'qty' => $qty,
-                    // ];
+                    $stmt_get_future_costs->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_get_future_costs->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_get_future_costs->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_get_future_costs->execute();
 
-                    // // Actualizar objeto $itemRepetido
-                    // if (!isset($resultados[$id_item])) {
-                    //     $resultados[$id_item] = [
-                    //         'qty' => $qty,
-                    //         'lastId_movementItem' => $conexion->lastInsertId()
-                    //     ];
-                    // } else {
-                    //     $itemRepetido->id_item[] = $id_item;
-                    //     $itemRepetido->lastId_movementItem[] = $resultados[$id_item]['lastId_movementItem'];
-                    //     $itemRepetido->qty[] = $qty;
-                    // }
+                    $stmt_insert_inventories->bindParam(':mov_transac_str', $mov_transac_str, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':date', $date, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':id_transaction', $id_movement, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':id_item', $id_item, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':cost', $cost, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':price', $precio_neto, \PDO::PARAM_STR);
+                    $stmt_insert_inventories->bindParam(':qty', $qty, \PDO::PARAM_INT);
+                    $stmt_insert_inventories->execute();
+
+                    $futureCosts = $stmt_get_future_costs->fetch(\PDO::FETCH_ASSOC);
+
+                    $averageCost = 0;
+                    $totalQty = 0;
+                    $totalCost = 0;
+
+                    if ($mov_transac == 3) {
+                        $totalQty = $futureCosts['qty'] - $qty;
+                        $averageCost = $futureCosts['avg_cost'];
+
+                        $totalCost = $averageCost * $totalQty;                
+                        
+                    }
+                    else{
+                        $totalQty = $futureCosts['qty'] + $qty ;
+                        $totalCost = $futureCosts['cost'] + ($cost * $qty);
+                        $averageCost = $totalCost / $totalQty;
+
+                    }
+
+                    $sql_update_productBalance = "UPDATE product_balances 
+                        SET qty = :totalQty, cost = :totalCost , avg_cost = :averageCost
+                        WHERE id_item = :id_item 
+                        AND year = :year 
+                        AND month = :month";
+                        
+        
+                    $stmt_update_productBalance = $conexion->prepare($sql_update_productBalance);
+                    $stmt_update_productBalance->bindParam(':totalQty', $totalQty, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->bindParam(':totalCost', $totalCost, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':averageCost', $averageCost, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->execute();
+
+                    $sql_update_futureMonths = "UPDATE product_balances 
+                        SET qty = :totalQty, cost = :totalCost, avg_cost = :averageCost
+                        WHERE id_item = :id_item 
+                        AND year = :year 
+                        AND month > :month ";
+
+                    $stmt_update_future_productBalance = $conexion->prepare($sql_update_futureMonths);
+                    $stmt_update_future_productBalance->bindParam(':totalQty', $totalQty, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->bindParam(':totalCost', $totalCost, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':averageCost', $averageCost, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->execute();
+
                 }
             }   
             return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
@@ -230,276 +311,6 @@ class MovementsController extends Controller
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         } 
-
-        // if($request->mov_transaction == 1){
-        //     do {
-        //         $if_exists = Expenditures::where('number', $secuencial)->exists();
-        //         if($if_exists == 1){  
-        //             $number = intval($secuencial);     
-        //             $number += 1;
-        //             $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
-        //             $sales_number = $secuencial;
-        //         }
-        //         else {
-        //             $sales_number = $secuencial;
-        //         }
-    
-        //     } while ($if_exists == 1);
-
-        //     $expenditure = Expenditures::firstOrCreate([
-        //         'id_warehouse' => $request->select_warehouse,
-        //         'number' => $sales_number,
-        //         'date' => $request->date,
-        //         'comments' => $request->comments,
-        //         'total' => $total
-        //     ]);
-
-        //     $count = count($request->items);
-        //     $index = 0;
-        //     for ($i=0; $i < $count; $i++) { 
-            
-        //             if ($request->items[$i] != null) {
-        //                 $size = null;
-        //                 $color = null;
-        
-        //                 if(isset($request->select_size[$index])){
-        //                     $size = $request->select_size[$index];
-        //                 }
-        
-        //                 if (isset($request->select_color[$index])) {
-        //                     $color = $request->select_color[$index];
-        //                 }
-                        
-        //                 $type =  Products::where('item_name', $request->items[$i])->value('id_type');
-        //                 if ($type == 4) {
-        //                     $id_item = Products::where('item_name', $request->items[$i])->value('id');
-        //                     if(!$id_item){
-        //                         $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-        //                     }                            
-        //                     $items_production = AssamblyItems::where('id_item_main', $id_item)->get();
-        
-        //                     $items = ExpendituresItems::create([
-        //                         'id_expenditure' => $expenditure->id,
-        //                         'id_warehouse' => $request->select_warehouse,
-        //                         'id_item' => $id_item,
-        //                         'id_size' => $size,
-        //                         'id_color' => $color,
-        //                         'qty' => $request->qty[$i],
-        //                         'unit' => $request->unit[$i],
-        //                         'cost' => $request->price[$i],
-        //                     ]);
-
-        //                     //Actualiza el stock en el balance del producto.
-        //                     if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-        //                         $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-        //                         $warehouse_balance_item->qty_balance -= $request->qty[$i];
-        //                         $warehouse_balance_item->save();
-        //                     }
-        //                     else{
-        //                         $warehouse_balance_item = Products_Warehouses::create([
-        //                             'id_item'=>$id_item,
-        //                             'id_warehouse'=>$request->select_warehouse,
-        //                             'qty_balance'=>$request->qty[$i]
-        //                         ]);
-        //                     }
-                            
-        //                     foreach ($items_production as $itm) {
-        //                         $id_unit = Products::where('id', $itm->id_item)->value('id_unit_measure');
-        //                         $unit = UnitMeasure::where('id', $id_unit)->value('abbreviation');
-        //                         $cost = Products::where('id', $itm->id_item)->value('cost_avg');
-
-        //                         $response=Products::where('id',$itm->id_item)->first();
-        //                         $response->qty  -= $itm->qty;
-        //                         $response->save();
-
-        //                         Inventories::create([
-        //                             'type' => 'Discharge',
-        //                             'id_transaction' => $expenditure->id,
-        //                             'id_warehouse' => $request->select_warehouse,
-        //                             'id_item' => $itm->id_item,
-        //                             'id_size' => $size,
-        //                             'id_color' => $color,
-        //                             'cost' => $cost,
-        //                             'qty' => $itm->qty
-        //                         ]);    
-                            
-        //                         $index++;
-        //                     }
-        //                 } 
-        //                 else {
-
-        //                     $id_item = Products::where('item_name', $request->items[$i])->value('id');
-
-        //                     if(!$id_item){
-        //                         $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-        //                     }
-        //                     $items = ExpendituresItems::create([
-        //                         'id_expenditure' => $expenditure->id,
-        //                         'id_warehouse' => $request->select_warehouse,
-        //                         'id_item' => $id_item,
-        //                         'id_size' => $size,
-        //                         'id_color' => $color,
-        //                         'qty' => $request->qty[$i],
-        //                         'unit' => $request->unit[$i],
-        //                         'cost' => $request->price[$i],
-        //                     ]);
-
-        //                     $response=Products::where('id',$id_item)->first();
-        //                     $response->qty  -= $request->qty[$i];
-        //                     $response->save();
-
-        //                       //Actualiza el stock en el balance del producto.
-        //                     if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-        //                         $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-        //                         $warehouse_balance_item->qty_balance -= $request->qty[$i];
-        //                         $warehouse_balance_item->save();
-        //                     }
-        //                     else{
-        //                         $warehouse_balance_item = Products_Warehouses::create([
-        //                             'id_item'=>$id_item,
-        //                             'id_warehouse'=>$request->select_warehouse,
-        //                             'qty_balance'=>$request->qty[$i]
-        //                         ]);
-        //                     }
-                            
-
-        //                     Inventories::create([
-        //                         'type' => 'Discharge',
-        //                         'id_transaction' => $expenditure->id,
-        //                         'id_warehouse' => $request->select_warehouse,
-        //                         'id_item' =>  $id_item,
-        //                         'id_size' => $size,
-        //                         'id_color' => $color,
-        //                         'cost' => Products::where('item_name', $request->items[$i])->value('cost_avg'),
-        //                         'price' => $request->price[$i],
-        //                         'qty' => $request->qty[$i]
-        //                     ]);
-        //                     $index++;
-        //                 }
-        //             }
-                        
-        //     }
-    
-        //         $document_number = DocumentNumbers::where('type', 'Discharges')->first();
-        //         $number = intval($sales_number) + 1;
-        //         $document_number->number = $number;
-        //         $document_number->save();
-
-        //         return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
-        // }
-        // else{
-            
-        //     do {
-        //         $if_exists = Incomes::where('number', $secuencial)->exists();
-        //         if($if_exists == 1){  
-        //             $number = intval($secuencial);     
-        //             $number += 1;
-        //             $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
-        //             $sales_number = $secuencial;
-        //         }
-        //         else {
-        //             $sales_number = $secuencial;
-        //         }
-                    
-        //     } while ($if_exists == 1);
-
-        //     $income = Incomes::firstOrCreate([
-        //         'id_warehouse' => $request->select_warehouse,
-        //         'number' => $sales_number,
-        //         'date' => $request->date,
-        //         'comments' => $request->comments,
-        //         'total' => $total
-        //     ]);
-        //     $index = 0;
-        //     $count = count($request->items);
-        //     for ($i=0; $i < $count; $i++) { 
-                
-        //         if ($request->items[$i] != null) {
-        //                 $size = null;
-        //                 $color = null;
-        
-        //                 if(isset($request->select_size[$index])){
-        //                     $size = $request->select_size[$index];
-        //                 }
-        
-        //                 if (isset($request->select_color[$index])) {
-        //                     $color = $request->select_color[$index];
-        //                 }
-                        
-        //                 $id_item = Products::where('item_name', $request->items[$i])->value('id');
-        //                 if(!$id_item){
-        //                     $id_item = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-        //                 }
-
-        //                 $items = IncomesItems::create([
-        //                     'id_income' => $income->id,
-        //                     'id_warehouse' => $request->select_warehouse,
-        //                     'id_item' => $id_item,
-        //                     'id_size' => $size,
-        //                     'id_color' => $color,
-        //                     'qty' => $request->qty[$i],
-        //                     'unit' => $request->unit[$i],
-        //                     'cost' => $request->price[$i],
-        //                 ]);
-        //                 $response=Products::where('id',$id_item)->first();
-
-        //                 //Actualiza el stock en el balance del producto.
-        //                 if(Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->exists()){
-        //                     $warehouse_balance_item = Products_Warehouses::where('id_item', $id_item)->where('id_warehouse', $request->select_warehouse)->first();
-        //                     $warehouse_balance_item->qty_balance += $request->qty[$i];
-        //                     $warehouse_balance_item->save();
-        //                 }
-        //                 else{
-        //                     $warehouse_balance_item = Products_Warehouses::create([
-        //                         'id_item'=>$id_item,
-        //                         'id_warehouse'=>$request->select_warehouse,
-        //                         'qty_balance'=>$request->qty[$i]
-        //                     ]);
-        //                 }
-                        
-        //                 $qty_total = $response->qty+$request->qty[$i];
-        //                 if ($qty_total==0) {
-        //                     $cost_prom=0;
-        //                     Transactions::create([
-        //                         'number' => $sales_number,
-        //                         'type' => 'Income', 
-        //                         'date' => $request->date
-        //                     ]);
-        //                 }
-        //                 else{$cost_prom=(($response->cost_avg*$response->qty)+($request->qty[$i]*$request->price[$i]))/($qty_total);
-        //                 }
-                        
-        //                 $response->qty  += $request->qty[$i];
-        //                 $response->save();
-
-        //                 $product = Products::where('item_name', $request->items[$i])->first();
-        //                 $product->cost = $request->price[$i];
-        //                 $product->cost_avg = $cost_prom;
-        //                 $product->save();
-        //                 Inventories::create([
-        //                     'type' => 'Income',
-        //                     'id_transaction' => $income->id,
-        //                     'id_warehouse' => $request->select_warehouse,
-        //                     'id_item' =>  $id_item,
-        //                     'id_size' => $size,
-        //                     'id_color' => $color,
-        //                     'price' => $request->price[$i],
-        //                     'cost' => $cost_prom,
-        //                     'qty' => $request->qty[$i]
-        //                 ]);
-        //         }
-                        
-        //     }
-    
-        //         $document_number = DocumentNumbers::where('type', 'Incomes')->first();
-        //         $number = intval($sales_number) + 1;
-        //         $document_number->number = $number;
-        //         $document_number->save();
-
-        //         return redirect()->route('movements.index')->with('info', 'A new record has been created')->send();
-        // }
-
-
     }
 
     /**

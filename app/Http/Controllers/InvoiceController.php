@@ -538,7 +538,7 @@ class InvoiceController extends Controller
             $month = $dateObject->format('m');
 
 
-            $sql_select_product_cost = "SELECT cost FROM product_balances WHERE id_item = :id_item AND year = :year AND month = :month";
+            $sql_select_product_cost = "SELECT avg_cost FROM product_balances WHERE id_item = :id_item AND year = :year AND month = :month";
             $stmt_select_product_cost = $db->prepare($sql_select_product_cost);
 
             $sql_select_product = "SELECT item_name FROM products WHERE id = :id_item";
@@ -546,17 +546,20 @@ class InvoiceController extends Controller
 
             // Preparar consulta SQL para insertar o actualizar elementos de la factura
             $sql_insert_update_item = "INSERT INTO invoices_items (id_invoice, id_item, qty, precio_neto, pvp, num_precio) 
-                                        VALUES (:id_invoice, :id_item, :qty, :precio_neto, :pvp, :num_precio)
-                                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty)";
+                                        VALUES (:id_invoice, :id_item, :qty, :precio_neto, :pvp, :num_precio)";
             $stmt_insert_update_item = $db->prepare($sql_insert_update_item);
 
             $sql_insert_inventories = "INSERT INTO inventories (type, date, id_transaction, id_item, cost, price, qty) 
-                                        VALUES (:type, :date, :id_transaction, :id_item, :cost, :price, :qty)
-                                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty)";
+                                        VALUES (:type, :date, :id_transaction, :id_item, :cost, :price, :qty)";
             $stmt_insert_inventories = $db->prepare($sql_insert_inventories);
 
-            $db->beginTransaction();
-            //return $request->items;
+             // Preparar consulta SQL para insertar o actualizar elementos de product balance
+            $sql_get_future_costs = " SELECT cost, qty, avg_cost 
+            FROM product_balances 
+            WHERE id_item = :id_item 
+            AND year = :year 
+            AND month = :month";
+            $stmt_get_future_costs = $db->prepare($sql_get_future_costs);
 
             
             foreach ($request->items as $index => $item) {
@@ -600,29 +603,56 @@ class InvoiceController extends Controller
                     $stmt_insert_inventories->bindParam(':qty', $qty, \PDO::PARAM_INT);
                     $stmt_insert_inventories->execute();
 
-                    // Guardar detalles del producto
-                    $detalles[$id_item] = [
-                        'codigo' => $id_item,
-                        'descripcion' => $item_name,
-                        'qty' => $qty,
-                        'precioUnitario' => floatval($precio_neto) / floatval($qty),
-                        'precioTotalSinImpuesto' => $precio_neto,
-                        'codigo_impuesto' => $impuesto->codigo_impuesto,
-                        'porcentaje' => $impuesto->porcentaje,
-                        'codigo_tarifa' =>  $impuesto->codigo_tarifa
-                    ];
+                    $stmt_get_future_costs->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_get_future_costs->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_get_future_costs->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_get_future_costs->execute();
 
-                    // Actualizar objeto $itemRepetido
-                    if (!isset($resultados[$id_item])) {
-                        $resultados[$id_item] = [
-                            'qty' => $qty,
-                            'lastId_invoiceItem' => $db->lastInsertId()
-                        ];
-                    } else {
-                        $itemRepetido->id_item[] = $id_item;
-                        $itemRepetido->lastId_invoiceItem[] = $resultados[$id_item]['lastId_invoiceItem'];
-                        $itemRepetido->qty[] = $qty;
-                    }
+                    $futureCosts = $stmt_get_future_costs->fetch(\PDO::FETCH_ASSOC);
+
+                    $averageCost = 0;
+                    $totalQty = 0;
+                    $totalCost = 0;
+
+                    $totalQty = $futureCosts['qty'] - $qty;
+                    $averageCost = $futureCosts['avg_cost'];
+
+                    $totalCost = $averageCost * $totalQty;                
+                        
+
+
+                    $sql_update_productBalance = "UPDATE product_balances 
+                        SET qty = :totalQty, cost = :totalCost , avg_cost = :averageCost
+                        WHERE id_item = :id_item 
+                        AND year = :year 
+                        AND month = :month";
+                        
+        
+                    $stmt_update_productBalance = $db->prepare($sql_update_productBalance);
+                    $stmt_update_productBalance->bindParam(':totalQty', $totalQty, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->bindParam(':totalCost', $totalCost, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':averageCost', $averageCost, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_update_productBalance->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_update_productBalance->execute();
+
+                    $sql_update_futureMonths = "UPDATE product_balances 
+                        SET qty = :totalQty, cost = :totalCost, avg_cost = :averageCost
+                        WHERE id_item = :id_item 
+                        AND year = :year 
+                        AND month > :month ";
+
+                    $stmt_update_future_productBalance = $db->prepare($sql_update_futureMonths);
+                    $stmt_update_future_productBalance->bindParam(':totalQty', $totalQty, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->bindParam(':totalCost', $totalCost, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':averageCost', $averageCost, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->bindParam(':year', $year, \PDO::PARAM_STR);
+                    $stmt_update_future_productBalance->bindParam(':month', $month, \PDO::PARAM_INT);
+                    $stmt_update_future_productBalance->execute();
+
+
                 }
             }      
             
@@ -756,7 +786,6 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        //return $id;
         $nombreBD = App::make('dataBase');
 
         $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
@@ -827,7 +856,6 @@ class InvoiceController extends Controller
             $statement->execute();
             $existeNC = $statement->fetch(\PDO::FETCH_ASSOC);
 
-            
             return view('invoices.show', compact('cabeceraInv', 'baseProductsInv', 'datosEmp', 'existeNC'));
             
         }catch (\PDOException $e) {

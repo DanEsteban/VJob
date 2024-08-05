@@ -452,8 +452,8 @@ class OperationController extends Controller
         return $product;
     }
 
-    public function getItemByCode($code){
-
+    public function getItemByCode($code, Request $request){
+        //return response()->json($request->date);
         $nombreBD = App::make('dataBase');
 
         try {
@@ -463,26 +463,47 @@ class OperationController extends Controller
             $p_impuestos = Impuesto::select('id', 'porcentaje')->get();
 
             $fechaActual = Carbon::now()->toDateString(); 
+            $fechaPartsActual = explode('-', $fechaActual);
+            $yearActual = $fechaPartsActual[0]; //Year
+            $monthActual = $fechaPartsActual[1]; // Mes
             $impuestoActual = Impuesto::where('desde', '<=', $fechaActual)
                                 ->where('hasta', '>=', $fechaActual)
                                 ->first();
+            $fechaMovement = $request->date;
+            
+            if($fechaMovement){
+                $fechaParts = explode('-', $fechaMovement);
+                $yearMov = $fechaParts[0]; // Año
+                $monthMov = $fechaParts[1]; // Mes
+                
+    
+                $consultaCosto = "SELECT * FROM product_balances WHERE id_item = :code AND year = :yearMov AND month = :monthMov ";
+    
+                $stmtC = $db->prepare($consultaCosto);
+                $stmtC->bindParam(':code', $code, \PDO::PARAM_INT);
+                $stmtC->bindParam(':yearMov', $yearMov, \PDO::PARAM_STR);
+                $stmtC->bindParam(':monthMov', $monthMov, \PDO::PARAM_STR);
+                $stmtC->execute();
+                $resultadoCosto = $stmtC->fetch(\PDO::FETCH_ASSOC);         
+    
+            }
+
 
             $consulta = "SELECT products.id, item_name, bar_code, si_iva, iva, unit_measures.abbreviation, num_precio, precio, precio_iva, desde, hasta
                         FROM products
                         LEFT JOIN price_products ON products.id = price_products.id_product
                         LEFT JOIN unit_measures ON products.id_unit_measure = unit_measures.id
                         -- WHERE products.id = :code OR bar_code = :code
-                        WHERE products.id = :code
-                        ORDER BY products.id DESC, price_products.num_precio DESC";
+                        WHERE products.id = :code ";
+                        // ORDER BY products.id DESC, price_products.num_precio DESC";
 
             $stmt = $db->prepare($consulta);
             $stmt->bindParam(':code', $code, \PDO::PARAM_INT);
             $stmt->execute();
             $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            $productos = [];
-            $porcentajeIva = null;
             
+            $productos = [];
+            $porcentajeIva = null;  
             $currentProduct = null;
 
             foreach ($resultados as $row) {
@@ -500,7 +521,6 @@ class OperationController extends Controller
                     }
                 }
                 
-
                 if ($currentProduct === null || $currentProduct['id'] !== $productId) {
                     if ($currentProduct !== null) {
                         $productos[] = $currentProduct;
@@ -512,6 +532,7 @@ class OperationController extends Controller
                         "iva" => $row['iva'],
                         "porcentajeIva" => $porcentajeIva,
                         "abbreviation" => $row['abbreviation'],
+                        "cost" => $resultadoCosto['avg_cost'] ?? 0,
                         "pvp1_neto" => null,
                         "pvp1" => null,
                         "cantidad2" => null,

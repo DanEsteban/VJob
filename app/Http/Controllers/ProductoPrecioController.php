@@ -402,16 +402,18 @@ class ProductoPrecioController extends Controller
                     $year = Carbon::now()->year;
                     $qty = 0;
                     $cost = 0;
+                    $avg_cost = 0;
                     for($month = 1; $month <= 12 ; $month ++){
-                        $sql = "INSERT INTO product_balances (id_item, year, month, qty, cost)
-                        VALUES (:id_item, :year, :month, :qty, :cost)";
+                        $sql = "INSERT INTO product_balances (id_item, year, month, qty, cost, avg_cost)
+                        VALUES (:id_item, :year, :month, :qty, :cost, :avg_cost)";
                         
                         $stmtPrice = $db->prepare($sql);
                         $stmtPrice->bindParam(':id_item', $lastInsertedId, \PDO::PARAM_INT);
                         $stmtPrice->bindParam(':year', $year, \PDO::PARAM_INT);
                         $stmtPrice->bindParam(':month', $month, \PDO::PARAM_STR);
-                        $stmtPrice->bindParam(':qty', $qty, \PDO::PARAM_STR);
+                        $stmtPrice->bindParam(':qty', $qty, \PDO::PARAM_INT);
                         $stmtPrice->bindParam(':cost', $cost, \PDO::PARAM_STR);
+                        $stmtPrice->bindParam(':cost', $avg_cost, \PDO::PARAM_STR);
             
                         $stmtPrice->execute();
                     }

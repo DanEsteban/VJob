@@ -42,7 +42,11 @@
                         @foreach ($movements as $mov)
                             <tr>
                                 <td role="button">{{ $mov['date']}} </td>
-                                <td role="button">{{ $mov['tipo']}} </td>
+                                @if ( $mov['tipo'] == 3)
+                                    <td role="button">Egreso</td>
+                                @elseif ($mov['tipo'] == 4)
+                                    <td role="button">Ingreso </td>
+                                @endif
                                 <td role="button">{{ $mov['number']}} </td>
                                 <td role="button">{{ $mov['total']}}</td>
                                 <td>

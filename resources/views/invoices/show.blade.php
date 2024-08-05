@@ -22,7 +22,6 @@
     //$fechaActual = 2024-01-31
     $fechaFormateada = Carbon::createFromFormat('Y-m-d', $fechaActual)->locale('es_ES')->isoFormat('dddd, D [de] MMMM [de] YYYY');
 
-    const porc_iva = 0.12;
 ?>
 
 
@@ -106,10 +105,10 @@
                         <?php foreach ($baseProductsInv as $item) : ?>
                             <tr>
                                 <td>
-                                    <input autocomplete="off" id="items" value="{{$item['id']}}" type="text" autocomplete="off" class="form-control form-control-sm" width="300px">
+                                    <input id="items" value="{{$item['id']}}" type="text" autocomplete="off" class="form-control form-control-sm">
                                 </td>
                                 <td>
-                                    <input autocomplete="off" id="description" value="{{$item['item_name']}}" type="text" autocomplete="off" class="form-control form-control-sm" width="300px">
+                                    <input id="description" value="{{$item['item_name']}}" type="text" autocomplete="off" class="form-control form-control-sm">
                                 </td>
                                 <td><input type="text" onchange="changeQty(this);" id="cantidad" value="{{$item['qty']}}" class="form-control form-control-sm"></td>
                                 <td><input type="text" id="pvp0_neto" value="{{number_format($item['precio_neto'], 2)}}" class="form-control form-control-sm" readonly></td>  

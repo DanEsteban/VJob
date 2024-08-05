@@ -95,7 +95,7 @@
                         <th hidden></th>
                         <th style="width: 1px;">IVA</th>
                         <th style="width: 20px;">Subtotal</th>
-                        <th hidden>Num.Precio</th>           
+                        <th hidden>Num.Precio</th>  
                     </thead>
                     <tbody id="tb_items">
                         <?php for ($i = 0; $i < 10; $i++) : ?>
@@ -107,7 +107,7 @@
                                     <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
                                     <datalist id="itemsList">
                                         @foreach ($items as $item)
-                                            <option value="{{$item['bar_code']}}"></option> 
+                                            <option value="{{$item['id']}}"></option> 
                                         @endforeach
                                     </datalist>
                                 </td>
@@ -250,7 +250,7 @@
             <!-- Modal -->
                 <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
                     <div class="modal-dialog modal-sm" role="document">
-                        <div class="modal-content rounded-5 shadow" style="width:700px;">
+                        <div class="modal-content rounded-5 shadow" style="width:530px;">
                             <div class="modal-header bg-primary" style="color: #fff;">
                                 <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
                                 <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
@@ -313,38 +313,40 @@
                                     </div>
                                 </div>
                                 <hr class="my-4">
-                                <table id="modal-tabla" class="table table-responsive" style="max-height: 350px;">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th hidden></th>
-                                            <th>Tipo Documento</th>
-                                            <th>Serie-Establ.</th>
-                                            <th>Secuencial</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($seriesFact as $key => $serie)
-                                            <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
-                                                <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
-                                                <td id="tipoDoc">{{$serie['nombre']}}</td>
-                                                <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
-                                                <td id="secuencial">{{$serie['secuencial']}}</td>
+                                <div class="table-responsive">
+                                    <table id="modal-tabla" class="table table-sm" style="width: 100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th hidden></th>
+                                                <th>Tipo Documento</th>
+                                                <th>Serie-Establ.</th>
+                                                <th>Secuencial</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($seriesFact as $key => $serie)
+                                                <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
+                                                    <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
+                                                    <td id="tipoDoc">{{$serie['nombre']}}</td>
+                                                    <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
+                                                    <td id="secuencial">{{$serie['secuencial']}}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                                 <div class="form-group row">
                                     <label class="col-form-label col-sm-2">Numero:</label>
                                     <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
                                     <?php foreach ($seriesFact as $elemento) { ?>
                                         <div class="col-sm-2">
-                                            <input id="serieNumero" name="serieNumero" type="text" class="form-control" value="{{$elemento['punto_emision']}}">
+                                            <input id="serieNumero" name="serieNumero" type="text" class="form-control mt-1" value="{{$elemento['punto_emision']}}">
                                         </div>
                                         <div class="col-sm-2">
-                                            <input id="estableNumero" name="estableNumero" type="text" class="form-control" value="{{$elemento['establecimiento']}}">
+                                            <input id="estableNumero" name="estableNumero" type="text" class="form-control mt-1" value="{{$elemento['establecimiento']}}">
                                         </div>
                                         <div class="col-sm-5">
-                                            <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
+                                            <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control mt-1" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
                                         </div>
                                         
                                     <?php break; } ?>
@@ -354,16 +356,16 @@
                                     <div class="form-group row modalGroup">
                                         <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
                                         <div class="col-sm-2">
-                                            <input type="apagar" class="form-control text-sm-left" id="apagar" name="apagar" value="0.00" readonly>
+                                            <input type="apagar" class="form-control text-sm-left mt-4" id="apagar" name="apagar" value="0.00" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row modalGroup">
                                         <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
                                         <div class="col-sm-2">
-                                            <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left" id="abono1" name="abono1" value="0.00" readonly>
+                                            <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left mt-2" id="abono1" name="abono1" value="0.00" readonly>
                                         </div>
                                         <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control">
+                                            <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control mt-1">
                                                 <option value="0">--Seleccione--</option>
                                                 @foreach ($payment_terms as $item)
                                                     <option value="{{$item['id']}}">{{$item['name']}}</option>
@@ -381,10 +383,10 @@
                                     <div class="form-group row modalGroup">
                                         <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
                                         <div class="col-sm-2">
-                                            <input onchange="calculoSaldo();" type="text" class="form-control" id="abono2" name="abono2" value="0.00" readonly>
+                                            <input onchange="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
                                         </div>
                                         <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control">
+                                            <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control mt-1">
                                                 <option value="0">--Seleccione--</option>
                                                 @foreach ($payment_terms as $item)
                                                     <option value="{{$item['id']}}">{{$item['name']}}</option>
@@ -402,7 +404,7 @@
                                     <div class="form-group row modalGroup">
                                         <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
                                         <div class="col-sm-2">
-                                            <input type="text" class="form-control text-sm-left" id="saldo" name="saldo" value="0.00">
+                                            <input type="text" class="form-control text-sm-left mt-2" id="saldo" name="saldo" value="0.00">
                                         </div>
                                     </div>
                                 </div>
@@ -594,7 +596,6 @@
 
     function obtenerFechaFormateada(fecha) {
         var fechaFormateada = moment(fecha).locale('es_ES').format('dddd, D [de] MMMM [de] YYYY');
-
         return fechaFormateada;
     }
 
@@ -662,61 +663,79 @@
     }
 
     function changeItem(objeto, items) { 
-        let code = $(objeto).val();
-        
-        function isMatch(item) {
-            return item.bar_code === code;
-        }
-        
-        code = items.find(isMatch);
-        let tr = $(objeto).parent().parent();
-
-        if(code){
-            let url = "/operations/item/code/" + code.id;        
-            $.ajax({
-                type: 'GET',
-                url: url,
-                dataType: 'json',
-                async: false,
-                data:{},
-                error: function (xhr, status, error) {
-                    console.log(xhr.error);
-                },
-                success : function(data){
-                    //console.log(data)
-                    tr.find('#items').val(data[0]['bar_code']);
-                    tr.find('#description').val(data[0]['item_name']);
-                    tr.find('#cantidad').val("1");
-                    tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
-                    tr.find('#pvp1').val(data[0]['pvp1']);
-                    tr.find('#cantidad2').val(data[0]['cantidad2']);
-                    tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
-                    tr.find('#pvp2').val(data[0]['pvp2']);
-                    tr.find('#cantidad3').val(data[0]['cantidad3']);
-                    tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
-                    tr.find('#pvp3').val(data[0]['pvp3']);
-                    tr.find('#cantidad4').val(data[0]['cantidad4']);
-                    tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
-                    tr.find('#pvp4').val(data[0]['pvp4']);
-                    tr.find('#id_iva').val(data[0]['iva']);
-                    tr.find('#iva').val(data[0]['porcentajeIva']+"%");
-                
-                    let precio_neto = (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
-                    let subtotal = precio_neto ;
-                    tr.find('#subtotal').val(subtotal);
-                    
-                    var select = $(objeto);
-                    var currentRow = select.closest('tr');
-                    var nextRow = currentRow.next();
-                    // Mueve el foco a la siguiente fila
-                    if (nextRow.length > 0) {
-                        nextDatalist = nextRow.find('#items');
-                        nextDatalist.focus();
-                    } 
+        let code = $(objeto).val().trim();
+        let tr = $(objeto).closest('tr');
+        let firstDuplicateRow = false;
+        let duplicateRowIndex = -1;
+        let itemData = items.find(item => item.id == code);
+        if (itemData) {
+            $('table tbody tr').each(function(index) {
+                if ($(this)[0] !== tr[0]) {
+                    let existingValue = $(this).find('#items').val();
+                    if (existingValue == code) {
+                        firstDuplicateRow = $(this);
+                        duplicateRowIndex = index;
+                        return false;
+                    }
                 }
             });
 
+            if (firstDuplicateRow) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Ya existe este producto en la tabla, se le sumo 1 a la fila existente con el producto",
+                    icon: "question",
+                })
+
+                tr.find('#items').val('');
+                var qty = firstDuplicateRow.find('#cantidad').val();  
+                firstDuplicateRow.find('#cantidad').val((parseInt(qty)+1));
+                changeQty(firstDuplicateRow.find('#cantidad'));
+            } else {
+                let url = "/operations/item/code/" + itemData.id;        
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    dataType: 'json',
+                    async: false,
+                    data:{},
+                    error: function (xhr, status, error) {
+                        console.log(xhr.error);
+                    },
+                    success : function(data){
+                        //console.log(data)
+                        tr.find('#items').val(data[0]['id']);
+                        tr.find('#description').val(data[0]['item_name']);
+                        tr.find('#cantidad').val("1");
+                        tr.find('#pvp0_neto').val(data[0]['pvp1_neto']);
+                        tr.find('#pvp1_neto').val(data[0]['pvp1_neto']);
+                        tr.find('#pvp1').val(data[0]['pvp1']);
+                        tr.find('#cantidad2').val(data[0]['cantidad2']);
+                        tr.find('#pvp2_neto').val(data[0]['pvp2_neto']);
+                        tr.find('#pvp2').val(data[0]['pvp2']);
+                        tr.find('#cantidad3').val(data[0]['cantidad3']);
+                        tr.find('#pvp3_neto').val(data[0]['pvp3_neto']);
+                        tr.find('#pvp3').val(data[0]['pvp3']);
+                        tr.find('#cantidad4').val(data[0]['cantidad4']);
+                        tr.find('#pvp4_neto').val(data[0]['pvp4_neto']);
+                        tr.find('#pvp4').val(data[0]['pvp4']);
+                        tr.find('#id_iva').val(data[0]['iva']);
+                        tr.find('#iva').val(data[0]['porcentajeIva']+"%");
+                        let precio_neto = (parseFloat(data[0]['pvp1_neto'])).toFixed(2)  
+                        let subtotal = precio_neto ;
+                        tr.find('#subtotal').val(subtotal);
+                        
+                        var select = $(objeto);
+                        var currentRow = select.closest('tr');
+                        var nextRow = currentRow.next();
+                        // Mueve el foco a la siguiente fila
+                        if (nextRow.length > 0) {
+                            nextDatalist = nextRow.find('#items');
+                            nextDatalist.focus();
+                        } 
+                    }
+                });
+            }
             var filasConDatos = leerFilas();
             numeroRegistros(filasConDatos);
             calcular(filasConDatos);

@@ -585,8 +585,8 @@ class EmpresasController extends Controller
                 $datosInicialesdocument_numbers = array(
                     "('1', 'Orders', '1')",
                     "('2', 'Factura', '0')",
-                    "('3', 'Discharges', '1')",
-                    "('4', 'Incomes', '1')",
+                    "('3', 'Engreso', '1')",
+                    "('4', 'Ingreso', '1')",
                 );
                 
                 $datosInicialesserie_factura = array(

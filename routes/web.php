@@ -79,6 +79,7 @@ Route::post('/imprimir-ticket', [CashierController::class, 'imprimirTicket']);
 
 Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPriceProduct'])->name('elements.priceProducts');
 Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->name('element.order.row');
+Route::get('/elements/order/row/movements', [ElementsController::class, 'addRowOrder3'])->name('element.order.row.movements');
 
 
 

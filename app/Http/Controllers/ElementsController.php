@@ -188,6 +188,85 @@ class ElementsController extends Controller
         return $row;
     }
 
+    public function addRowOrder3(Request $request){
+        
+        $nombreBD = App::make('dataBase');
+
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
+
+        try
+        {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            $consulta = "SELECT * FROM products WHERE is_active = 1";
+            $result= $conexion->query($consulta);
+            $items = []; 
+
+            foreach ($result as $fila) {
+                $items[]=[
+                    "id" => $fila['id'],
+                    "id_type" => $fila['id_type'],
+                    "id_group" => $fila['id_group'],
+                    "item_name" => $fila['item_name'],
+                    "bar_code" => $fila['bar_code'],
+                    "si_iva" => $fila['si_iva'],
+                    "iva" => $fila['iva'],
+                    "id_unit_measure" => $fila['id_unit_measure'],
+                    "notes" => $fila['notes'],
+                    "is_active" => $fila['is_active'],
+                ];
+            }
+
+            $jitems = json_encode($items);
+
+            if( $request->type ==1){
+                $row = '<tr id="tr_items">'.
+                    '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td>
+                        <input onchange="changeItemMov(this, '.htmlspecialchars($jitems).')" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
+                        <datalist id="itemsList">';                     
+                            foreach ($items as $item){
+                            $row .= '<option value="{{'.$item["id"].'}}"></option>';
+                            }
+                $row .= '</datalist>
+                    </td>
+                    <td><input id="description" name="description[]" type="text" class="form-control form-control-sm" readonly></td>
+                    <td><input onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
+                    <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm"></td>
+                    <td><input id="price" onkeyup="changePrice(this);" name="price[]" type="text" class="form-control form-control-sm" readonly></td>
+                    <td><input id="amt" name="amt[]" type="text" class="form-control form-control-sm" readonly></td>
+                </tr>';
+    
+            }
+            else
+            {
+                $row = '<tr id="tr_items">'.
+                    '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td>
+                        <input onchange="changeItemMov(this, '.htmlspecialchars($jitems).')" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
+                        <datalist id="itemsList">';                     
+                            foreach ($items as $item){
+                            $row .= '<option value="{{'.$item["item_name"].'}}"></option>';
+                            }
+                $row .= '</datalist>
+                    </td>
+                    <td><input id="description" name="description[]" type="text" class="form-control form-control-sm" readonly></td>
+                    <td><input onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
+                    <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm"></td>
+                    <td><input autocomplete="off" onkeyup="changePrice(this);" id="price" name="price[]" type="text" class="form-control form-control-sm"></td>
+                    <td><input id="amt" type="text" class="form-control form-control-sm" readonly></td>
+                </tr>';
+            }
+            return $row;    
+
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+    }
+
     public function addRowOrder2(Request $request){
         $items = Products::where('is_active', 1)->get()->toArray();
         $types = ItemTypes::find(2);
@@ -223,52 +302,6 @@ class ElementsController extends Controller
         return $row;
     }
 
-    public function addRowOrder3(Request $request){
-     
-        $items = Products::where('is_active', 1)->get()->toArray();
-        $types = ItemTypes::find(2);
-        $jitems = json_encode($items);
-        $jtypes = json_encode($types); 
-        if( $request->type ==1){
-            $row = '<tr id="tr_items">'.
-                '<td><button onclick="delRow(this);" onblur="calcular();" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
-                <td>
-                    <input autocomplete="off" onchange="changeItemMov(this, '.htmlspecialchars($jitems).' , '.htmlspecialchars($jtypes).')" onblur="calcular();" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
-                    <datalist id="itemsList">';                     
-                        foreach ($items as $item){
-                        $row .= '<option value="{{'.$item["item_name"].'}}"></option>';
-                        }
-            $row .= '</datalist>
-                </td>
-                <td><input id="description" name="description[]" type="text" class="form-control form-control-sm" readonly></td>
-                <td><input autocomplete="off" onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
-                <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" readonly></td>
-                <td hidden><input autocomplete="off" onkeyup="changePrice(this);" id="price" name="price[]" type="text" class="form-control form-control-sm"></td>
-                <td hidden><input id="amt" type="text" class="form-control form-control-sm" readonly></td>
-            </tr>';
-
-        }
-        else
-        {
-            $row = '<tr id="tr_items">'.
-                '<td><button onclick="delRow(this);" onblur="calcular();" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
-                <td>
-                    <input autocomplete="off" onchange="changeItemMov(this, '.htmlspecialchars($jitems).' , '.htmlspecialchars($jtypes).')" onblur="calcular();" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
-                    <datalist id="itemsList">';                     
-                        foreach ($items as $item){
-                        $row .= '<option value="{{'.$item["item_name"].'}}"></option>';
-                        }
-            $row .= '</datalist>
-                </td>
-                <td><input id="description" name="description[]" type="text" class="form-control form-control-sm" readonly></td>
-                <td><input autocomplete="off" onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
-                <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" readonly></td>
-                <td><input autocomplete="off" onkeyup="changePrice(this);" id="price" name="price[]" type="text" class="form-control form-control-sm"></td>
-                <td><input id="amt" type="text" class="form-control form-control-sm" readonly></td>
-            </tr>';
-        }
-        return $row;
-    }
 
     public function addRowVendorOrder(Request $request){
         $items = Products::where('is_active', 1)->get()->toArray();
@@ -463,47 +496,136 @@ class ElementsController extends Controller
         $from = explode('-',$request->start_month)[1];
         $to = explode('-',$request->end_month)[1];
         $year = explode('-',$request->end_month)[0];
+        $fechaActual =  date("Y");
 
-        $parameter=Parameters::where('value', date("Y"))->first();
+        $nombreBD = App::make('dataBase');
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
 
-        if($parameter->name == "PERIODO ACTIVO" && $parameter->value == $year)
-        {
-            $fechafrom = mktime(0, 0, 0, $from, 1);
-            $nombreMesfrom = date("F", $fechafrom);
-    
-            $fechato = mktime(0, 0, 0, $to, 1);
-            $nombreMesto = date("F", $fechato);
-    
-            $fechaInicio = date('Y-m-01', strtotime($request->start_month)); 
-            $fechaFin = date('Y-m-31', strtotime($request->end_month));
-    
-            $product=Products::select('id','qty','cost','price')->where('item_name',$request->item)->first();
-    
-            $response = ProductsBalances::where('id_item',$product->id)->first();
-            if(!isset($response)){
-                for($i=0; $i<=12; $i++){
-                    ProductsBalances::create([
-                        "id_item" => $product->id,
-                        "month" => $i,
-                        "year" => date('Y'),
-                        "qty" => 1,
-                        "cost" => 1
-                    ]);
-                    
+        try {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            $consulta = "SELECT * FROM parameters WHERE value = :fechaActual"; 
+            $stmt = $conexion->prepare($consulta);
+            $stmt->bindParam(':fechaActual', $fechaActual, \PDO::PARAM_STR);
+            $stmt->execute();
+            
+            $parameter = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+
+            if($parameter['name'] == "PERIODO ACTIVO" && $parameter['value'] == $year)
+            {
+                $fechafrom = mktime(0, 0, 0, $from, 1);
+                $nombreMesfrom = date("F", $fechafrom);
+        
+                $fechato = mktime(0, 0, 0, $to, 1);
+                $nombreMesto = date("F", $fechato);
+        
+                $fechaInicio = date('Y-m-01', strtotime($request->start_month)); 
+                $fechaFin = date('Y-m-31', strtotime($request->end_month));
+        
+
+                $consultaidProducto = "SELECT id FROM Products WHERE item_name = :product_name LIMIT 1"; 
+                $stmt = $conexion->prepare($consultaidProducto);
+                $stmt->bindParam(':product_name', $product_name, \PDO::PARAM_STR);
+                $stmt->execute();
+
+                $productoId = $stmt->fetch(\PDO::FETCH_ASSOC);
+                $id_product = $productoId['id'];
+                // $response = ProductsBalances::where('id_item',$product->id)->first();
+                // if(!isset($response)){
+                //     for($i=0; $i<=12; $i++){
+                //         ProductsBalances::create([
+                //             "id_item" => $product->id,
+                //             "month" => $i,
+                //             "year" => date('Y'),
+                //             "qty" => 1,
+                //             "cost" => 1
+                //         ]);
+                        
+                //     }
+
+                // }
+                
+                $consultaSaldoAnterior = "SELECT * FROM product_balances WHERE id_item = :id_product AND month BETWEEN :from AND :to LIMIT 1";
+                $stmt = $conexion->prepare($consultaSaldoAnterior);
+                $stmt->bindParam(':id_product', $id_product, \PDO::PARAM_INT);
+                $stmt->bindParam(':from', $from, \PDO::PARAM_STR);
+                $stmt->bindParam(':to', $to, \PDO::PARAM_STR);
+                $stmt->execute();
+
+                $saldo_anterior = $stmt->fetch(\PDO::FETCH_ASSOC);
+                $saldo_anterior = (object) $saldo_anterior;
+
+
+                $consultaKardex = "SELECT * FROM inventories WHERE id_item = :id_product AND date BETWEEN :fechaInicio AND :fechaFin";
+                $stmt = $conexion->prepare($consultaKardex);
+                $stmt->bindParam(':id_product', $id_product, \PDO::PARAM_INT);
+                $stmt->bindParam(':fechaInicio', $fechaInicio, \PDO::PARAM_STR);
+                $stmt->bindParam(':fechaFin', $fechaFin, \PDO::PARAM_STR);
+                $stmt->execute();
+
+                $kardex = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                $kardex = array_map(function($row) {
+                    return (object) $row;
+                }, $kardex);
+                
+                
+                foreach ($kardex as &$kx) {
+                    if ($kx->type == 'Ingreso' || $kx->type == 'Egreso') {
+                        $id_transaction = $kx->id_transaction;
+                        $consultaIngreso = "SELECT number, comments FROM movements WHERE id = :id_transaction LIMIT 1";
+                        $stmt = $conexion->prepare($consultaIngreso);
+                        $stmt->bindParam(':id_transaction', $id_transaction, \PDO::PARAM_INT);
+                        $stmt->execute();
+
+                        $movimiento = $stmt->fetch(\PDO::FETCH_ASSOC);
+                        $movimiento = (object) $movimiento;
+
+                        $kx->number = $movimiento->number;
+                        $kx->comments = $movimiento->comments;
+
+                    }
+                    else if($kx->type == 'Invoice'){
+                        $id_transaction = $kx->id_transaction;
+
+                        $consultaIngreso = "SELECT number, id_customer FROM invoices WHERE id = :id_transaction LIMIT 1";
+                        $stmt = $conexion->prepare($consultaIngreso);
+                        $stmt->bindParam(':id_transaction', $id_transaction, \PDO::PARAM_INT);
+                        $stmt->execute();
+
+                        $invoice = $stmt->fetch(\PDO::FETCH_ASSOC);
+                        $invoice = (object) $invoice;
+
+                        
+
+                        $id_customer = $invoice->id_customer;
+                        $consultaCustomer = "SELECT name FROM customers WHERE id = :id_customer LIMIT 1";
+                        $stmt = $conexion->prepare($consultaCustomer);
+                        $stmt->bindParam(':id_customer', $id_customer, \PDO::PARAM_INT);
+                        $stmt->execute();
+
+                        $customer = $stmt->fetch(\PDO::FETCH_ASSOC);
+                        $customer = (object) $customer;
+
+                        $kx->number = $invoice->number;
+                        $kx->customer = $customer->name;
+                    }
                 }
 
+        
+                return view('kardex.pdf', compact('product_name', 'kardex', 'nombreMesfrom', 'nombreMesto', 'year', 'id_product', 'saldo_anterior')); 
             }
-            $saldo_anterior= ProductsBalances::where('id_item',$product->id)->whereBetween('month', [$from, $to])->first();
-            $id_product=$product->id;
-    
-            $kardex=Inventories::where('id_item',$product->id)->whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
-    
-            return view('kardex.pdf', compact('product_name', 'kardex', 'nombreMesfrom', 'nombreMesto', 'year', 'id_product', 'saldo_anterior')); 
-        }
-        else{
-            return redirect()->route('kardex.index')->with('info', 'Select a date within the current period')->send();
-        }       
+            else{
+                return redirect()->route('kardex.index')->with('info', 'Select a date within the current period')->send();
+            }     
 
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
     }
 
     public function productsReport(Request $request){

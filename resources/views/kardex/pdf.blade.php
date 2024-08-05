@@ -69,11 +69,12 @@
                                             <th>Number</th>
                                             <th>Customer/Vendor</th>
                                             <th>Qty</th>
-                                            <th>Cost</th>
+                                            <th>Pre. Unit</th>
+                                            <th>Pre. Total</th>
                                             <th>Total Qty</th>
                                             <th>Total Cost</th>
                                             <th>Unit Cost</th>
-                                            <th>Price</th>
+                                            <th>P.V.P</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -82,6 +83,7 @@
                                             <td></td>
                                             <td></td>
                                             <td>Previous Balance</td>
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <?php
@@ -103,37 +105,36 @@
                                         </tr>
                                         @foreach ($kardex as $kx)
                                             <tr>
-                                                <td>{{date('Y-m-d',strtotime($kx->created_at))}}</td>
+                                                <td>{{date('Y-m-d',strtotime($kx->date))}}</td>
                                                 <td>{{$kx->type}}</td>
                                                 @if ($kx->type=="Invoice")
                                                     <?php
-                                                        $response = Invoices::where('id',$kx->id_transaction)->first();
-                                                        if ($response) {
-                                                            $number = $response->number;                                                                                                             
-                                                            $name = Customers::where('id',$response->id_customer)->value('company_name');
+                                                        // $response = Invoices::where('id',$kx->id_transaction)->first();
+                                                        // if ($response) {
+                                                            $number = $kx->number;                                                                                                             
+                                                            $name = $kx->customer;
                                                             $qty_total-=$kx->qty;
                                                             $cost_total=$cost_total-($kx->qty*$kx->cost);
                                                             $price = number_format($kx->price,5);
-                                                        }
-                                                        else{
-                                                            $number = "";                                                                                                             
-                                                            $name = "";
-                                                            $qty_total=0;
-                                                            $cost_total=0;
-                                                            $price = 0;
-                                                        }
-                                                       
+                                                        // }
+                                                        // else{
+                                                        //     $number = "";                                                                                                             
+                                                        //     $name = "";
+                                                        //     $qty_total=0;
+                                                        //     $cost_total=0;
+                                                        //     $price = 0;
+                                                        // }
                                                         
                                                     ?>
                                                 @elseif($kx->type=="BL")
                                                     <?php
-                                                    $response = Bills::where('id',$kx->id_transaction)->first();
-                                                    if ($response) {
+                                                    // $response = Bills::where('id',$kx->id_transaction)->first();
+                                                    // if ($response) {
                                                         
-                                                        $number = $response->number;
-                                                        $name = Vendors::where('id',$response->id_customer)->value('name');
+                                                        $number = $kx->id_transaction;
+                                                        $name = "";
                                                         $qty_total+=$kx->qty;
-                                                        $cost_total=$cost_total+($kx->qty*$kx->price);
+                                                        $cost_total=$cost_total+($kx->qty*$kx->cost);
                                                         if ($qty_total != 0) {
                                                             $unit_cost=$cost_total/$qty_total;
                                                         } else {
@@ -142,66 +143,68 @@
                                                         
                                                         
                                                         $price = 0;
-                                                    }
-                                                    else{
-                                                        $number = "";                                                                                                             
-                                                        $name = "";
-                                                        $qty_total=0;
-                                                        $cost_total=0;
-                                                        $price = 0;
-                                                    }
+                                                    // }
+                                                    // else{
+                                                    //     $number = "";                                                                                                             
+                                                    //     $name = "";
+                                                    //     $qty_total=0;
+                                                    //     $cost_total=0;
+                                                    //     $price = 0;
+                                                    // }
                                                     ?>
-                                                @elseif($kx->type=="Income")
+                                                @elseif($kx->type=="Ingreso")
                                                     <?php
-                                                    $response = Incomes::where('id',$kx->id_transaction)->first();
-                                                    if ($response) {
-                                                     
-                                                        $number = $response->number;
-                                                        $name = $response->comments;
+                                                    // $response = Incomes::where('id',$kx->id_transaction)->first();
+                                                    // if ($response) {
+
+                                                        $number = $kx->number;
+                                                        $name = $kx->comments ?? "";
                                                         $qty_total+=$kx->qty;
-                                                        $cost_total=$cost_total+($kx->qty*$kx->price);
+                                                        $cost_total=$cost_total+($kx->qty*$kx->cost);
                                                         if ($qty_total != 0) {
                                                             $unit_cost=$cost_total/$qty_total;
                                                         } else {
                                                             $unit_cost=0;
                                                         }
                                                         $price = 0;
-                                                    }
-                                                    else{
-                                                        $number = "";                                                                                                             
-                                                        $name = "";
-                                                        $qty_total=0;
-                                                        $cost_total=0;
-                                                        $price = 0;
-                                                    }
+                                                    // }
+                                                    // else{
+                                                    //     $number = "";                                                                                                             
+                                                    //     $name = "";
+                                                    //     $qty_total=0;
+                                                    //     $cost_total=0;
+                                                    //     $price = 0;
+                                                    // }
                                                     ?>
-                                                @else
+                                                @elseif($kx->type=="Egreso")
                                                     <?php
-                                                    $response = Expenditures::where('id',$kx->id_transaction)->first();
-                                                    if ($response) {
+                                                    // $response = Expenditures::where('id',$kx->id_transaction)->first();
+                                                    // if ($response) {
                                                         
-                                                        $number = $response->number;
-                                                        $name = $response->comments;
+                                                        $number = $kx->number;
+                                                        $name = $kx->comments ?? "";
                                                         $qty_total-=$kx->qty;
                                                         $cost_total=$cost_total-($kx->qty*$kx->cost);
                                                         $price = 0;
-                                                    }
-                                                    else{
-                                                        $number = "";                                                                                                             
-                                                        $name = "";
-                                                        $qty_total=0;
-                                                        $cost_total=0;
-                                                        $price = 0;
-                                                    }
+                                                    // }
+                                                    // else{
+                                                    //     $number = "";                                                                                                             
+                                                    //     $name = "";
+                                                    //     $qty_total=0;
+                                                    //     $cost_total=0;
+                                                    //     $price = 0;
+                                                    // }
                                                     ?>
                                                 @endif
                                                 <td>{{$number}}</td>
                                                 <td>{{$name}}</td>
                                                 @if ($number != "")
                                                     <td>{{number_format($kx->qty,2)}}</td>
-                                                    <td>{{number_format($kx->qty*$kx->price,2)}}</td>
+                                                    <td>{{number_format($kx->cost,2)}}</td>
+                                                    <td>{{number_format($kx->qty*$kx->cost,2)}}</td>
                                                 @else
                                                     <td>{{number_format($qty_total,2)}}</td>
+                                                    <td>{{number_format($price,2)}}</td>
                                                     <td>{{number_format($qty_total*$price,2)}}</td>
                                                 @endif
                                                 @if($qty_total < 0)

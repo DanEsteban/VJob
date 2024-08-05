@@ -10,8 +10,11 @@
 
 @php
     $length = 9;
-    $numberD = str_pad($order_numberD[0]['number'], $length,"0", STR_PAD_LEFT);
-    $numberI = str_pad($order_numberI[0]['number'], $length,"0", STR_PAD_LEFT);
+    $numberD = str_pad($document_numbers[2]['number'], $length,"0", STR_PAD_LEFT);
+    $numberI = str_pad($document_numbers[3]['number'], $length,"0", STR_PAD_LEFT);
+    $numberFC = str_pad($document_numbers[4]['number'], $length,"0", STR_PAD_LEFT);
+    // $numberD = str_pad($order_numberD[0]['number'], $length,"0", STR_PAD_LEFT);
+    // $numberI = str_pad($order_numberI[0]['number'], $length,"0", STR_PAD_LEFT);
 @endphp
 
 @section('content')
@@ -42,18 +45,19 @@
                                     <label for="select_move" class="col-sm-3 col-form-label form-control-sm">Tipo:</label>
                                     <select id="select_move" onchange="typenumber(this);" name="mov_transaction" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="2">
                                         <option value="none" selected disabled>Seleccione Movimiento</option>
-                                        <option value="1">Egresos</option>
-                                        <option value="2">Ingresos</option>
+                                        @for ($i = 2; $i < 4; $i++)
+                                            <option value="{{$document_numbers[$i]['id']}}">{{ $document_numbers[$i]['type'] }}</option>
+                                            @endfor
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="input-group">
                                     <label for="" class="col-sm-3 col-form-label form-control-sm">Fecha:</label>
-                                    <input name="date" type="date" class="form-control form-control-sm" value="{{date('Y-m-d')}}" width="300px">
+                                    <input name="date" id="date" type="date" onchange="changeDate(this);" class="form-control form-control-sm" value="{{date('Y-m-d')}}" width="300px">
                                 </div>
                             </div>
-                            <div hidden class="col-md-4">
+                            {{-- <div hidden class="col-md-4">
                                 <div class="input-group">
                                     <label for="" class="col-sm-3 col-form-label form-control-sm">Wh:</label>
                                     <Select id="select_warehouse" name="select_warehouse" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="13">
@@ -62,7 +66,7 @@
                                         @endforeach
                                     </Select>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                         <br>
                         <div class="row">
@@ -80,7 +84,7 @@
         <br>
         <div class="card">
             <div class="card-body">
-                <table id="dTable" class="table table-sm" style="width: 100%">
+                <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
                     <thead>
                         <tr>
                             <th width="4%"></th>
@@ -98,16 +102,16 @@
                                 <td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
                                 
                                 <td>
-                                    <input onchange="changeItemMov(this, {{json_encode($items)}}, {{json_encode($types)}})" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList" >
+                                    <input onchange="changeItemMov(this, {{json_encode($items)}})" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList" >
                                     <datalist id="itemsList">
                                         @foreach ($items as $item)
-                                            <option value="{{$item['bar_code']}}"></option>
+                                            <option value="{{$item['id']}}"></option>
                                         @endforeach
                                     </datalist>
                                 </td>
                                 <td><input id="description" name="description[]" type="text" class="form-control form-control-sm" readonly></td>
                                 <td><input onkeyup="changeQty(this);" id="qty" name="qty[]" type="text" class="form-control form-control-sm" required></td>
-                                <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" readonly></td>
+                                <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" ></td>
                                 <td><input id="price" onkeyup="changePrice(this);" name="price[]" type="text" class="form-control form-control-sm"></td>
                                 <td><input id="amt" name="amt[]" type="text" class="form-control form-control-sm" readonly></td>
                             </tr>
@@ -169,6 +173,8 @@
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 {{-- <script type="text/javascript" src="/js/orders.actions.js"></script> --}}
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
 <script type="text/javascript">
 
     $(document).ready(function() {
@@ -177,19 +183,47 @@
         
         $("#select_move").change(function() { 
             if ($(this).val() != "") { 
-            $("#tb_items").show();
-            $("#addrow").show();
+                $("#tb_items").show();
+                $("#addrow").show();
+                $('#dTable').find('input').val('');
             } else {
-            $("#tb_items").hide(); 
-            $("#addrow").hide();
+                $("#tb_items").hide(); 
+                $("#addrow").hide();
             }
         });
     });   
     
+    function changeDate(objeto){
+        var filas = $('#tb_items #tr_items');
+
+        // Itera sobre cada fila y vacía los datos de cada celda
+        filas.each(function() {
+            $(this).find('td').each(function() {
+                $(this).find('input, select').val('');
+            });
+        });
+    }
+
     function changeQty(objeto) {
         let tr = $(objeto).parent().parent();
         let qty = parseFloat($(objeto).val()) * 1;
         let price = parseFloat(tr.find('#price').val()) * 1;
+        let subtotal = 0;
+        if(qty && price){
+            subtotal = qty * price;
+            tr.find('#amt').val(subtotal.toFixed(2));
+            calcularMov();
+        }
+        else{
+            tr.find('#amt').val("0.00");
+            calcularMov();
+        }
+    }
+
+    function changePrice(objeto) {
+        let tr = $(objeto).parent().parent();
+        let price = parseFloat($(objeto).val()) * 1;
+        let qty = parseFloat(tr.find('#qty').val()) * 1;
         let subtotal = 0;
         if(qty && price){
             subtotal = qty * price;
@@ -218,21 +252,20 @@
     }
     
     function changeItemMov(objeto, items) {
+        let date = $("#date").val();
         let code = $(objeto).val().trim();
         let tr = $(objeto).closest('tr');
         let firstDuplicateRow = false;
         let duplicateRowIndex = -1;
-
-        let itemData = items.find(item => item.bar_code === code);
+        let itemData = items.find(item => item.id == code);
         if (itemData) {
-            // Verificar si el código del producto ya está presente en la tabla
             $('table tbody tr').each(function(index) {
                 if ($(this)[0] !== tr[0]) {
                     let existingValue = $(this).find('#items').val().trim();
-                    if (existingValue === code) {
+                    if (existingValue == code) {
                         firstDuplicateRow = $(this);
                         duplicateRowIndex = index;
-                        return false; // Salir del bucle each cuando se encuentra el primer duplicado
+                        return false;
                     }
                 }
             });
@@ -241,19 +274,20 @@
                 Swal.fire({
                     title: "Error",
                     text: "Ya existe este producto en la tabla",
-                    icon: "question"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        firstDuplicateRow.find('#items').val(''); // Limpiar el campo de entrada en la fila duplicada
-                        $('table tbody tr').eq(duplicateRowIndex).find('#items').focus(); // Establecer foco en el campo de entrada en la fila duplicada
-                    }
-                });
+                    icon: "question",
+                })
+
+                tr.find('#items').val('');
+                var qty = firstDuplicateRow.find('#qty').val();  
+                firstDuplicateRow.find('#qty').val((parseInt(qty)+1));
+                changeQty(firstDuplicateRow.find('#qty'));
             } else {
                 let url = "/operations/item/code/" + itemData.id;
                 $.ajax({
                     type: 'GET',
                     url: url,
                     dataType: 'json',
+                    data:{date},
                     error: function(xhr, status, error) {
                         console.log(xhr.error);
                         Swal.fire({
@@ -263,11 +297,11 @@
                         });
                     },
                     success: function(data) {
-                        //console.log(data[0]);
+                        // console.log(data[0]);
                         tr.find('#description').val(data[0]['item_name']);
                         tr.find('#unit').val((data[0]['abbreviation'] == null) ? 0 : data[0]['abbreviation']);
                         tr.find('#qty').val("1");
-                        let precio = parseFloat(data[0]['pvp1']);
+                        let precio = parseFloat(data[0]['cost']);
                         tr.find('#price').val(precio.toFixed(2));
                         tr.find('#amt').val(precio.toFixed(2));
 
@@ -275,6 +309,7 @@
                     }
                 });
             }
+            
         } else {
             Swal.fire({
                 title: "Error",
@@ -287,63 +322,6 @@
                 }
             });
         }
-
-
-        // if (firstDuplicateRow) {
-        //     Swal.fire({
-        //         title: "Error",
-        //         text: "Ya existe este producto en la tabla",
-        //         icon: "question"
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             firstDuplicateRow.find('#items').val(''); // Limpiar el campo de entrada en la fila duplicada
-        //             firstDuplicateRow.find('#items').focus(); // Establecer foco en el campo de entrada en la fila duplicada
-        //         }
-        //     });
-        //     return;
-        // }
-
-
-        // let itemData = items.find(item => item.bar_code === code);
-
-        // if (itemData) {
-        //     let url = "/operations/item/code/" + itemData.id;        
-        //     $.ajax({
-        //         type: 'GET',
-        //         url: url,
-        //         dataType: 'json',
-        //         error: function (xhr, status, error) {
-        //             console.log(xhr.error);
-        //             Swal.fire({
-        //                 title: "Error",
-        //                 text: "Ha ocurrido un error al cargar la información del producto.",
-        //                 icon: "error"
-        //             });
-        //         },
-        //         success: function(data) {
-        //             //console.log(data[0]);
-        //             tr.find('#description').val(data[0]['item_name']);
-        //             tr.find('#unit').val((data[0]['abbreviation'] == null) ? 0 : data[0]['abbreviation']);
-        //             tr.find('#qty').val("1");
-        //             let precio = parseFloat(data[0]['pvp1']);
-        //             tr.find('#price').val(precio.toFixed(2));                    
-        //             tr.find('#amt').val(precio.toFixed(2)); 
-                    
-        //             calcularMov();  
-        //         }
-        //     });
-        // } else {
-        //     Swal.fire({
-        //         title: "Error",
-        //         text: "Por favor seleccione un producto existente",
-        //         icon: "warning"
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             tr.find('input').val('');
-        //             tr.find('td').eq(1).find('input').focus();
-        //         } 
-        //     });
-        // }
     }
 
     function save(){
@@ -385,35 +363,44 @@
 
     function typenumber(objeto){
         $type = $(objeto).val();
-        if ($type == 1) {
+        
+        if ($type == 3) {
             var variablejs = "<?php echo $numberD; ?>" ;
             $("#number").val(variablejs);
-            $("#dTable th:nth-child(6), #dTable td:nth-child(6)").hide();
-            $("#dTable th:nth-child(7), #dTable td:nth-child(7)").hide();
-            $("#ltotal").hide();
-            $("#order_total").hide();
-
-            // $("#th_cost").attr("hidden",true);
-            // $('#tb_items tr #td_cost').each(function () {
-            //     console.log('aqui');
-            //     $(this).attr('hidden', true)
-            // });
-            // console.log($('#td_cost'));
+            $("#dTable td:nth-child(6) input").prop('readonly', true);
         } else {
             var variablejs = "<?php echo $numberI; ?>" ;
             $("#number").val(variablejs);
+            $("#dTable td:nth-child(6) input").prop('readonly', false);
 
-            $("#dTable th:nth-child(7), #dTable td:nth-child(7)").show();
-            $("#dTable th:nth-child(8), #dTable td:nth-child(8)").show();
-            $("#ltotal").show();
-            $("#order_total").show();
-            // $("#tb_items tr #price").removeAttr("readonly");
-
-            // $("#th_cost").removeAttr("hidden");
-            // $('#tb_items tr #td_cost').each(function () {
-            //     $(this).removeAttr('hidden')
-            // });
         }
+    }
+
+    function delRow(object) {
+        var filas = $('#tb_items #tr_items').length;
+        if(filas > 1){
+            $(object).closest('tr').remove();
+            calcularMov();
+        }
+    }
+
+    function addRow3() {
+        let type = $('#select_move').val();
+        let url = "/elements/order/row/movements";
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: 'false',
+            data:{type:type},
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            },
+            success : function(data){
+                //console.log(data)
+                $('#tb_items').append(data)
+            }
+        });
     }
 
     function exit() {
@@ -428,5 +415,6 @@
                 }
             })
     }
+
 </script>
 @stop

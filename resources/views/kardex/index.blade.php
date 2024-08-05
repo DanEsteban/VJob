@@ -21,7 +21,7 @@
                 <div class="row">
                     <div class="col-md-5">
                         <div class="input-group">
-                            <label class="col-sm-3 col-form-label" style="font-size: 16px">Product:</label>
+                            <label class="col-sm-3 col-form-label" style="font-size: 16px">Productos:</label>
                             <input id="item" name="item" type="text" autocomplete="off" class="form-control form-control-sm" width="300px" list="itemsList">
                             <datalist id="itemsList">
                                 @foreach ($items as $item)
@@ -65,15 +65,15 @@
 @stop
 
 @section('css')
-<link href="/css/bootstrap.min.css" rel="stylesheet">
-<link href="/css/configuration.view.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/configuration.view.css" rel="stylesheet">
 @stop
 
 @section('js')
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/js/orders.actions.js"></script>
 <script type="text/javascript">
-   $(document).ready(function() {
+    $(document).ready(function() {
         $("#pay-form").keypress(function(e) {
             if (e.which == 13) {
                 return false;

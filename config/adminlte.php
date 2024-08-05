@@ -331,12 +331,6 @@ return [
                     'can'         => 'invoice.index',
                     'shift'   => 'ml-3',
                 ],
-                [
-                    'text'    => 'Cierre de Caja',
-                    'url'     => '/cashier',
-                    'icon'    => 'fa-solid  fa-cash-register',
-                    'shift'   => 'ml-3',
-                ]
             ],
         ],
         [
