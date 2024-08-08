@@ -526,7 +526,7 @@ class InvoiceController extends Controller
 
 
             //Inventories
-            $type = 'Invoice';
+            $type = 'Factura';
             $dateObject = new DateTime($date);
             $year = $dateObject->format('Y');
             $month = $dateObject->format('m');
@@ -875,38 +875,38 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        ///Consulta datos necesarios para usar el formulario
-        $invoice = Invoices::find($id);
-        $invoice_items = InvoicesItems::where('id_invoice', $invoice->id)->get();
-        $customers = Customers::where('is_active', 1)->get();
-        $shipto = ShipToCustomer::where('id_customer', $invoice->id_customer)->get();
-        $items = Products::where('is_active', 1)->get()->toArray();
-        $terms = PaymentTerms::all();
-        $deliveries = DeliveryMethod::all();
-        $taxes = Taxes::all();
-        $types = ItemTypes::find(2);
-        $warehouses = Warehouses::where('is_active', 1)->get();
-        $id_order = Process_Order::where('id_invoice', $invoice->id)->value('id_order');
-        $attach_file = null;
-        $inventories_customer = null;
-        if($id_order){
-            $attach_files = AttachmentCustomer::where('type_transaction', 'SO')->where('id_transaction', $id_order)->get();
-            $inventories_customer = InventoriesCustomers::where('type_transaction', 'SO')->where('id_transaction', $id_order)->get();
-        }
-        else{
-            $attach_files = AttachmentCustomer::where('type_transaction', 'INV')->where('id_transaction', $invoice->id)->get();
-            $inventories_customer = InventoriesCustomers::where('type_transaction', 'INV')->where('id_transaction', $id_order)->get();
-        }
+    // public function edit($id)
+    // {
+    //     ///Consulta datos necesarios para usar el formulario
+    //     $invoice = Invoices::find($id);
+    //     $invoice_items = InvoicesItems::where('id_invoice', $invoice->id)->get();
+    //     $customers = Customers::where('is_active', 1)->get();
+    //     $shipto = ShipToCustomer::where('id_customer', $invoice->id_customer)->get();
+    //     $items = Products::where('is_active', 1)->get()->toArray();
+    //     $terms = PaymentTerms::all();
+    //     $deliveries = DeliveryMethod::all();
+    //     $taxes = Taxes::all();
+    //     $types = ItemTypes::find(2);
+    //     $warehouses = Warehouses::where('is_active', 1)->get();
+    //     $id_order = Process_Order::where('id_invoice', $invoice->id)->value('id_order');
+    //     $attach_file = null;
+    //     $inventories_customer = null;
+    //     if($id_order){
+    //         $attach_files = AttachmentCustomer::where('type_transaction', 'SO')->where('id_transaction', $id_order)->get();
+    //         $inventories_customer = InventoriesCustomers::where('type_transaction', 'SO')->where('id_transaction', $id_order)->get();
+    //     }
+    //     else{
+    //         $attach_files = AttachmentCustomer::where('type_transaction', 'INV')->where('id_transaction', $invoice->id)->get();
+    //         $inventories_customer = InventoriesCustomers::where('type_transaction', 'INV')->where('id_transaction', $id_order)->get();
+    //     }
 
-        $sizes = Sizes::all();
-        $colors = Colors::all();
-        $taxes = Taxes::all();
+    //     $sizes = Sizes::all();
+    //     $colors = Colors::all();
+    //     $taxes = Taxes::all();
 
-        ///Redirigir a la vista Edit, se adjunta todos los registro para que funcione el formulario.
-        return view('invoices.edit', compact('invoice', 'invoice_items', 'customers', 'items', 'terms', 'deliveries', 'taxes', 'shipto', 'types', 'attach_files', 'inventories_customer', 'sizes', 'colors', 'warehouses'));
-    }
+    //     ///Redirigir a la vista Edit, se adjunta todos los registro para que funcione el formulario.
+    //     return view('invoices.edit', compact('invoice', 'invoice_items', 'customers', 'items', 'terms', 'deliveries', 'taxes', 'shipto', 'types', 'attach_files', 'inventories_customer', 'sizes', 'colors', 'warehouses'));
+    // }
     
     /**
      * Update the specified resource in storage.
@@ -915,170 +915,170 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-        ///Declaración de varibales
-        $invoice = null;
-        $total = "";
-        $total = str_replace("$", " ", $request->order_total);
-        $tax = str_replace("$", " ", $request->order_tax);
-        $total = str_replace(",", "", $total);
-        $temp_balance = 0;
+    // public function update(Request $request, $id)
+    // {
+    //     ///Declaración de varibales
+    //     $invoice = null;
+    //     $total = "";
+    //     $total = str_replace("$", " ", $request->order_total);
+    //     $tax = str_replace("$", " ", $request->order_tax);
+    //     $total = str_replace(",", "", $total);
+    //     $temp_balance = 0;
 
-        ///Actualiza la cabecera de la Invoice
-        $invoice = Invoices::find($id);
-        if (isset($request->select_shipto[0])) {
-            $invoice->update([
-                'number' => $request->number,
-                'id_customer' => Customers::where('company_name', $request->select_customer)->value('id'),
-                'date' => $request->date,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'id_term' => $request->select_term,
-                'billto' => $request->billto,
-                'id_shipto' => $request->select_shipto[0],
-                'id_warehouse' => $request->select_warehouse,
-                'id_taxes' => $request->select_tax,
-                'taxes' => $tax,
-                'total' => $total
-            ]);
-        }
-        else{
-            $invoice->update([
-                'number' => $request->number,
-                'id_customer' => Customers::where('company_name', $request->select_customer)->value('id'),
-                'date' => $request->date,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'id_term' => $request->select_term,
-                'billto' => $request->billto,
-                'id_warehouse' => $request->select_warehouse,
-                'id_taxes' => $request->select_tax,
-                'taxes' => $tax,
-                'total' => $total
-            ]);
-        }
+    //     ///Actualiza la cabecera de la Invoice
+    //     $invoice = Invoices::find($id);
+    //     if (isset($request->select_shipto[0])) {
+    //         $invoice->update([
+    //             'number' => $request->number,
+    //             'id_customer' => Customers::where('company_name', $request->select_customer)->value('id'),
+    //             'date' => $request->date,
+    //             'phone' => $request->phone,
+    //             'email' => $request->email,
+    //             'id_term' => $request->select_term,
+    //             'billto' => $request->billto,
+    //             'id_shipto' => $request->select_shipto[0],
+    //             'id_warehouse' => $request->select_warehouse,
+    //             'id_taxes' => $request->select_tax,
+    //             'taxes' => $tax,
+    //             'total' => $total
+    //         ]);
+    //     }
+    //     else{
+    //         $invoice->update([
+    //             'number' => $request->number,
+    //             'id_customer' => Customers::where('company_name', $request->select_customer)->value('id'),
+    //             'date' => $request->date,
+    //             'phone' => $request->phone,
+    //             'email' => $request->email,
+    //             'id_term' => $request->select_term,
+    //             'billto' => $request->billto,
+    //             'id_warehouse' => $request->select_warehouse,
+    //             'id_taxes' => $request->select_tax,
+    //             'taxes' => $tax,
+    //             'total' => $total
+    //         ]);
+    //     }
 
-        ///Elimina los productos de los detalles de facturas e inventarios, para volver a crearlos.
-        $items = InvoicesItems::where('id_invoice', $invoice->id)->get();
-        foreach ($items as $item) {
-            $item->delete();
-        }
+    //     ///Elimina los productos de los detalles de facturas e inventarios, para volver a crearlos.
+    //     $items = InvoicesItems::where('id_invoice', $invoice->id)->get();
+    //     foreach ($items as $item) {
+    //         $item->delete();
+    //     }
 
-        $inventories = Inventories::where('type', 'Invoice')->where('id_transaction', $invoice->id)->get();
-        if ($inventories) {
-            foreach ($inventories as $inventory) {
-                $product=Products::where('id',$inventory->id_item)->first();
-                $total_cost=$product->qty*$product->cost_avg;
-                $delete_cost=$inventory->qty*$inventory->price;
-                $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
+    //     $inventories = Inventories::where('type', 'Invoice')->where('id_transaction', $invoice->id)->get();
+    //     if ($inventories) {
+    //         foreach ($inventories as $inventory) {
+    //             $product=Products::where('id',$inventory->id_item)->first();
+    //             $total_cost=$product->qty*$product->cost_avg;
+    //             $delete_cost=$inventory->qty*$inventory->price;
+    //             $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
 
-                if ($product->qty < 0) {
-                    $product->qty = $product->qty+$inventory->qty;
-                }
-                else{
-                    $product->qty = $product->qty-$inventory->qty;
-                }
-                $product->cost_avg = $cost_prom;
-                $product->save();
+    //             if ($product->qty < 0) {
+    //                 $product->qty = $product->qty+$inventory->qty;
+    //             }
+    //             else{
+    //                 $product->qty = $product->qty-$inventory->qty;
+    //             }
+    //             $product->cost_avg = $cost_prom;
+    //             $product->save();
 
-                $inventory->delete();
-            }
-        }
+    //             $inventory->delete();
+    //         }
+    //     }
 
-        //Verifica si hubo cambios en el total de la factura, resta el valor anterior y suma el valor nuevo al saldo
-        $customer = Customers::where('company_name', $request->select_customer)->first();
-        $customer->balance -= $temp_balance;
-        $customer->balance += $invoice->total;
-        $customer->save();
+    //     //Verifica si hubo cambios en el total de la factura, resta el valor anterior y suma el valor nuevo al saldo
+    //     $customer = Customers::where('company_name', $request->select_customer)->first();
+    //     $customer->balance -= $temp_balance;
+    //     $customer->balance += $invoice->total;
+    //     $customer->save();
 
-        $index = 0;
-        ///Cuenta el array principal para saber cuantos registros vienen
-        $count = count($request->items);
-        ///Crea los detalles de items Invoices
-        for ($i=0; $i < $count; $i++) { 
-            $size = isset($request->select_size[$index]);
-            $color = isset($request->select_color[$index]);
+    //     $index = 0;
+    //     ///Cuenta el array principal para saber cuantos registros vienen
+    //     $count = count($request->items);
+    //     ///Crea los detalles de items Invoices
+    //     for ($i=0; $i < $count; $i++) { 
+    //         $size = isset($request->select_size[$index]);
+    //         $color = isset($request->select_color[$index]);
 
-            $type =  Products::where('item_name', $request->items[$i])->value('id_type');
-            ///Revisa si el item es de tipo ensamblaje (4) o tipo inventario (2)
-            if ($type == 4) {
-                $id = Products::where('item_name', $request->items[$i])->value('id');
-                if(!$id){
-                    $id = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-                }
-                $items_production = AssamblyItems::where('id_item_main', $id)->get();
+    //         $type =  Products::where('item_name', $request->items[$i])->value('id_type');
+    //         ///Revisa si el item es de tipo ensamblaje (4) o tipo inventario (2)
+    //         if ($type == 4) {
+    //             $id = Products::where('item_name', $request->items[$i])->value('id');
+    //             if(!$id){
+    //                 $id = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
+    //             }
+    //             $items_production = AssamblyItems::where('id_item_main', $id)->get();
 
-                foreach ($items_production as $itm) {
-                    $items = InvoicesItems::create([
-                        'id_invoice' => $invoice->id,
-                        'id_warehouse' => $request->select_warehouse,
-                        'id_item' => $id,
-                        'id_size' => $size,
-                        'id_color' => $color,
-                        'qty' => $request->qty[$i],
-                        'unit' => $request->unit[$i],
-                        'price' => $request->price[$i],
-                    ]);
+    //             foreach ($items_production as $itm) {
+    //                 $items = InvoicesItems::create([
+    //                     'id_invoice' => $invoice->id,
+    //                     'id_warehouse' => $request->select_warehouse,
+    //                     'id_item' => $id,
+    //                     'id_size' => $size,
+    //                     'id_color' => $color,
+    //                     'qty' => $request->qty[$i],
+    //                     'unit' => $request->unit[$i],
+    //                     'price' => $request->price[$i],
+    //                 ]);
 
-                    Inventories::create([
-                        'type' => 'Invoice',
-                        'id_transaction' => $invoice->id,
-                        'id_warehouse' => $request->select_warehouse,
-                        'id_item' =>  $id,
-                        'id_size' => $size,
-                        'id_color' => $color,
-                        'price' => $request->price[$i],
-                        'qty' => $request->qty[$i]
-                    ]);
+    //                 Inventories::create([
+    //                     'type' => 'Invoice',
+    //                     'id_transaction' => $invoice->id,
+    //                     'id_warehouse' => $request->select_warehouse,
+    //                     'id_item' =>  $id,
+    //                     'id_size' => $size,
+    //                     'id_color' => $color,
+    //                     'price' => $request->price[$i],
+    //                     'qty' => $request->qty[$i]
+    //                 ]);
 
-                    $ticket_fecha = TicketSetItems::create([
-                        'date' =>$invoice->date,
-                        'num_factura'=> $invoice->number,
-                        'id_customer' => $invoice->id_customer,
-                        'id_item'=> Products::where('item_name', $request->items[$i])->value('id'),
-                        'qty' =>  $request->qty[$i],
-                        'status' => '0'
-                    ]);
-                    $index++;
-                }
-            } else {
-                $id = Products::where('item_name', $request->items[$i])->value('id');
-                $cost = Products::where('item_name', $request->items[$i])->value('cost_avg');
+    //                 $ticket_fecha = TicketSetItems::create([
+    //                     'date' =>$invoice->date,
+    //                     'num_factura'=> $invoice->number,
+    //                     'id_customer' => $invoice->id_customer,
+    //                     'id_item'=> Products::where('item_name', $request->items[$i])->value('id'),
+    //                     'qty' =>  $request->qty[$i],
+    //                     'status' => '0'
+    //                 ]);
+    //                 $index++;
+    //             }
+    //         } else {
+    //             $id = Products::where('item_name', $request->items[$i])->value('id');
+    //             $cost = Products::where('item_name', $request->items[$i])->value('cost_avg');
 
-                if(!$id){
-                    $id = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
-                }
+    //             if(!$id){
+    //                 $id = Products_LabelBar::where('code', $request->items[$i])->value('id_item');
+    //             }
 
-                $items = InvoicesItems::create([
-                    'id_invoice' => $invoice->id,
-                    'id_warehouse' => $request->select_warehouse,
-                    'id_item' => $id,
-                    'id_size' => $size,
-                    'id_color' => $color,
-                    'qty' => $request->qty[$i],
-                    'unit' => $request->unit[$i],
-                    'cost' => $cost,
-                    'price' => $request->price[$i],
-                ]);
+    //             $items = InvoicesItems::create([
+    //                 'id_invoice' => $invoice->id,
+    //                 'id_warehouse' => $request->select_warehouse,
+    //                 'id_item' => $id,
+    //                 'id_size' => $size,
+    //                 'id_color' => $color,
+    //                 'qty' => $request->qty[$i],
+    //                 'unit' => $request->unit[$i],
+    //                 'cost' => $cost,
+    //                 'price' => $request->price[$i],
+    //             ]);
 
-                Inventories::create([
-                    'type' => 'Invoice',
-                    'id_transaction' => $invoice->id,
-                    'id_warehouse' => $request->select_warehouse,
-                    'id_item' =>  $id,
-                    'id_size' => $size,
-                    'id_color' => $color,
-                    'price' => $request->price[$i],
-                    'qty' => $request->qty[$i]
-                ]);
-                $index++;
-            }
-        }
+    //             Inventories::create([
+    //                 'type' => 'Invoice',
+    //                 'id_transaction' => $invoice->id,
+    //                 'id_warehouse' => $request->select_warehouse,
+    //                 'id_item' =>  $id,
+    //                 'id_size' => $size,
+    //                 'id_color' => $color,
+    //                 'price' => $request->price[$i],
+    //                 'qty' => $request->qty[$i]
+    //             ]);
+    //             $index++;
+    //         }
+    //     }
 
-        ///Redirigir a la vista Index, se adjunta mensaje.
-        return redirect()->route('invoices.index')->with('info', 'A record has been edited')->send();
-    }
+    //     ///Redirigir a la vista Index, se adjunta mensaje.
+    //     return redirect()->route('invoices.index')->with('info', 'A record has been edited')->send();
+    // }
 
     /**
      * Delete the specified resource in storage.
@@ -1093,43 +1093,43 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        $invoice = Invoices::find($id);
-        $is_payment = PaymentsDetails::where('invoice', $invoice->number)->count();
+    // public function destroy($id)
+    // {
+    //     $invoice = Invoices::find($id);
+    //     $is_payment = PaymentsDetails::where('invoice', $invoice->number)->count();
 
-        if ($is_payment == 0) {
-            //Delete Items, attachments and Inventories
-            $items = InvoicesItems::where('id_invoice', $invoice->id)->get();
+    //     if ($is_payment == 0) {
+    //         //Delete Items, attachments and Inventories
+    //         $items = InvoicesItems::where('id_invoice', $invoice->id)->get();
             
-            foreach ($items as $item) {
-                $inventory = Inventories::where('type', 'invoice')->where('id_transaction', $id)->where('id_item', $item->id_item)->first();
-                if ($inventory) {
-                    $product=Products::where('id',$inventory->id_item)->first();
-                    $total_cost=$product->qty*$product->cost_avg;
-                    $delete_cost=$inventory->qty*$inventory->price;
-                    $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
+    //         foreach ($items as $item) {
+    //             $inventory = Inventories::where('type', 'invoice')->where('id_transaction', $id)->where('id_item', $item->id_item)->first();
+    //             if ($inventory) {
+    //                 $product=Products::where('id',$inventory->id_item)->first();
+    //                 $total_cost=$product->qty*$product->cost_avg;
+    //                 $delete_cost=$inventory->qty*$inventory->price;
+    //                 $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
 
-                    $product->qty = $product->qty-$inventory->qty;
-                    $product->cost_avg = $cost_prom;
-                    $product->save();
+    //                 $product->qty = $product->qty-$inventory->qty;
+    //                 $product->cost_avg = $cost_prom;
+    //                 $product->save();
 
-                    $inventory->delete();
-                }
-            }
+    //                 $inventory->delete();
+    //             }
+    //         }
 
-            foreach ($items as $item) {
-                $item->delete();
-            }
+    //         foreach ($items as $item) {
+    //             $item->delete();
+    //         }
 
-            $invoice->delete();
+    //         $invoice->delete();
 
-            return redirect()->route('invoices.index')->with('info', 'A record has been deleted')->send();
-        }
-        else{
-            return redirect()->route('invoices.index')->with('info', 'This invoice #'. $invoice->number .' has payments and cannot be deleted')->send();
-        }
-    }
+    //         return redirect()->route('invoices.index')->with('info', 'A record has been deleted')->send();
+    //     }
+    //     else{
+    //         return redirect()->route('invoices.index')->with('info', 'This invoice #'. $invoice->number .' has payments and cannot be deleted')->send();
+    //     }
+    // }
 
     /**
      * Voided the specified resource in storage.
@@ -1138,39 +1138,39 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function void($id){
-        $invoice = Invoices::find($id);
-        $is_payment = PaymentsDetails::where('invoice', $invoice->number)->count();
-        $items = InvoicesItems::select('id_item')->where('id_invoice', $id)->get();
+    // public function void($id){
+    //     $invoice = Invoices::find($id);
+    //     $is_payment = PaymentsDetails::where('invoice', $invoice->number)->count();
+    //     $items = InvoicesItems::select('id_item')->where('id_invoice', $id)->get();
 
-        foreach ($items as $item) {
-            $inventory = Inventories::where('type', 'invoice')->where('id_transaction', $id)->where('id_item', $item->id_item)->first();
-            if ($inventory) {
-                $product=Products::where('id',$inventory->id_item)->first();
-                $total_cost=$product->qty*$product->cost_avg;
-                $delete_cost=$inventory->qty*$inventory->price;
-                $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
+    //     foreach ($items as $item) {
+    //         $inventory = Inventories::where('type', 'invoice')->where('id_transaction', $id)->where('id_item', $item->id_item)->first();
+    //         if ($inventory) {
+    //             $product=Products::where('id',$inventory->id_item)->first();
+    //             $total_cost=$product->qty*$product->cost_avg;
+    //             $delete_cost=$inventory->qty*$inventory->price;
+    //             $cost_prom=($total_cost-$delete_cost)/($product->qty-$inventory->qty);
 
-                $product->qty = $product->qty-$inventory->qty;
-                $product->cost_avg = $cost_prom;
-                $product->save();
+    //             $product->qty = $product->qty-$inventory->qty;
+    //             $product->cost_avg = $cost_prom;
+    //             $product->save();
 
-                $inventory->delete();
-            }/*  */
-        }
+    //             $inventory->delete();
+    //         }/*  */
+    //     }
 
-        if ($is_payment == 0) {
-            $invoice->status = "Void";
-            $invoice->taxes = 0.00;
-            $invoice->total = 0.00;
-            $invoice->save();
+    //     if ($is_payment == 0) {
+    //         $invoice->status = "Void";
+    //         $invoice->taxes = 0.00;
+    //         $invoice->total = 0.00;
+    //         $invoice->save();
 
-            return redirect()->route('invoices.index')->with('info', 'The invoice #'. $invoice->number .' has been voided')->send();
-        }
-        else{
-            return redirect()->route('invoices.index')->with('info', 'This invoice #'. $invoice->number .' has payments and cannot be voided')->send();
-        }
-    }
+    //         return redirect()->route('invoices.index')->with('info', 'The invoice #'. $invoice->number .' has been voided')->send();
+    //     }
+    //     else{
+    //         return redirect()->route('invoices.index')->with('info', 'This invoice #'. $invoice->number .' has payments and cannot be voided')->send();
+    //     }
+    // }
 
     /**
      * Remove the specified resource from storage.
@@ -1178,192 +1178,192 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function approved($id)
-    {  
-        $length = 9;
-        $invoice_number = DocumentNumbers::where('type', 'Invoices')->first();
-        $secuencial = str_pad($invoice_number->number, $length,"0", STR_PAD_LEFT);
-        $sales_order = SalesOrders::find($id);
-        $sales_order->status = 'In process';
-        $sales_order->save();
-        $sales_number = null;
+    // public function approved($id)
+    // {  
+    //     $length = 9;
+    //     $invoice_number = DocumentNumbers::where('type', 'Invoices')->first();
+    //     $secuencial = str_pad($invoice_number->number, $length,"0", STR_PAD_LEFT);
+    //     $sales_order = SalesOrders::find($id);
+    //     $sales_order->status = 'In process';
+    //     $sales_order->save();
+    //     $sales_number = null;
         
-        $sales_items = SalesOrdersItems::where('id_order', $sales_order->id)->get();
+    //     $sales_items = SalesOrdersItems::where('id_order', $sales_order->id)->get();
         
-        $if_exists = Invoices::where('number', $secuencial)->exists();
-        if ($if_exists == 1) {
-            while ($if_exists == 1)
-            {
-                $number = intval($secuencial);   
-                $number += 1;
-                $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
-                $sales_number = $secuencial;
-                $if_exists = Invoices::where('number', $secuencial)->exists();
-            }
-        }
-        else{
-            $sales_number = $secuencial;
-        }
-        $invoice = Invoices::create([
-            'number' => $sales_number,
-            'id_customer' => $sales_order->id_customer,
-            'date' => $sales_order->date,
-            'phone' => $sales_order->phone,
-            'email' => $sales_order->email,
-            'id_term' => $sales_order->id_term,
-            'billto' => $sales_order->billto,
-            'id_shipto' => $sales_order->id_shipto,
-            'id_warehouse' => $sales_order->id_warehouse, 
-            'taxes' => $sales_order->taxes,
-            'total' => $sales_order->total,
-            'status' => 'Pending',
-            'active' => 1
-        ]);
+    //     $if_exists = Invoices::where('number', $secuencial)->exists();
+    //     if ($if_exists == 1) {
+    //         while ($if_exists == 1)
+    //         {
+    //             $number = intval($secuencial);   
+    //             $number += 1;
+    //             $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
+    //             $sales_number = $secuencial;
+    //             $if_exists = Invoices::where('number', $secuencial)->exists();
+    //         }
+    //     }
+    //     else{
+    //         $sales_number = $secuencial;
+    //     }
+    //     $invoice = Invoices::create([
+    //         'number' => $sales_number,
+    //         'id_customer' => $sales_order->id_customer,
+    //         'date' => $sales_order->date,
+    //         'phone' => $sales_order->phone,
+    //         'email' => $sales_order->email,
+    //         'id_term' => $sales_order->id_term,
+    //         'billto' => $sales_order->billto,
+    //         'id_shipto' => $sales_order->id_shipto,
+    //         'id_warehouse' => $sales_order->id_warehouse, 
+    //         'taxes' => $sales_order->taxes,
+    //         'total' => $sales_order->total,
+    //         'status' => 'Pending',
+    //         'active' => 1
+    //     ]);
 
-        foreach ($sales_items as $item) {
-            $id_process = Products::where('id', $item->id_item)->value('id_process');
-            InvoicesItems::create([
-            'id_invoice' => $invoice->id, 
-            'id_item' => $item->id_item, 
-            'id_size' => $item->id_size, 
-            'id_color' => $item->id_color, 
-            'qty' => $item->qty, 
-            'unit' => $item->unit, 
-            'price' => $item->price
-        ]);
+    //     foreach ($sales_items as $item) {
+    //         $id_process = Products::where('id', $item->id_item)->value('id_process');
+    //         InvoicesItems::create([
+    //         'id_invoice' => $invoice->id, 
+    //         'id_item' => $item->id_item, 
+    //         'id_size' => $item->id_size, 
+    //         'id_color' => $item->id_color, 
+    //         'qty' => $item->qty, 
+    //         'unit' => $item->unit, 
+    //         'price' => $item->price
+    //     ]);
 
-            Inventories::create([
-            'type' => 'Invoice',
-            'id_transaction' => $invoice->id,
-            'id_warehouse' => $invoice->id_warehouse,
-            'id_item' => $item->id_item,
-            'id_size' => $item->id_size, 
-            'id_color' => $item->id_color, 
-            'price' => $item->price,
-            'qty' =>  $item->qty 
-            ]);
+    //         Inventories::create([
+    //         'type' => 'Invoice',
+    //         'id_transaction' => $invoice->id,
+    //         'id_warehouse' => $invoice->id_warehouse,
+    //         'id_item' => $item->id_item,
+    //         'id_size' => $item->id_size, 
+    //         'id_color' => $item->id_color, 
+    //         'price' => $item->price,
+    //         'qty' =>  $item->qty 
+    //         ]);
 
-            if($id_process){                   
-                $process = Processes::where('id', $id_process)->first();          
-                $process_data = ProcessData::create([
-                    'name' => $process->description,
-                    'id_customer' => $sales_order->id_customer,
-                    'has_responsible' => $process->responsible,
-                    'id_responsible' => $process->id_responsible
-                ]);
+    //         if($id_process){                   
+    //             $process = Processes::where('id', $id_process)->first();          
+    //             $process_data = ProcessData::create([
+    //                 'name' => $process->description,
+    //                 'id_customer' => $sales_order->id_customer,
+    //                 'has_responsible' => $process->responsible,
+    //                 'id_responsible' => $process->id_responsible
+    //             ]);
 
-                $process_order = Process_Order::create([
-                    'id_order' => $sales_order->id,
-                    'id_process' => $process_data->id,
-                    'id_invoice' => $invoice->id,  
-                ]);
+    //             $process_order = Process_Order::create([
+    //                 'id_order' => $sales_order->id,
+    //                 'id_process' => $process_data->id,
+    //                 'id_invoice' => $invoice->id,  
+    //             ]);
 
-                $process_phases = ProcessPhases::where('id_process', $id_process)->get();
-                foreach ($process_phases as $phase) {
-                    $process_data_phase = ProcessDataPhase::create([
-                        'id_data' => $process_data->id,
-                        'name' => $phase->description,
-                        'has_responsible' => $phase->has_responsible,
-                        'id_responsable' => $phase->id_responsible
-                    ]);
+    //             $process_phases = ProcessPhases::where('id_process', $id_process)->get();
+    //             foreach ($process_phases as $phase) {
+    //                 $process_data_phase = ProcessDataPhase::create([
+    //                     'id_data' => $process_data->id,
+    //                     'name' => $phase->description,
+    //                     'has_responsible' => $phase->has_responsible,
+    //                     'id_responsable' => $phase->id_responsible
+    //                 ]);
 
-                    $process_stage = ProcessStage::where('id_phase', $phase->id)->get();
-                    foreach ($process_stage as $stage) {
-                            $process_data_stage = ProcessDataStage::create([
-                                'id_phases' => $process_data_phase->id,
-                                'name' => $stage->description,
-                                'has_condition' => $stage->has_condition,
-                                'has_attachment_customer' => $stage->has_attachment_customer,
-                                'has_inventory_received' => $stage->has_inventory_received,
-                                'has_responsible' => $stage->has_responsible,
-                                'id_responsible' => $stage->id_responsible,
-                                'has_date' => $stage->has_date,
-                                'has_instructions' => $stage->has_instructions,
-                                'has_attachment' => $stage->has_attachment,
-                                'has_comparison' => $stage->has_comparison,
-                                'has_send_mail' => $stage->has_send_mail
-                            ]);
-                            if($process_data_stage->has_condition == 1){
-                                $process_condition = ProcessCondition::where('id_stage', $stage->id)->first();
+    //                 $process_stage = ProcessStage::where('id_phase', $phase->id)->get();
+    //                 foreach ($process_stage as $stage) {
+    //                         $process_data_stage = ProcessDataStage::create([
+    //                             'id_phases' => $process_data_phase->id,
+    //                             'name' => $stage->description,
+    //                             'has_condition' => $stage->has_condition,
+    //                             'has_attachment_customer' => $stage->has_attachment_customer,
+    //                             'has_inventory_received' => $stage->has_inventory_received,
+    //                             'has_responsible' => $stage->has_responsible,
+    //                             'id_responsible' => $stage->id_responsible,
+    //                             'has_date' => $stage->has_date,
+    //                             'has_instructions' => $stage->has_instructions,
+    //                             'has_attachment' => $stage->has_attachment,
+    //                             'has_comparison' => $stage->has_comparison,
+    //                             'has_send_mail' => $stage->has_send_mail
+    //                         ]);
+    //                         if($process_data_stage->has_condition == 1){
+    //                             $process_condition = ProcessCondition::where('id_stage', $stage->id)->first();
 
-                                if($process_condition){
-                                    ProcessDataCondition::create([
-                                        'id_stage' => $process_data_stage->id,
-                                        'action_yes' => $process_condition->action_yes,
-                                        'action_no' => $process_condition->action_no
-                                    ]);
-                                }
-                            }
-                    }
-                }
-            }
-        }
+    //                             if($process_condition){
+    //                                 ProcessDataCondition::create([
+    //                                     'id_stage' => $process_data_stage->id,
+    //                                     'action_yes' => $process_condition->action_yes,
+    //                                     'action_no' => $process_condition->action_no
+    //                                 ]);
+    //                             }
+    //                         }
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        $number = intval($invoice_number->number) + 1;
-        $invoice_number->number = $number;
-        $invoice_number->save();
+    //     $number = intval($invoice_number->number) + 1;
+    //     $invoice_number->number = $number;
+    //     $invoice_number->save();
 
-        return redirect()->route('invoices.index')->with('info', 'A new record has been created')->send();
+    //     return redirect()->route('invoices.index')->with('info', 'A new record has been created')->send();
 
-    }
+    // }
 
-    public function verificarCliente($ruc)
-    {
-        $nombreBD = App::make('dataBase');
+    // public function verificarCliente($ruc)
+    // {
+    //     $nombreBD = App::make('dataBase');
 
-        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
-        $usuario = "root";
-        $contrasena = "";
+    //     $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+    //     $usuario = "root";
+    //     $contrasena = "";
 
-        try
-        {
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+    //     try
+    //     {
+    //         $conexion = new \PDO($dsn, $usuario, $contrasena);
+    //         $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
-            $consulta = "SELECT * FROM customers WHERE numero_ident = '{$ruc}'";
-            $result= $conexion->query($consulta);
+    //         $consulta = "SELECT * FROM customers WHERE numero_ident = '{$ruc}'";
+    //         $result= $conexion->query($consulta);
 
-            $customer = [];
+    //         $customer = [];
 
-            foreach ($result as $fila) {
-                $customer[]=[
-                    "id" => $fila['id'],
-                    "cliente" => $fila['name'],
-                    "email" => $fila['email'],
-                    "telefono" => $fila['phone'],
-                    "direccion" => $fila['direccion']
-                ];
-            }
+    //         foreach ($result as $fila) {
+    //             $customer[]=[
+    //                 "id" => $fila['id'],
+    //                 "cliente" => $fila['name'],
+    //                 "email" => $fila['email'],
+    //                 "telefono" => $fila['phone'],
+    //                 "direccion" => $fila['direccion']
+    //             ];
+    //         }
 
-            return json_encode($customer);
+    //         return json_encode($customer);
             
-        }catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        } 
-    }
+    //     }catch (\PDOException $e) {
+    //         echo "Error de conexión: " . $e->getMessage();
+    //     } 
+    // }
 
-    public function tipoDocumento($tipo)
-    {
-        $nombreBD = App::make('dataBase');
+    // public function tipoDocumento($tipo)
+    // {
+    //     $nombreBD = App::make('dataBase');
 
-        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
-        $usuario = "root";
-        $contrasena = "";
+    //     $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+    //     $usuario = "root";
+    //     $contrasena = "";
 
-        try
-        {
-            $conexion = new \PDO($dsn, $usuario, $contrasena);
-            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+    //     try
+    //     {
+    //         $conexion = new \PDO($dsn, $usuario, $contrasena);
+    //         $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
-            $consulta = "SELECT number FROM document_numbers WHERE type = '{$tipo}'";
-            $result= $conexion->query($consulta);
+    //         $consulta = "SELECT number FROM document_numbers WHERE type = '{$tipo}'";
+    //         $result= $conexion->query($consulta);
 
-            $tipo =  $result->fetch();
+    //         $tipo =  $result->fetch();
 
-            return json_encode($tipo);
+    //         return json_encode($tipo);
             
-        }catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        } 
-    }
+    //     }catch (\PDOException $e) {
+    //         echo "Error de conexión: " . $e->getMessage();
+    //     } 
+    // }
 }

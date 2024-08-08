@@ -111,7 +111,7 @@
                                             <tr>
                                                 <td>{{date('Y-m-d',strtotime($kx->date))}}</td>
                                                 <td>{{$kx->type}}</td>
-                                                @if ($kx->type=="Invoice")
+                                                @if ($kx->type=="Factura")
                                                     <?php
                                                         // $response = Invoices::where('id',$kx->id_transaction)->first();
                                                         // if ($response) {

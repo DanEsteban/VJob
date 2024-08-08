@@ -88,12 +88,12 @@
                     <thead>
                         <tr>
                             <th width="4%"></th>
-                            <th width="15%">Code</th>
-                            <th>Description</th>
-                            <th width="10%">Qty</th>
+                            <th width="15%">Codigo</th>
+                            <th>Descripcion</th>
+                            <th width="10%">Cantidad</th>
                             <th width="10%">U/M</th>
-                            <th width="10%" id="th_cost">Cost</th> 
-                            <th width="10%">Amount</th>
+                            <th width="10%" id="th_cost">Costo</th> 
+                            <th width="10%">Total</th>
                         </tr>
                     </thead>
                     <tbody id="tb_items">
@@ -132,7 +132,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <button onclick="addRow3();" type="button" class="btn btn-sm btn-outline-primary mt-3"><i class="fa-solid fa-plus"></i> Row</button>
+                            <button onclick="addRow3();" id="addRow" type="button" class="btn btn-sm btn-outline-primary mt-3"><i class="fa-solid fa-plus"></i> Row</button>
                         </div>
                         
                     </div>
@@ -180,12 +180,14 @@
     $(document).ready(function() {
         $("#tb_items").hide();
         $("#addrow").hide();
+        $("#addRow").prop("disabled", true);
         
         $("#select_move").change(function() { 
             if ($(this).val() != "") { 
                 $("#tb_items").show();
                 $("#addrow").show();
                 $('#dTable').find('input').val('');
+                $("#addRow").prop("disabled", false);
             } else {
                 $("#tb_items").hide(); 
                 $("#addrow").hide();
@@ -252,9 +254,11 @@
     }
     
     function changeItemMov(objeto, items) {
+        //console.log("Te amo mom")
         let date = $("#date").val();
         let code = $(objeto).val().trim();
         let tr = $(objeto).closest('tr');
+
         let firstDuplicateRow = false;
         let duplicateRowIndex = -1;
         let itemData = items.find(item => item.id == code);
@@ -325,42 +329,57 @@
         }
     }
 
-    function save(){
-
+    function save() {
         var tipo = $("#select_move option:selected").text(); 
-        var aprobado = 0;
+        var aprobado = false;
+
+        if (tipo == "Select Movement") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Seleccione un tipo de movimiento',
+            });
+            aprobado = true;
+        }
+
         var rows = 0;
 
-        if(tipo == "Select Movement"){
-            Swal.fire(
-                'Warning',
-                'Seleccione un tipo de movimiento',
-                'warning'
-            )
-            aprobado++;
-        }
-
         $('#tb_items tr').find('#amt').each(function () {
-            codigo = $(this).val();
-            if (codigo != "") {
+            var amountValue = $(this).val();
+            var $currentRow = $(this).closest('tr');
+
+            if (amountValue !== "") {
                 rows++;
             }
-        })
 
-        if (rows < 1 && aprobado == 0) {
-            Swal.fire(
-                    'Warning',
-                    'Por favor elija los productos y añádalos a la lista',
-                    'warning'
-            )
-            aprobado++;
+            if (amountValue == '0.00') {
+                aprobado = true; // Marcar como aprobado para evitar el envío
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "¡El Total de un ingreso no puede ser cero!"
+                }).then(() => {
+                    $currentRow.find("#price").focus(); // Enfocar el campo anterior
+                });
+                return false; // Salir del each para evitar múltiples alertas
+            }
+        });
+
+        if (rows < 1 && !aprobado) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Por favor elija los productos y añádalos a la lista',
+            });
+            aprobado = true;
         }
 
-        if(aprobado == 0){
+        // Enviar el formulario solo si no hubo ningún error
+        if (!aprobado) {
             $('#doc_form').submit();
         }
-
     }
+
 
     function typenumber(objeto){
         $type = $(objeto).val();
