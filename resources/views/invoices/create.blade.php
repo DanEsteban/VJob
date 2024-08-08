@@ -30,13 +30,13 @@
         </div>
     @endif
     <br>
-
+    
     <div class="card">
         <div class="card-header">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
-                        <h1 class="text-left">Logo Empresa</h1>
+                        <img src="/{{$datosEmp['emp_ruta_logo']}}" class="img-fluid" width="200px" alt="">
                     </div>
 
                     <div class="col-md-6 text-right">

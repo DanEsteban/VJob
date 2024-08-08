@@ -40,8 +40,13 @@ class KardexController extends Controller
                     "is_active" => $fila['is_active'],
                 ];
             }
+            // Redirige a la página principal si no hay elementos
+            if (empty($items)) {
+                return redirect('/dashboard');
+            }
 
             return view('kardex.index', compact('items'));
+            //return view('kardex.index', compact('items'))->with('noProducts', empty($items));
 
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();

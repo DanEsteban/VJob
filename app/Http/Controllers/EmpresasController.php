@@ -49,6 +49,7 @@ class EmpresasController extends Controller
     public function store(Request $request)
     {
         //return $request;
+        //return $_FILES['rutaFirma'];
         $palabras = explode(" ", $request->cs_company); // Divide el string en palabras
 
         $nombreBD = "";
@@ -193,7 +194,7 @@ class EmpresasController extends Controller
 
                 "movements" => "id int(20) NOT NULL AUTO_INCREMENT,
                     number varchar(20) NOT NULL,
-                    comments varchar(255) NOT NULL,
+                    comments varchar(255) DEFAULT NULL,
                     date date NOT NULL,
                     total decimal(8,2) NOT NULL,
                     tipo varchar(10) NOT NULL,
@@ -204,12 +205,12 @@ class EmpresasController extends Controller
                     PRIMARY KEY (id)",
 
                 "movements_items" => "id int(20) NOT NULL AUTO_INCREMENT,
-                    id_income int(11) NOT NULL,
+                    id_movement int(11) NOT NULL,
                     id_item int(11) NOT NULL,
-                    id_size int(11) DEFAULT NULL,
-                    qty decimal(8,2) NOT NULL,
+                    qty int(11) NOT NULL,
                     unit varchar(50) DEFAULT NULL,
                     cost decimal(8,2) NOT NULL,
+                    total_cost decimal(8,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
                     updated_at timestamp NULL DEFAULT NULL,
                     PRIMARY KEY (id)",
@@ -330,7 +331,6 @@ class EmpresasController extends Controller
                     desde int(10) NOT NULL,
                     hasta int(10) NOT NULL,
                     PRIMARY KEY (id)",
-                
 
                 "products" => "id int(20) NOT NULL AUTO_INCREMENT,
                     id_type int(11) NOT NULL,
@@ -359,7 +359,8 @@ class EmpresasController extends Controller
                     year varchar(4) NOT NULL,
                     month int(11) NOT NULL,
                     qty int(11) NOT NULL,
-                    cost int(11) NOT NULL,
+                    cost decimal(8,2) NOT NULL,
+                    avg_cost decimal(8,2) NOT NULL,
                     created_at timestamp NULL DEFAULT NULL,
                     updated_at timestamp NULL DEFAULT NULL,
                     PRIMARY KEY (id)",
@@ -500,6 +501,121 @@ class EmpresasController extends Controller
                 die("Conexión fallida: " . $conn->connect_error);
             }
 
+            if ($_FILES['logo']['error'] === UPLOAD_ERR_OK && is_uploaded_file($_FILES['logo']['tmp_name'])) {
+                // Obtener la información del archivo
+                $nombreArchivo = $_FILES['logo']['name'];
+                $archivoTemporal = $_FILES['logo']['tmp_name'];
+                // Verificar si el archivo es una imagen
+                $esImagen = getimagesize($archivoTemporal);
+                if ($esImagen !== false) {
+                    // Definir la carpeta de destino con el nombre de la empresa
+                    $nombreEmpresa = $request->input('cs_company');
+                    $carpetaDestino = "img/" . $nombreEmpresa . "/";
+                    
+                    // Verificar si la carpeta de destino existe, si no, crearla
+                    if (!file_exists($carpetaDestino)) {
+                        if (!mkdir($carpetaDestino, 0777, true)) {
+                            die('Error al crear la carpeta de destino.');
+                        }
+                    }
+                    // Mover el archivo a la carpeta de destino
+                    $rutaArchivo = $carpetaDestino . $nombreArchivo;
+                    if (move_uploaded_file($archivoTemporal, $rutaArchivo)) {
+                        echo "La imagen se ha subido correctamente.";
+                    } else {
+                        echo "Error al subir la imagen.";
+                        $rutaArchivo = null;
+                    }
+                } else {
+                    echo "El archivo no es una imagen válida.";
+                    $rutaArchivo = null;
+                }
+            } else {
+                echo "Error al subir el archivo.";
+                $rutaArchivo = null;
+            }
+
+            //FIRMA ARCHIVO.P12
+            /*
+                // $file = $request->file('rutaFirma');
+                // $nuevoNombre = $request->ruc.'.p12';
+
+                // $carpeta = 'firmas';
+                // $fullPath = $carpeta . '/' . $nuevoNombre;
+                //Storage::disk('local')->put($fullPath, file_get_contents($file));
+                // Storage::disk('local')->put($fullPath, file_get_contents($file));
+                // if (Storage::disk('local')->exists($fullPath)) {
+                //     $empresa = Empresas::create([
+                //         'nombre' => $request->cs_company,
+                //         'ruc' => $request->ruc,
+                //         'direccion' => $request->direccion,
+                //         'telefono' => $request->cs_phone,
+                //         'correo' => $request->cs_mail,
+                //         'id_tipo_contribuyente' => $request->tipoContribuyente,
+                //         'base_datos' => $nombreBD,
+                //         'cadena_conexion' => $cadena_conexion,
+                //         'ruta_firma' => $fullPath,
+                //         'clave_firma' => $request->claveFirma,
+                //         'ruta_logo' => $rutaArchivo,
+                //         'fecha_creacion' => date("Y-m-d")
+                //     ]);
+                //     //dd($empresa);
+                //     $user = User::create([
+                //         'id_empresa' => $empresa->id_empresa,
+                //         'name' => 'admin',
+                //         'email' => $request->cs_mail,
+                //         'password' => bcrypt($request->ruc),
+                //         'role_id' => 1,             
+                //     ]);    
+
+                //     ModelHasRole::create([
+                //         'role_id' => $user->role_id,  
+                //         'model_type' => 'App\Models\User',  
+                //         'model_id' => $user->id
+                //     ]);
+                    
+                // }
+            */
+            $filename = $_FILES['rutaFirma']['name'];
+            $directory = "firmas/".$request->input('cs_company')."/";
+            if (!file_exists($directory)) {
+                mkdir($directory, 0777, true); // Añadido 'true' para permitir la creación recursiva
+            }
+            $dir = opendir($directory);
+
+            if(copy($_FILES['rutaFirma']['tmp_name'], $directory.$filename)){
+                $empresa = Empresas::create([
+                        'nombre' => $request->cs_company,
+                        'ruc' => $request->ruc,
+                        'direccion' => $request->direccion,
+                        'telefono' => $request->cs_phone,
+                        'correo' => $request->cs_mail,
+                        'id_tipo_contribuyente' => $request->tipoContribuyente,
+                        'base_datos' => $nombreBD,
+                        'cadena_conexion' => $cadena_conexion,
+                        'ruta_firma' => $directory.$filename,
+                        'clave_firma' => $request->claveFirma,
+                        'ruta_logo' => $rutaArchivo,
+                        'fecha_creacion' => date("Y-m-d")
+                    ]);
+
+                $user = User::create([
+                    'id_empresa' => $empresa->id_empresa,
+                    'name' => 'admin',
+                    'email' => $request->cs_mail,
+                    'password' => bcrypt($request->ruc),
+                    'role_id' => 1,             
+                ]);    
+
+                ModelHasRole::create([
+                    'role_id' => $user->role_id,  
+                    'model_type' => 'App\Models\User',  
+                    'model_id' => $user->id
+                ]);
+                
+            }
+            closedir($dir);
+            
             $databaseExists = DB::select("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?", [$nombreBD]);
 
             if (empty($databaseExists)) {
@@ -524,8 +640,18 @@ class EmpresasController extends Controller
                 }
 
                 // Función para insertar datos iniciales en la tabla parameters
+                function insertarDatosInicialesCustomers($conn, $datos) {
+                    $sql = "INSERT INTO customers (tipo_ident, numero_ident, name, phone, direccion, id_vendedor, balance) VALUES $datos";
+                
+                    if ($conn->query($sql) === TRUE) {
+                        echo "Datos insertados en la tabla 'customers' exitosamente<br>";
+                    } else {
+                        echo "Error al insertar datos en la tabla 'customers': " . $conn->error . "<br>";
+                    }
+                }
+
                 function insertarDatosInicialesParameters($conn, $datos) {
-                    $sql = "INSERT INTO parameters (id, name, type, value) VALUES $datos";
+                    $sql = "INSERT INTO parameters (name, type, value) VALUES $datos";
                 
                     if ($conn->query($sql) === TRUE) {
                         echo "Datos insertados en la tabla 'parameters' exitosamente<br>";
@@ -533,9 +659,9 @@ class EmpresasController extends Controller
                         echo "Error al insertar datos en la tabla 'parameters': " . $conn->error . "<br>";
                     }
                 }
-
+                
                 function insertarDatosInicialesdocument_numbers($conn, $datos) {
-                    $sql = "INSERT INTO document_numbers (id, type, number) VALUES $datos";
+                    $sql = "INSERT INTO document_numbers (type, number) VALUES $datos";
                     if ($conn->query($sql) === TRUE) {
                         echo "Datos insertados en la otra tabla exitosamente<br>";
                     } else {
@@ -544,7 +670,7 @@ class EmpresasController extends Controller
                 }
 
                 function insertarDatosInicialesserie_factura($conn, $datos) {
-                    $sql = "INSERT INTO serie_factura (id, nombre, tipo_documento, establecimiento, punto_emision, secuencial) VALUES $datos";
+                    $sql = "INSERT INTO serie_factura (nombre, tipo_documento, establecimiento, punto_emision, secuencial) VALUES $datos";
                     if ($conn->query($sql) === TRUE) {
                         echo "Datos insertados en la otra tabla exitosamente<br>";
                     } else {
@@ -553,7 +679,7 @@ class EmpresasController extends Controller
                 }
 
                 function insertarDatosInicialespayment_terms($conn, $datos) {
-                    $sql = "INSERT INTO payment_terms (id, name) VALUES $datos";
+                    $sql = "INSERT INTO payment_terms (name) VALUES $datos";
                     if ($conn->query($sql) === TRUE) {
                         echo "Datos insertados en la otra tabla exitosamente<br>";
                     } else {
@@ -562,48 +688,58 @@ class EmpresasController extends Controller
                 }
 
                 function insertarDatosInicialesitem_types($conn, $datos) {
-                    $sql = "INSERT INTO item_types (id, name) VALUES $datos";
+                    // Prepara la consulta SQL para insertar los datos
+                    $sql = "INSERT INTO item_types (name) VALUES $datos";
+                
+                    // Ejecuta la consulta
                     if ($conn->query($sql) === TRUE) {
-                        echo "Datos insertados en la otra tabla exitosamente<br>";
+                        echo "Datos insertados en la tabla exitosamente<br>";
                     } else {
-                        echo "Error al insertar datos en la otra tabla: " . $conn->error . "<br>";
+                        echo "Error al insertar datos en la tabla: " . $conn->error . "<br>";
                     }
                 }
                 
                 // Array de datos para insertar en cada tabla
+                $datosInicialesCustomers = array(
+                    "('07', '9999999999999', 'CONSUMIDOR FINAL (SOLO CONTADOS)', '999999999','SIN DIRECCIÓN', '0', '0.00')"
+        
+                );
+
                 $datosInicialesParameters = array(
-                    "(1, 'PERIODO ACTIVO', 'N', '2023')",
-                    "(2, 'SERIE FACTURA', 'C', '001001')",
-                    "(3, 'emp_nombre', 'C', '{$request->cs_company}')",
-                    "(4, 'emp_ruc', 'N', '{$request->ruc}')",
-                    "(5, 'emp_dir', 'C', '{$request->direccion}')",
-                    "(6, 'emp_tel', 'C', '{$request->cs_phone}')",
-                    "(7, 'emp_email', 'N', '{$request->cs_mail}')",
-                    "(8, 'emp_firmaElec', 'N', '{$request->claveFirma}')"
+                    "('PERIODO ACTIVO', 'N', '" . date('Y') . "')",
+                    "('SERIE FACTURA', 'C', '001001')",
+                    "('emp_nombre', 'C', '{$request->cs_company}')",
+                    "('emp_ruc', 'N', '{$request->ruc}')",
+                    "('emp_dir', 'C', '{$request->direccion}')",
+                    "('emp_tel', 'C', '{$request->cs_phone}')",
+                    "('emp_email', 'N', '{$request->cs_mail}')",
+                    "('emp_firmaElec', 'N', '{$request->claveFirma}')",
+                    "('emp_ruta_p12', 'N', '{$directory }')",
+                    "('emp_ruta_logo', 'N', '{$rutaArchivo}')"
                 );
 
                 $datosInicialesdocument_numbers = array(
-                    "('1', 'Orders', '1')",
-                    "('2', 'Factura', '0')",
-                    "('3', 'Engreso', '1')",
-                    "('4', 'Ingreso', '1')",
+                    "('Orders', '1')",
+                    "('Factura', '1')",
+                    "('Egreso', '1')",
+                    "('Ingreso', '1')",
                 );
                 
                 $datosInicialesserie_factura = array(
-                    "('1', 'Nota de Venta', '0', '999', '999', '1')",
-                    "('2', 'Factura', '1', '001', '001', '1')",
-                    "('3', 'Nota de Credito', '4', '001', '001', '1')",
+                    "('Nota de Venta', '0', '999', '999', '1')",
+                    "('Factura', '1', '001', '001', '1')",
+                    "('Nota de Credito', '4', '001', '001', '1')",
                 );
 
                 $datosInicialespayment_terms = array(
-                    "('1', 'Efectivo')",
-                    "('2', 'Transferencia')",
+                    "('Efectivo')",
+                    "('Transferencia')",
                 );
 
                 $datosInicialesitem_types = array(
-                    "('1', 'Servicio')",
-                    "('2', 'ParteInventario')",
-                    "('3', 'No-ParteInventario')",
+                    "('Servicio')",
+                    "('ParteInventario')",
+                    "('No-ParteInventario')",
                 );
 
 
@@ -611,7 +747,13 @@ class EmpresasController extends Controller
                 foreach ($tablas as $nombreTabla => $columnas) {
                     crearTabla($conn, $nombreTabla, $columnas);
                     
-                    // Si la tabla es 'parameters', inserta los datos iniciales
+                    // Si la tabla es 'customers', inserta los datos iniciales
+                    if ($nombreTabla === 'customers') {
+                        foreach ($datosInicialesCustomers as $datos) {
+                            insertarDatosInicialesCustomers($conn, $datos);
+                        }
+                    }
+
                     if ($nombreTabla === 'parameters') {
                         foreach ($datosInicialesParameters as $datos) {
                             insertarDatosInicialesParameters($conn, $datos);
@@ -632,7 +774,7 @@ class EmpresasController extends Controller
 
                     if ($nombreTabla === 'payment_terms') {
                         foreach ($datosInicialespayment_terms as $datos) {
-                            insertarDatosInicialesitem_types($conn, $datos);
+                            insertarDatosInicialespayment_terms($conn, $datos);
                         }
                     }
 
@@ -644,121 +786,7 @@ class EmpresasController extends Controller
                 }
                 // Cerrar la conexión
                 $conn->close();
-            }
-
-            if ($_FILES['logo']['error'] === UPLOAD_ERR_OK && is_uploaded_file($_FILES['logo']['tmp_name'])) {
-                // Obtener la información del archivo
-                $nombreArchivo = $_FILES['logo']['name'];
-                // $tipoArchivo = $_FILES['logo']['type'];
-                // $tamanioArchivo = $_FILES['logo']['size'];
-                $archivoTemporal = $_FILES['logo']['tmp_name'];
-            
-                // Verificar si el archivo es una imagen
-                $esImagen = getimagesize($archivoTemporal);
-                if ($esImagen !== false) {
-                    // Definir la carpeta de destino con el nombre de la empresa
-                    $nombreEmpresa = $request->input('cs_company');
-                    $carpetaDestino = "img/" . $nombreEmpresa . "/";
-                    
-                    // Verificar si la carpeta de destino existe, si no, crearla
-                    if (!file_exists($carpetaDestino)) {
-                        if (!mkdir($carpetaDestino, 0777, true)) {
-                            die('Error al crear la carpeta de destino.');
-                        }
-                    }
-            
-                    // Mover el archivo a la carpeta de destino
-                    $rutaArchivo = $carpetaDestino . $nombreArchivo;
-                    if (move_uploaded_file($archivoTemporal, $rutaArchivo)) {
-                        echo "La imagen se ha subido correctamente.";
-                    } else {
-                        echo "Error al subir la imagen.";
-                    }
-                } else {
-                    echo "El archivo no es una imagen válida.";
-                }
-            } else {
-                echo "Error al subir el archivo.";
-            }
-
-            //FIRMA ARCHIVO.P12
-
-            $file = $request->file('rutaFirma');
-            $nuevoNombre = $request->ruc.'.p12';
-
-            $carpeta = '';
-            $filePath = Storage::disk('local')->put($carpeta . '/' . $nuevoNombre, file_get_contents($file));
-            //return $filePath;
-            if (Storage::disk('local')->exists($carpeta . '/' . $nuevoNombre)) {
-                $empresa = Empresas::create([
-                    'nombre' => $request->cs_company,
-                    'ruc' => $request->ruc,
-                    'direccion' => $request->direccion,
-                    'telefono' => $request->cs_phone,
-                    'correo' => $request->cs_mail,
-                    'id_tipo_contribuyente' => $request->tipoContribuyente,
-                    'base_datos' => $nombreBD,
-                    'cadena_conexion' => $cadena_conexion,
-                    'ruta_firma' => $filePath,
-                    'clave_firma' => $request->claveFirma,
-                    'fecha_creacion' => date("Y-m-d")
-                ]);
-
-                $user = User::create([
-                    'id_empresa' => $empresa->id_empresa,
-                    'name' => 'admin',
-                    'email' => $request->cs_mail,
-                    'password' => bcrypt($request->ruc),
-                    'role_id' => 1,             
-                ]);    
-
-                ModelHasRole::create([
-                    'role_id' => $user->role_id,  
-                    'model_type' => 'App\Models\User',  
-                    'model_id' => $user->id
-                ]);
-                
-            }
-            /*
-                $filename = $_FILES['rutaFirma']['name'];
-                $directory = "firmas/".$request->input('cs_company')."/";
-                if(!file_exists($directory)){
-                    mkdir($directory, 0777);
-                } 
-                $dir = opendir($directory);
-
-                if(copy($_FILES['rutaFirma']['tmp_name'], $directory.$filename)){
-                    $empresa = Empresas::create([
-                            'nombre' => $request->cs_company,
-                            'ruc' => $request->ruc,
-                            'direccion' => $request->direccion,
-                            'telefono' => $request->cs_phone,
-                            'correo' => $request->cs_mail,
-                            'id_tipo_contribuyente' => $request->tipoContribuyente,
-                            'base_datos' => $nombreBD,
-                            'cadena_conexion' => $cadena_conexion,
-                            'ruta_firma' => $directory,
-                            'clave_firma' => $request->claveFirma,
-                            'fecha_creacion' => date("Y-m-d")
-                        ]);
-
-                    $user = User::create([
-                        'id_empresa' => $empresa->id_empresa,
-                        'name' => 'admin',
-                        'email' => $request->cs_mail,
-                        'password' => bcrypt($request->ruc),
-                        'role_id' => 1,             
-                    ]);    
-
-                    ModelHasRole::create([
-                        'role_id' => $user->role_id,  
-                        'model_type' => 'App\Models\User',  
-                        'model_id' => $user->id
-                    ]);
-                    
-                }
-                closedir($dir);
-            */
+            }           
             
             $rol_activacion = Activacion::where('ruc', $request->ruc)->first();
             $rol_activacion->es_activo = 1;
