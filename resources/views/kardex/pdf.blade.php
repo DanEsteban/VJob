@@ -24,7 +24,10 @@
             use App\Models\Incomes;
             use App\Models\Expenditures;     
             use App\Models\Customers;     
-            use App\Models\Vendors;       
+            use App\Models\Vendors;    
+            use Carbon\Carbon;
+            
+            date_default_timezone_set('America/Guayaquil');
         ?>
         
         <div class="container1" style="height: 1400px;"> 
@@ -34,46 +37,47 @@
                     <div class="container">
                             <div class="row">
                                 <div class="col">
-                                    <img src="/img/Logo-web-1.png" width="350px" alt="">
+                                    <img src="/{{$datosEmp['emp_ruta_logo']}}" class="img-fluid" width="200px" alt="">
                                 </div>
-                            </div>
-                            <div class="row">
+                            
                                 <div class="col">
-                                    <div class="nav justify-content-center">
-                                        <label style="font-size: 50px;">Kardex from {{$nombreMesfrom}} to {{$nombreMesto}} {{$year}}</label>
+                                    <div class="row">
+                                        <div class="nav justify-content-center">
+                                            <label style="font-size: 30px;">Kardex desde {{$nombreMesfrom}} hasta {{$nombreMesto}} {{$year}}</label>
+                                        </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="col-md-6 d-flex align-items-center">
+                                                <label for="id_producto" class="me-2 mb-0">Id del Producto:</label>
+                                                <input id="id_producto" type="text" value="{{$id_product}}" class="form-control border-0" style="width: auto;">
+                                            </div>
+                                        </div>
+                                        <div class="col mt-2">
+                                            <div class="col-md-6 d-flex align-items-center">
+                                                <label for="producto" class="me-2 mb-0">Producto:</label>
+                                                <input id="producto" type="text" value="{{$product_name}}" class="form-control border-0" style="width: auto;">
+                                            </div>
+                                        </div>
+                                    </div>  
                                 </div>  
-                            </div>                                     
+                            </div>                                    
                             <hr>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="row">
-                                            <div class="col"><p class="text-end"><b>Id Product:</b></p></div> 
-                                            <div class="col"><p>{{$id_product}}</p></div>
-
-                                    </div>
-                                    <div class="row">
-                                            <div class="col"><p class="text-end"><b>Name:</b></p></div>
-                                            <div class="col"><p>{{$product_name}}</p></div>
-                                    
-                                    </div>
-                                </div>
-                            </div>
                             <br>
-                            <div class="row">
+                            <div class="table-responsive">
                                 <table class="table table-hover" style="border: 2px solid">
                                     <thead class="bg-dark">
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Type</th>
-                                            <th>Number</th>
-                                            <th>Customer/Vendor</th>
-                                            <th>Qty</th>
-                                            <th>Pre. Unit</th>
-                                            <th>Pre. Total</th>
-                                            <th>Total Qty</th>
-                                            <th>Total Cost</th>
-                                            <th>Unit Cost</th>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Numero Doc.</th>
+                                            <th>Cliente/Proveedor</th>
+                                            <th>Cantidad</th>
+                                            <th>Pre.Unit</th>
+                                            <th>Pre.Total</th>
+                                            <th>Cant.Total</th>
+                                            <th>Costo Total</th>
+                                            <th>Costo Unitario</th>
                                             <th>P.V.P</th>
                                         </tr>
                                     </thead>
@@ -82,7 +86,7 @@
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td>Previous Balance</td>
+                                            <td>Saldo Anterior</td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
@@ -139,9 +143,7 @@
                                                             $unit_cost=$cost_total/$qty_total;
                                                         } else {
                                                             $unit_cost=0;
-                                                        }
-                                                        
-                                                        
+                                                        }   
                                                         $price = 0;
                                                     // }
                                                     // else{

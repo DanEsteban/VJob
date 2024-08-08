@@ -12,7 +12,7 @@
     $length = 9;
     $numberD = str_pad($document_numbers[2]['number'], $length,"0", STR_PAD_LEFT);
     $numberI = str_pad($document_numbers[3]['number'], $length,"0", STR_PAD_LEFT);
-    $numberFC = str_pad($document_numbers[4]['number'], $length,"0", STR_PAD_LEFT);
+    //$numberFC = str_pad($document_numbers[4]['number'], $length,"0", STR_PAD_LEFT);
     // $numberD = str_pad($order_numberD[0]['number'], $length,"0", STR_PAD_LEFT);
     // $numberI = str_pad($order_numberI[0]['number'], $length,"0", STR_PAD_LEFT);
 @endphp

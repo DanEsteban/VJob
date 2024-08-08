@@ -358,7 +358,7 @@ class InvoiceController extends Controller
                         SELECT number FROM document_numbers WHERE type = 'Factura';
                         SELECT id, name FROM payment_terms;
                         SELECT name, value FROM parameters WHERE name LIKE 'emp_%';";
-
+                        
             // Ejecutar las consultas
             $resultado = $conexion->query($consulta);
             
@@ -380,6 +380,7 @@ class InvoiceController extends Controller
             }
 
             //return $items;
+            //return $datosEmp;
             return view('invoices.create', compact('items','vendors','seriesFact','numFact', 'payment_terms', 'datosEmp'));
             
         }catch (\PDOException $e) {
@@ -520,13 +521,6 @@ class InvoiceController extends Controller
             $id_invoice = $lastId_invoice;
 
             $qty = 0;
-            $lastId_invoiceItem = '';
-            $itemRepetido = (object) array(
-                'id_item' => array(),
-                'lastId_invoiceItem' => array(),
-                'qty' => array()
-            );
-            $resultados = [];
             
             $detalles = [];
 
@@ -603,6 +597,18 @@ class InvoiceController extends Controller
                     $stmt_insert_inventories->bindParam(':qty', $qty, \PDO::PARAM_INT);
                     $stmt_insert_inventories->execute();
 
+                    // Guardar detalles del producto
+                    $detalles[$id_item] = [
+                        'codigo' => $id_item,
+                        'descripcion' => $item_name,
+                        'qty' => $qty,
+                        'precioUnitario' => floatval($precio_neto) / floatval($qty),
+                        'precioTotalSinImpuesto' => $precio_neto,
+                        'codigo_impuesto' => $impuesto->codigo_impuesto,
+                        'porcentaje' => $impuesto->porcentaje,
+                        'codigo_tarifa' =>  $impuesto->codigo_tarifa
+                    ];
+
                     $stmt_get_future_costs->bindParam(':id_item', $id_item, \PDO::PARAM_INT);
                     $stmt_get_future_costs->bindParam(':year', $year, \PDO::PARAM_STR);
                     $stmt_get_future_costs->bindParam(':month', $month, \PDO::PARAM_INT);
@@ -651,17 +657,16 @@ class InvoiceController extends Controller
                     $stmt_update_future_productBalance->bindParam(':year', $year, \PDO::PARAM_STR);
                     $stmt_update_future_productBalance->bindParam(':month', $month, \PDO::PARAM_INT);
                     $stmt_update_future_productBalance->execute();
-
-
                 }
             }      
             
             //return $detalles;
 
-            $db->commit();
+            //$db->commit();
 
             // Payment_Customers
             $id_customer = $request->id_cliente ?? $id_cliente;
+            //return $id_customer;
             $invoice = $request->number;
             $amount = $request->total;
 
@@ -713,7 +718,6 @@ class InvoiceController extends Controller
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':number', $number, \PDO::PARAM_INT);
             $stmt->execute();
-
             // Incrementar el número secuencial y actualizar la serie de facturas
             $sec = $request->secuencialNumero;
             $sec = ltrim($sec, '0');
@@ -735,6 +739,7 @@ class InvoiceController extends Controller
             $stmt->execute();
 
             $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            //return $resultados;
             $datos = [];
             foreach ($resultados as $fila) {
                 // Acceder a los datos de cada fila
