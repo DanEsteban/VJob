@@ -541,20 +541,22 @@ class ElementsController extends Controller
 
                 $productoId = $stmt->fetch(\PDO::FETCH_ASSOC);
                 $id_product = $productoId['id'];
-                // $response = ProductsBalances::where('id_item',$product->id)->first();
-                // if(!isset($response)){
-                //     for($i=0; $i<=12; $i++){
-                //         ProductsBalances::create([
-                //             "id_item" => $product->id,
-                //             "month" => $i,
-                //             "year" => date('Y'),
-                //             "qty" => 1,
-                //             "cost" => 1
-                //         ]);
-                        
-                //     }
+                /* 
+                    //$response = ProductsBalances::where('id_item',$product->id)->first();
+                    // if(!isset($response)){
+                    //     for($i=0; $i<=12; $i++){
+                    //         ProductsBalances::create([
+                    //             "id_item" => $product->id,
+                    //             "month" => $i,
+                    //             "year" => date('Y'),
+                    //             "qty" => 1,
+                    //             "cost" => 1
+                    //         ]);
+                            
+                    //     }
 
-                // }
+                    // }
+                */
                 
                 $consultaSaldoAnterior = "SELECT * FROM product_balances WHERE id_item = :id_product AND month = :previousMonth LIMIT 1";
                 $previousMonth = intval($from) - 1;
@@ -575,12 +577,12 @@ class ElementsController extends Controller
                 $stmt->execute();
 
                 $kardex = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
+                
                 $kardex = array_map(function($row) {
                     return (object) $row;
                 }, $kardex);
                 
-                
+                //return $kardex;
                 foreach ($kardex as &$kx) {
                     if ($kx->type == 'Ingreso' || $kx->type == 'Egreso') {
                         $id_transaction = $kx->id_transaction;
@@ -591,12 +593,18 @@ class ElementsController extends Controller
 
                         $movimiento = $stmt->fetch(\PDO::FETCH_ASSOC);
                         $movimiento = (object) $movimiento;
-
-                        $kx->number = $movimiento->number;
-                        $kx->comments = $movimiento->comments;
+                        //return $movimiento;
+                        if ($movimiento) {
+                            $movimiento = (object) $movimiento;
+                            $kx->number = $movimiento->number;
+                            $kx->comments = $movimiento->comments;
+                        } else {
+                            $kx->number = null; // O un valor por defecto
+                            $kx->comments = null; // O un valor por defecto
+                        }
 
                     }
-                    else if($kx->type == 'Invoice'){
+                    else if($kx->type == 'Factura'){
                         $id_transaction = $kx->id_transaction;
 
                         $consultaIngreso = "SELECT number, id_customer FROM invoices WHERE id = :id_transaction LIMIT 1";
