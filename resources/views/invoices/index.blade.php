@@ -4,7 +4,7 @@
 
 @section('plugins.Datatables', true)
 
-@section('plugins.Select.DataTable', true)
+@section('plugins.Select.DataTable', true) 
 
 @section('content_header')
     <div class="container-fluid bg-white shadow" style="min-height: 5rem;">

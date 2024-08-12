@@ -26,7 +26,7 @@
 @endphp
 <div class="card">
     <div class="card-body">
-        <table id="dTable" class="display nowrap table table-sm" style="width: 100%">
+        <table id="dTable" class="display nowrap table table-sm" style="width: 100%"> 
             <thead class="bg-dark">
                 <tr>
                     <th>Date</th>

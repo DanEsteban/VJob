@@ -85,7 +85,8 @@ Route::get('/elements/order/row/movements', [ElementsController::class, 'addRowO
 
 ///////////////////////////////////////////////////////
 
-Route::resource('bills', BillController::class)->middleware(['auth:sanctum', 'verified']);
+Route::resource('bills', BillController::class);
+Route::get('/bills/buscarVendedor/{ruc}', [BillController::class, 'verificarVendedor'])->name('bills.buscarVendedor');
 
 Route::resource('cashier', CashierController::class)->except(['update', 'edit'])->middleware(['auth:sanctum', 'verified']);
 
@@ -139,6 +140,7 @@ Route::resource('terms', TermsController::class)->except(['create', 'store', 'up
 Route::resource('unite', UniteController::class)->except(['create', 'store', 'update', 'edit', 'show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('users', UsersController::class)->except(['edit', 'show'])->middleware(['auth:sanctum', 'verified']);
+
 
 // Route::resource('vendors', VendorController::class)->except(['show', 'destroy'])->middleware(['auth:sanctum', 'verified']);
 // Route::post('/vendors/access/api/login', [VendorOrderController::class, 'login'])->name('vendor.access.api');
