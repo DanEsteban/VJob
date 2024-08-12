@@ -20,8 +20,9 @@ use App\Models\ProductsBalances;
 use App\Models\Parameters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 
-
+Carbon::setLocale('es');
 class ElementsController extends Controller
 {
     public function addRowPriceProduct(){
@@ -508,25 +509,31 @@ class ElementsController extends Controller
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $consulta = "SELECT * FROM parameters WHERE value = :fechaActual"; 
-            $stmt = $conexion->prepare($consulta);
+            $consulta2 =  "SELECT name, value FROM parameters WHERE name LIKE 'emp_%'";
+            $stmt = $conexion->prepare($consulta);      
             $stmt->bindParam(':fechaActual', $fechaActual, \PDO::PARAM_STR);
             $stmt->execute();
-            
+
             $parameter = $stmt->fetch(\PDO::FETCH_ASSOC);
 
+            $resultado = $conexion->query($consulta2);
+
+            $datosEmp = [];
+            foreach ($resultado as $fila) {
+                $datosEmp[$fila['name']] = $fila['value'];
+            }
 
             if($parameter['name'] == "PERIODO ACTIVO" && $parameter['value'] == $year)
             {
-                $fechafrom = mktime(0, 0, 0, $from, 1);
-                $nombreMesfrom = date("F", $fechafrom);
+                $fechafrom = Carbon::create(null, $from, 1);
+                $nombreMesfrom = ucfirst($fechafrom->translatedFormat('F'));
         
-                $fechato = mktime(0, 0, 0, $to, 1);
-                $nombreMesto = date("F", $fechato);
-        
+                $fechato = Carbon::create(null, $to, 1);
+                $nombreMesto = ucfirst($fechato->translatedFormat('F'));
+
                 $fechaInicio = date('Y-m-01', strtotime($request->start_month)); 
                 $fechaFin = date('Y-m-31', strtotime($request->end_month));
         
-
                 $consultaidProducto = "SELECT id FROM Products WHERE item_name = :product_name LIMIT 1"; 
                 $stmt = $conexion->prepare($consultaidProducto);
                 $stmt->bindParam(':product_name', $product_name, \PDO::PARAM_STR);
@@ -534,31 +541,33 @@ class ElementsController extends Controller
 
                 $productoId = $stmt->fetch(\PDO::FETCH_ASSOC);
                 $id_product = $productoId['id'];
-                // $response = ProductsBalances::where('id_item',$product->id)->first();
-                // if(!isset($response)){
-                //     for($i=0; $i<=12; $i++){
-                //         ProductsBalances::create([
-                //             "id_item" => $product->id,
-                //             "month" => $i,
-                //             "year" => date('Y'),
-                //             "qty" => 1,
-                //             "cost" => 1
-                //         ]);
-                        
-                //     }
+                /* 
+                    //$response = ProductsBalances::where('id_item',$product->id)->first();
+                    // if(!isset($response)){
+                    //     for($i=0; $i<=12; $i++){
+                    //         ProductsBalances::create([
+                    //             "id_item" => $product->id,
+                    //             "month" => $i,
+                    //             "year" => date('Y'),
+                    //             "qty" => 1,
+                    //             "cost" => 1
+                    //         ]);
+                            
+                    //     }
 
-                // }
+                    // }
+                */
                 
-                $consultaSaldoAnterior = "SELECT * FROM product_balances WHERE id_item = :id_product AND month BETWEEN :from AND :to LIMIT 1";
+                $consultaSaldoAnterior = "SELECT * FROM product_balances WHERE id_item = :id_product AND month = :previousMonth LIMIT 1";
+                $previousMonth = intval($from) - 1;
                 $stmt = $conexion->prepare($consultaSaldoAnterior);
                 $stmt->bindParam(':id_product', $id_product, \PDO::PARAM_INT);
-                $stmt->bindParam(':from', $from, \PDO::PARAM_STR);
-                $stmt->bindParam(':to', $to, \PDO::PARAM_STR);
+                $stmt->bindParam(':previousMonth', $previousMonth, \PDO::PARAM_INT);
+
                 $stmt->execute();
 
                 $saldo_anterior = $stmt->fetch(\PDO::FETCH_ASSOC);
                 $saldo_anterior = (object) $saldo_anterior;
-
 
                 $consultaKardex = "SELECT * FROM inventories WHERE id_item = :id_product AND date BETWEEN :fechaInicio AND :fechaFin";
                 $stmt = $conexion->prepare($consultaKardex);
@@ -568,12 +577,12 @@ class ElementsController extends Controller
                 $stmt->execute();
 
                 $kardex = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
+                
                 $kardex = array_map(function($row) {
                     return (object) $row;
                 }, $kardex);
                 
-                
+                //return $kardex;
                 foreach ($kardex as &$kx) {
                     if ($kx->type == 'Ingreso' || $kx->type == 'Egreso') {
                         $id_transaction = $kx->id_transaction;
@@ -584,12 +593,18 @@ class ElementsController extends Controller
 
                         $movimiento = $stmt->fetch(\PDO::FETCH_ASSOC);
                         $movimiento = (object) $movimiento;
-
-                        $kx->number = $movimiento->number;
-                        $kx->comments = $movimiento->comments;
+                        //return $movimiento;
+                        if ($movimiento) {
+                            $movimiento = (object) $movimiento;
+                            $kx->number = $movimiento->number;
+                            $kx->comments = $movimiento->comments;
+                        } else {
+                            $kx->number = null; // O un valor por defecto
+                            $kx->comments = null; // O un valor por defecto
+                        }
 
                     }
-                    else if($kx->type == 'Invoice'){
+                    else if($kx->type == 'Factura'){
                         $id_transaction = $kx->id_transaction;
 
                         $consultaIngreso = "SELECT number, id_customer FROM invoices WHERE id = :id_transaction LIMIT 1";
@@ -599,8 +614,6 @@ class ElementsController extends Controller
 
                         $invoice = $stmt->fetch(\PDO::FETCH_ASSOC);
                         $invoice = (object) $invoice;
-
-                        
 
                         $id_customer = $invoice->id_customer;
                         $consultaCustomer = "SELECT name FROM customers WHERE id = :id_customer LIMIT 1";
@@ -616,8 +629,9 @@ class ElementsController extends Controller
                     }
                 }
 
+                //return $datosEmp;
         
-                return view('kardex.pdf', compact('product_name', 'kardex', 'nombreMesfrom', 'nombreMesto', 'year', 'id_product', 'saldo_anterior')); 
+                return view('kardex.pdf', compact('product_name', 'kardex', 'nombreMesfrom', 'nombreMesto', 'year', 'id_product', 'saldo_anterior', 'datosEmp')); 
             }
             else{
                 return redirect()->route('kardex.index')->with('info', 'Select a date within the current period')->send();

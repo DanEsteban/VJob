@@ -110,6 +110,7 @@ class MovementsController extends Controller
             //return $order_numberD[0]['number']; 
 
             // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'warehouses'));
+            
             return view('movements.create', compact('items', 'document_numbers', 'warehouses'));
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
@@ -180,8 +181,8 @@ class MovementsController extends Controller
 
             $fechaActual = Carbon::now()->toDateString(); 
             $fechaPartsActual = explode('-', $fechaActual);
-            $yearActual = $fechaPartsActual[0]; //Year
-            $monthActual = $fechaPartsActual[1]; // Mes
+            // $yearActual = $fechaPartsActual[0]; //Year
+            // $monthActual = $fechaPartsActual[1]; // Mes
 
             $comments = $request->comments ?? null;
             $date = $request->date;
@@ -190,7 +191,6 @@ class MovementsController extends Controller
             $month = $formatoFecha[1];
 
             
-
             $consulta = "INSERT INTO movements (number, comments, date, total, tipo) VALUES (:number, :comments, :date, :total, :tipo)";
             $stmt = $conexion->prepare($consulta);
             $stmt->bindParam(':number', $sales_number, \PDO::PARAM_STR);
@@ -254,7 +254,7 @@ class MovementsController extends Controller
                     $stmt_insert_inventories->execute();
 
                     $futureCosts = $stmt_get_future_costs->fetch(\PDO::FETCH_ASSOC);
-
+                    
                     $averageCost = 0;
                     $totalQty = 0;
                     $totalCost = 0;

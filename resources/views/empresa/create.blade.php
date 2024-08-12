@@ -102,7 +102,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="input-group mt-2">
-                                            <label for="direccion" class="col-sm-4 col-form-label form-control-sm" align="left">Direccion:</label>
+                                            <label for="direccion" class="col-sm-4 col-form-label form-control-sm" align="left">Dirección:</label>
                                             <textarea id="direccion" name="direccion" rows="4" cols="50" placeholder="Porfavor Ingresar una Direccion" tabindex="7">    
                                             </textarea>
                                         </div>
@@ -126,7 +126,7 @@
         <br>
         <footer class="main-footer">
             <div class="ml-4 text-sm text-gray-500 sm:text-right sm:ml-0">
-                <img src="../img/ISOTIPO.png" width="30px" alt="isotipo_logo"> Copyright © 2022-2024 Visual Job. All rights reserved.
+                <img src="../img/ISOTIPO.png" width="30px" alt="isotipo_logo"> Copyright © 2022-2024 Visual Job. Derechos Reservados.
             </div>
         </footer>
     </div>
@@ -140,3 +140,20 @@
     </style>
 </body>
 </html>
+
+<script type="text/javascript">
+
+
+    function salir() {
+        Swal.fire({
+            title: 'Do you want to exit the form?',
+            showDenyButton: true,
+            confirmButtonText: 'Exit',
+            denyButtonText: `Cancelar`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/";
+                }
+            })
+    }
+</script>

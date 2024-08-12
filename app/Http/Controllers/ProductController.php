@@ -41,7 +41,6 @@ class ProductController extends Controller
         $sums = array();
         $sumaqty=0;
         $products = Products::all();
-       
         
         foreach ($products as $product) {
             $product->id_type = ItemTypes::where('id', $product->id_type)->value('name');
