@@ -223,7 +223,7 @@ class ElementsController extends Controller
 
             $jitems = json_encode($items);
 
-            if( $request->type ==1){
+            if( $request->type == 3){
                 $row = '<tr id="tr_items">'.
                     '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
                     <td>
@@ -240,7 +240,6 @@ class ElementsController extends Controller
                     <td><input id="price" onkeyup="changePrice(this);" name="price[]" type="text" class="form-control form-control-sm" readonly></td>
                     <td><input id="amt" name="amt[]" type="text" class="form-control form-control-sm" readonly></td>
                 </tr>';
-    
             }
             else
             {
@@ -302,7 +301,6 @@ class ElementsController extends Controller
         
         return $row;
     }
-
 
     public function addRowVendorOrder(Request $request){
         $items = Products::where('is_active', 1)->get()->toArray();

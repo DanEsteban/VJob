@@ -32,400 +32,356 @@
     <br>
     
     <div class="card">
-        <div class="card-header">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-6">
-                        <img src="/{{$datosEmp['emp_ruta_logo']}}" class="img-fluid" width="200px" alt="">
-                    </div>
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-left mb-3 mb-md-0">
+                    <img src="/{{$datosEmp['emp_ruta_logo']}}" class="img-fluid" width="200px" alt="">
+                </div>
 
-                    <div class="col-md-6 text-right">
-                        <p><strong>{{$datosEmp['emp_nombre']}}</strong></p>
-                        <p><strong>Ruc: </strong>{{$datosEmp['emp_ruc']}}</p>
-                        <p>{{$datosEmp['emp_dir']}}</p>
-                        <p><strong>Telf: </strong>{{$datosEmp['emp_tel']}}</p>
-                    </div>
+                <div class="col-md-6 text-md-right">
+                    <p class="mb-1"><strong>{{$datosEmp['emp_nombre']}}</strong></p>
+                    <p class="mb-1"><strong>Ruc: </strong>{{$datosEmp['emp_ruc']}}</p>
+                    <p class="mb-1">{{$datosEmp['emp_dir']}}</p>
+                    <p class="mb-0"><strong>Telf: </strong>{{$datosEmp['emp_tel']}}</p>
                 </div>
             </div>
-        </div>
-
-        <div class="card-body">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
-                            <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
-                            <div class="text-right">
-                                <label for="fechaSpan">Fecha:</label>
-                                <span id="fechaSpan"><?php echo $fechaFormateada ; ?></span>
-                            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                        <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
+                        <div class="text-right">
+                            <label for="fechaSpan">Fecha:</label>
+                            <span id="fechaSpan"><?php echo $fechaFormateada ; ?></span>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>   
         </div>
-    </div>
 
-    <form id="formulario" action="{{route('invoices.store')}}" method="POST"> 
-        @csrf
-        <input type="text" name="emp_nombre" value="{{$datosEmp['emp_nombre']}}" hidden>
-        <input type="text" name="emp_ruc" value="{{$datosEmp['emp_ruc']}}" hidden>
-        <input type="text" name="emp_dir" value="{{$datosEmp['emp_dir']}}" hidden>
-        <input type="text" name="number" value="<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?>" hidden>
-        <div class="card">
-            <div class="card-body">
-                <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
-                    <thead class="bg-dark sticky-header">
-                        <th width="2%"></th>
-                        <th style="width: 90px;">Código</th>
-                        <th style="width: 300px;">Descripción</th>    
-                        <th style="width: 10px;">Cant.Unid.</th>
-                        <th style="width: 20px;" id="thP0">Pre.neto</th>        
-                        <th hidden id="thP1">Pre.neto</th>                       
-                        <th hidden>PrecioIva</th>
-                        <th hidden>Cantidad2</th>
-                        <th style="width: 20px;" id="thP2" hidden>Pre.neto</th>
-                        <th hidden>PrecioIva2</th>  
-                        <th hidden>Cantidad3</th>
-                        <th id="thP3" hidden>Pre.neto</th>
-                        <th hidden>PrecioIva3</th>
-                        <th hidden>Cantidad4</th>
-                        <th id="thP4" hidden>Pre.neto</th>
-                        <th hidden>PrecioIva4</th>
-                        <th hidden></th>
-                        <th style="width: 1px;">IVA</th>
-                        <th style="width: 20px;">Subtotal</th>
-                        <th hidden>Num.Precio</th>  
-                    </thead>
-                    <tbody id="tb_items">
-                        <?php for ($i = 0; $i < 10; $i++) : ?>
-                            <tr id="tr_items">
-                                <td>
-                                    <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                                <td>
-                                    <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
-                                    <datalist id="itemsList">
-                                        @foreach ($items as $item)
-                                            <option value="{{$item['id']}}"></option> 
-                                        @endforeach
-                                    </datalist>
-                                </td>
-                                <td>
-                                    <input onchange="changeDescription(this, {{json_encode($items)}})" id="description" type="text" autocomplete="off" class="form-control form-control-sm" list="itemDesList">
-                                    <datalist id="itemDesList">
-                                        @foreach ($items as $item)
-                                            <option value="{{$item['item_name']}}"></option>
-                                        @endforeach
-                                    </datalist>
-                                </td>
-                                <td id="tdC1"><input type="text" onchange="changeQty(this);" id="cantidad" name="cantidad[]" class="form-control form-control-sm"></td>
-                                <td id="tdP0"><input type="text" id="pvp0_neto" name="pvp0_neto[]" class="form-control form-control-sm" readonly></td>  
-                                <td hidden id="tdP1"><input type="text" id="pvp1_neto" class="form-control form-control-sm" readonly></td>                   
-                                <td hidden><input hidden type="text" id="pvp1"  class="form-control form-control-sm"></td>
-                                <td id="tdC2" hidden><input hidden type="text" id="cantidad2" class="form-control form-control-sm"></td>
-                                <td id="tdP2" hidden><input hidden type="text" id="pvp2_neto" class="form-control form-control-sm"></td>
-                                <td hidden><input hidden type="text" id="pvp2" class="form-control form-control-sm"></td>
-                                <td id="tdC3" hidden><input hidden type="text" id="cantidad3" class="form-control form-control-sm"></td>
-                                <td id="tdP3" hidden><input hidden type="text" id="pvp3_neto" class="form-control form-control-sm"></td>
-                                <td hidden><input hidden type="text" id="pvp3"  class="form-control form-control-sm"></td>
-                                <td id="tdC4" hidden><input hidden type="text" id="cantidad4" class="form-control form-control-sm"></td>
-                                <td id="tdP4" hidden><input hidden type="text" id="pvp4_neto" class="form-control form-control-sm"></td>
-                                <td hidden><input hidden type="text" id="pvp4" class="form-control form-control-sm"></td>
-                                <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
-                                <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
-                                <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
-                                <td hidden><input type="text" id="num_precio" name="num_precio[]" class="form-control form-control-sm" readonly></td> 
-                            </tr>
-                        <?php endfor; ?> 
-                    </tbody>
-                </table>
+        <div class="card-body bg-white">
+            <form id="formulario" action="{{route('invoices.store')}}" method="POST"> 
+                @csrf
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="p-1 mb-3" id="PVP1" style="text-align:center;">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="p-1 mb-3" id="PVP2" style="text-align:center;">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="p-1 mb-3" id="PVP3" style="text-align:center;">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="p-1 mb-3" id="PVP4" style="text-align:center;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Subtotal:</strong>
+                                <input class="border-0 text-right font-weight-bold" id="sumaSub" name="sumaSub" type="text" value="0.00" readonly>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Base 0%:</strong>
+                                <input class="border-0 text-right font-weight-bold" id="baseCero" name="baseCero" type="text" value="0.00" readonly>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Base IVA:</strong>
+                                <input class="border-0 text-right font-weight-bold" id="baseIva" name="baseIva" type="text" value="0.00" readonly>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>I.V.A:</strong>
+                                <input class="border-0 text-right font-weight-bold" id="siIva" name="siIva" type="text" value="0.00" readonly>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Total:</strong>
+                                <input class="border-0 text-right font-weight-bold" id="total" name="total" type="text" value="0.00" readonly>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <hr>
+                <div class="table-responsive" style="max-height: 329px; overflow-y: auto;">
+                    <table id="dTable" class="table " style="width: 100%;">
+                        <thead class="bg-dark sticky-top">
+                            <th width="2%"></th>
+                            <th style="width: 90px;">Código</th>
+                            <th style="width: 300px;">Descripción</th>    
+                            <th style="width: 10px;">Cant.Unid.</th>
+                            <th style="width: 20px;" id="thP0">Pre.neto</th>        
+                            <th hidden id="thP1">Pre.neto</th>                       
+                            <th hidden>PrecioIva</th>
+                            <th hidden>Cantidad2</th>
+                            <th style="width: 20px;" id="thP2" hidden>Pre.neto</th>
+                            <th hidden>PrecioIva2</th>  
+                            <th hidden>Cantidad3</th>
+                            <th id="thP3" hidden>Pre.neto</th>
+                            <th hidden>PrecioIva3</th>
+                            <th hidden>Cantidad4</th>
+                            <th id="thP4" hidden>Pre.neto</th>
+                            <th hidden>PrecioIva4</th>
+                            <th hidden></th>
+                            <th style="width: 1px;">IVA</th>
+                            <th style="width: 20px;">Subtotal</th>
+                            <th hidden>Num.Precio</th>  
+                        </thead>
+                        <tbody id="tb_items">
+                            <?php for ($i = 0; $i < 10; $i++) : ?>
+                                <tr id="tr_items">
+                                    <td>
+                                        <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
+                                    <td>
+                                        <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
+                                        <datalist id="itemsList">
+                                            @foreach ($items as $item)
+                                                <option value="{{$item['id']}}"></option> 
+                                            @endforeach
+                                        </datalist>
+                                    </td>
+                                    <td>
+                                        <input onchange="changeDescription(this, {{json_encode($items)}})" id="description" type="text" autocomplete="off" class="form-control form-control-sm" list="itemDesList">
+                                        <datalist id="itemDesList">
+                                            @foreach ($items as $item)
+                                                <option value="{{$item['item_name']}}"></option>
+                                            @endforeach
+                                        </datalist>
+                                    </td>
+                                    <td id="tdC1"><input type="text" onchange="changeQty(this);" id="cantidad" name="cantidad[]" class="form-control form-control-sm"></td>
+                                    <td id="tdP0"><input type="text" id="pvp0_neto" name="pvp0_neto[]" class="form-control form-control-sm" readonly></td>  
+                                    <td hidden id="tdP1"><input type="text" id="pvp1_neto" class="form-control form-control-sm" readonly></td>                   
+                                    <td hidden><input hidden type="text" id="pvp1"  class="form-control form-control-sm"></td>
+                                    <td id="tdC2" hidden><input hidden type="text" id="cantidad2" class="form-control form-control-sm"></td>
+                                    <td id="tdP2" hidden><input hidden type="text" id="pvp2_neto" class="form-control form-control-sm"></td>
+                                    <td hidden><input hidden type="text" id="pvp2" class="form-control form-control-sm"></td>
+                                    <td id="tdC3" hidden><input hidden type="text" id="cantidad3" class="form-control form-control-sm"></td>
+                                    <td id="tdP3" hidden><input hidden type="text" id="pvp3_neto" class="form-control form-control-sm"></td>
+                                    <td hidden><input hidden type="text" id="pvp3"  class="form-control form-control-sm"></td>
+                                    <td id="tdC4" hidden><input hidden type="text" id="cantidad4" class="form-control form-control-sm"></td>
+                                    <td id="tdP4" hidden><input hidden type="text" id="pvp4_neto" class="form-control form-control-sm"></td>
+                                    <td hidden><input hidden type="text" id="pvp4" class="form-control form-control-sm"></td>
+                                    <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
+                                    <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
+                                    <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
+                                    <td hidden><input type="text" id="num_precio" name="num_precio[]" class="form-control form-control-sm" readonly></td> 
+                                </tr>
+                            <?php endfor; ?> 
+                        </tbody>
+                    </table>
+                </div>
                 <hr>
                 <center>
                     <button onclick="addRow();" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus"></i> Row</button>
                 </center> 
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-3">
-                                <div class="p-3 mb-3" id="PVP1" style="text-align:center;">
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="p-3 mb-3" id="PVP2" style="text-align:center;">
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="p-3 mb-3" id="PVP3" style="text-align:center;">
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="p-3 mb-3" id="PVP4" style="text-align:center;">
-                                </div>
-                            </div>
+                <div class="card-body botPrincipales">
+                    <button onclick="seleccion();" type="button" class="btn btn-sm btn-outline-success mr-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary mr-2">
+                        <i class="fa-solid fa-print"></i> Imprimir
+                    </button>
+                    <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
+                        <i class="fa-solid fa-door-open"></i> Salir
+                    </button>
+                    <br>
+                    <br>
+                    <div class="row">
+                        <div class="col-3">
+                            <label for="canalVenta">Canal Venta:</label>
+                            <input autocomplete="off" id="canalVenta" type="text" class="form-control form-control-sm" width="300px" list="canalVtaList">
+                            <datalist id="canalVtaList">
+                                <option value="--SELECCIONAR--"></option>
+                            </datalist>
                         </div>
-                    </div>
-                    <div class="card-body botPrincipales">
-                        <button onclick="seleccion();" type="button" class="btn btn-sm btn-outline-success mr-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary mr-2">
-                            <i class="fa-solid fa-print"></i> Imprimir
-                        </button>
-                        <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
-                            <i class="fa-solid fa-door-open"></i> Salir
-                        </button>
-                        <br>
-                        <br>
-                        <div class="row">
-                            <div class="col-3">
-                                <label for="canalVenta">Canal Venta:</label>
-                            </div>
-                            <div class="col-9">
-                                <input autocomplete="off" id="canalVenta" type="text" class="form-control form-control-sm" width="300px" list="canalVtaList">
-                                <datalist id="canalVtaList">
-                                    <option value="--SELECCIONAR--"></option>
-                                </datalist>
-                            </div>
-                            
-                        </div>
+                        
                     </div>
                 </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-text">
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Subtotal:</strong>
+                <!-- Modal -->
+                    <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content rounded-5 shadow" style="width:530px;">
+                                <div class="modal-header bg-primary" style="color: #fff;">
+                                    <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
+                                    <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="sumaSub" name="sumaSub" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Base 0%:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseCero" name="baseCero" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Base IVA:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseIva" name="baseIva" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>I.V.A:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="siIva" name="siIva" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                <strong>Total:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                <input class="border-0 col-sm-12 text-right font-weight-bold" id="total" name="total" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Modal -->
-                <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
-                    <div class="modal-dialog modal-sm" role="document">
-                        <div class="modal-content rounded-5 shadow" style="width:530px;">
-                            <div class="modal-header bg-primary" style="color: #fff;">
-                                <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
-                                <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="form-group row">
-                                    <label for="ruc" class="col-sm-3 col-form-label">Identificación:</label>
-                                    <div class="col-sm-3">
-                                        <input onchange="buscarPorRuc(this);" type="text" class="form-control" id="ruc" name="ruc" value="9999999999999" required autocomplete="off">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="cliente" class="col-sm-3 col-form-label">Cliente:</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="cliente" name="cliente" value="CONSUMIDOR FINAL (SOLO CONTADOS)" required>
-                                        <input type="text" id="id_cliente" name="id_cliente" value="1" hidden>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="direccion" class="col-sm-3 col-form-label">Dirección:</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="direccion" name="direccion" value="SIN DIRECCIÓN" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for= "telefono" class="col-sm-3 col-form-label">Teléfono:</label>
-                                    <div class="col-sm-3">
-                                        <input type="text" class="form-control" id="telefono" name="telefono" value="999999999" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="email" class="col-sm-3 col-form-label">Email:</label>
-                                    <div class="col-sm-8">
-                                        <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="fecha_fact" class="col-sm-3 col-form-label">Fecha:</label>
-                                    <div class="col-sm-3">
-                                        <input onchange="cambioFecha()" type="date" class="form-control" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="vendedor" class="col-sm-3 col-form-label">Vendedor</label>
-                                    <div class="col-sm-3">
-                                        <select id="vendedor" id="vendedor" name="vendedor" type="text" class="form-control form-control-sm" width="300px">
-                                            <option value="0">--Seleccione--</option>
-                                            @foreach ($vendors as $item)
-                                                <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <hr class="my-4">
-                                <div class="table-responsive">
-                                    <table id="modal-tabla" class="table table-sm" style="width: 100%">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th hidden></th>
-                                                <th>Tipo Documento</th>
-                                                <th>Serie-Establ.</th>
-                                                <th>Secuencial</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($seriesFact as $key => $serie)
-                                                <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
-                                                    <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
-                                                    <td id="tipoDoc">{{$serie['nombre']}}</td>
-                                                    <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
-                                                    <td id="secuencial">{{$serie['secuencial']}}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-form-label col-sm-2">Numero:</label>
-                                    <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
-                                    <?php foreach ($seriesFact as $elemento) { ?>
-                                        <div class="col-sm-2">
-                                            <input id="serieNumero" name="serieNumero" type="text" class="form-control mt-1" value="{{$elemento['punto_emision']}}">
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input id="estableNumero" name="estableNumero" type="text" class="form-control mt-1" value="{{$elemento['establecimiento']}}">
-                                        </div>
-                                        <div class="col-sm-5">
-                                            <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control mt-1" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
-                                        </div>
-                                        
-                                    <?php break; } ?>
-                                </div>
-                                <hr class="my-4">
-                                <div class="my-3">        
-                                    <div class="form-group row modalGroup">
-                                        <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
-                                        <div class="col-sm-2">
-                                            <input type="apagar" class="form-control text-sm-left mt-4" id="apagar" name="apagar" value="0.00" readonly>
+                                <div class="modal-body">
+                                    <div class="form-group row">
+                                        <label for="ruc" class="col-sm-3 col-form-label">Identificación:</label>
+                                        <div class="col-sm-3">
+                                            <input onchange="buscarPorRuc(this);" type="text" class="form-control" id="ruc" name="ruc" value="9999999999999" required autocomplete="off">
                                         </div>
                                     </div>
-                                    <div class="form-group row modalGroup">
-                                        <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                        <div class="col-sm-2">
-                                            <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left mt-2" id="abono1" name="abono1" value="0.00" readonly>
+
+                                    <div class="form-group row">
+                                        <label for="cliente" class="col-sm-3 col-form-label">Cliente:</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" id="cliente" name="cliente" value="CONSUMIDOR FINAL (SOLO CONTADOS)" required>
+                                            <input type="text" id="id_cliente" name="id_cliente" value="1" hidden>
                                         </div>
-                                        <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control mt-1">
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="direccion" class="col-sm-3 col-form-label">Dirección:</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" id="direccion" name="direccion" value="SIN DIRECCIÓN" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for= "telefono" class="col-sm-3 col-form-label">Teléfono:</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="telefono" name="telefono" value="999999999" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="email" class="col-sm-3 col-form-label">Email:</label>
+                                        <div class="col-sm-8">
+                                            <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="fecha_fact" class="col-sm-3 col-form-label">Fecha:</label>
+                                        <div class="col-sm-3">
+                                            <input onchange="cambioFecha()" type="date" class="form-control" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="vendedor" class="col-sm-3 col-form-label">Vendedor</label>
+                                        <div class="col-sm-3">
+                                            <select id="vendedor" id="vendedor" name="vendedor" type="text" class="form-control form-control-sm" width="300px">
                                                 <option value="0">--Seleccione--</option>
-                                                @foreach ($payment_terms as $item)
+                                                @foreach ($vendors as $item)
                                                     <option value="{{$item['id']}}">{{$item['name']}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="col-sm-3 ntransfer">
-                                            <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
+                                    </div>
+                                    <hr class="my-4">
+                                    <div class="table-responsive">
+                                        <table id="modal-tabla" class="table table-sm" style="width: 100%">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th hidden></th>
+                                                    <th>Tipo Documento</th>
+                                                    <th>Serie-Establ.</th>
+                                                    <th>Secuencial</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($seriesFact as $key => $serie)
+                                                    <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
+                                                        <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
+                                                        <td id="tipoDoc">{{$serie['nombre']}}</td>
+                                                        <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
+                                                        <td id="secuencial">{{$serie['secuencial']}}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-form-label col-sm-2">Numero:</label>
+                                        <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
+                                        <?php foreach ($seriesFact as $elemento) { ?>
+                                            <div class="col-sm-2">
+                                                <input id="serieNumero" name="serieNumero" type="text" class="form-control mt-1" value="{{$elemento['punto_emision']}}">
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <input id="estableNumero" name="estableNumero" type="text" class="form-control mt-1" value="{{$elemento['establecimiento']}}">
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control mt-1" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
+                                            </div>
+                                            
+                                        <?php break; } ?>
+                                    </div>
+                                    <hr class="my-4">
+                                    <div class="my-3">        
+                                        <div class="form-group row modalGroup">
+                                            <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
+                                            <div class="col-sm-2">
+                                                <input type="apagar" class="form-control text-sm-left mt-4" id="apagar" name="apagar" value="0.00" readonly>
+                                            </div>
                                         </div>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
+                                        <div class="form-group row modalGroup">
+                                            <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
+                                            <div class="col-sm-2">
+                                                <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left mt-2" id="abono1" name="abono1" value="0.00" readonly>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control mt-1">
+                                                    <option value="0">--Seleccione--</option>
+                                                    @foreach ($payment_terms as $item)
+                                                        <option value="{{$item['id']}}">{{$item['name']}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3 ntransfer">
+                                                <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group row modalGroup">
+                                            <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
+                                            <div class="col-sm-2">
+                                                <input onchange="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control mt-1">
+                                                    <option value="0">--Seleccione--</option>
+                                                    @foreach ($payment_terms as $item)
+                                                        <option value="{{$item['id']}}">{{$item['name']}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3 ntransfer">
+                                                <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row modalGroup">
+                                            <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control text-sm-left mt-2" id="saldo" name="saldo" value="0.00">
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="form-group row modalGroup">
-                                        <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                        <div class="col-sm-2">
-                                            <input onchange="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control mt-1">
-                                                <option value="0">--Seleccione--</option>
-                                                @foreach ($payment_terms as $item)
-                                                    <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-3 ntransfer">
-                                            <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
-                                        </div>
-                                    </div>
+                                    <hr class="my-4">
 
-                                    <div class="form-group row modalGroup">
-                                        <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control text-sm-left mt-2" id="saldo" name="saldo" value="0.00">
+                                    <div>
+                                        <div class="d-flex justify-content-center">
+                                            <button class="btn btn-primary" type="submit">Grabar</button>
+                                            <button onclick="cerrarmodal();" class="btn btn-secondary ml-2" type="button">Corregir</button>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <hr class="my-4">
-
-                                <div>
-                                    <div class="d-flex justify-content-center">
-                                        <button class="btn btn-primary" type="submit">Grabar</button>
-                                        <button onclick="cerrarmodal();" class="btn btn-secondary ml-2" type="button">Corregir</button>
-                                    </div>
-                                </div>
-                            </div>                    
+                                </div>                    
+                            </div>
                         </div>
                     </div>
-                </div>
-            <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
+                <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
 
+            </form>
         </div>
-    </form>
-
+    </div>
 @stop
 
 
@@ -445,11 +401,14 @@
             }
         }
 
-        @media screen and (max-width: 719px) {
+        @media screen and (max-width: 760px) {
             .custom-paragraph {
                 font-size: 12px;
             }
         }
+
+        /*Control del  encabezado de la tabla y el card*/
+
 
         #PVP1,#PVP2,#PVP3, #PVP4 {
             color: #ffff;

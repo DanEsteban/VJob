@@ -42,7 +42,7 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="dTable" class="display nowrap table table-sm table-hover" style="width: 100%">
-                        <thead class="bg-dark">
+                        <thead class="bg-dark sticky-top">
                             <tr>
                                 <th width="4%"></th>
                                 <th width="4%"></th>
