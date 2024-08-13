@@ -349,7 +349,7 @@
         title: 'Do you want to delete this item?',
         showDenyButton: true,
         confirmButtonText: 'Delete',
-        denyButtonText: `Cancelar`,
+        denyButtonText: Cancelar,
         }).then((result) => {
             if (result.isConfirmed) {
                 $(fila).find('td input').each(function() {
@@ -796,7 +796,7 @@
             title: 'Do you want to exit the form?',
             showDenyButton: true,
             confirmButtonText: 'Exit',
-            denyButtonText: `Cancelar`,
+            denyButtonText: Cancelar,
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = "/invoices";

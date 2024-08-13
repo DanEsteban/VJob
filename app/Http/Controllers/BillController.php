@@ -144,16 +144,18 @@ class BillController extends Controller
 
             // Ejecutar las consultas
             $resultado = $conexion->query($consulta);
-
+            
             // Obtener los resultados de todas las consultas
             $resultados = [];
             do {
                 $resultados[] = $resultado->fetchAll(\PDO::FETCH_ASSOC);
             } while ($resultado->nextRowset());
 
+            //return $resultados[3];
             // Asignar los resultados a las variables correspondientes
             $items = $resultados[0];
             $vendors = $resultados[1];
+
             $seriesFact = $resultados[2];
             $numFact = intval($resultados[3][0]['number']) + 1;
             $payment_terms = $resultados[4];
@@ -551,7 +553,6 @@ class BillController extends Controller
             echo "Error al insertar el registro: " . $e->getMessage();
         }
     }
-
 
     /**
      * Display the specified resource.

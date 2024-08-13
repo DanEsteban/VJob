@@ -724,10 +724,11 @@ class EmpresasController extends Controller
                 );
 
                 $datosInicialesdocument_numbers = array(
-                    "('Orders', '1')",
                     "('Factura', '1')",
                     "('Egreso', '1')",
                     "('Ingreso', '1')",
+                    "('FacturaCompra', '1')",
+                    "('NotaCreditoCliente', '1')",
                 );
                 
                 $datosInicialesserie_factura = array(

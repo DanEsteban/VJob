@@ -30,7 +30,7 @@
         </div>
     @endif
     <br>
-    
+
     <div class="card">
         <div class="card-header bg-white">
             <div class="row align-items-center">
