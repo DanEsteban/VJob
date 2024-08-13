@@ -177,7 +177,7 @@ class BillController extends Controller
      */
     public function store(Request $request)
     {
-        //return $request;
+
         $nombreBD = App::make('dataBase');
 
         try {
@@ -189,10 +189,10 @@ class BillController extends Controller
             $numero_ident = $request->ruc;
             $tipo_ident = $this->identificarTipoIdentificacion($numero_ident);
             $name = $request->proveedor;
-            $phone = $request->telefono;
-            $email = $request->email;
+            $phone = $request->telefono ?? null;
+            $email = $request->email ?? null;
             $direccion = $request->direccion;
-            $balance = $request->saldo;
+            $balance = $request->saldo ?? null;
             if ($id_proveedor !== null) {
                 $sql = "UPDATE vendors 
                         SET tipo_ident = :tipo_ident,     

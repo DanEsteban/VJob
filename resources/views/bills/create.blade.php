@@ -48,22 +48,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="card-body">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
-                            <h4 class="invoice-color mb-2 mt-md-2">Factura de Compra #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
-                            <div class="text-right">
-                                <label for="fechaSpan">Fecha:</label>
-                                <span id="fechaSpan"><?php echo $fechaFormateada ; ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <form id="formulario" action="{{route('bills.store')}}" method="POST"> 
@@ -71,7 +55,37 @@
         <input type="text" name="emp_nombre" value="{{$datosEmp['emp_nombre']}}" hidden>
         <input type="text" name="emp_ruc" value="{{$datosEmp['emp_ruc']}}" hidden>
         <input type="text" name="emp_dir" value="{{$datosEmp['emp_dir']}}" hidden>
-        <input type="text" name="number" value="<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?>" hidden>
+        <div class="card-body">
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="number">No. Documento:</label>
+                    <input type="text" id="number" name="number" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="ruc">R.U.C.:</label>
+                    <input onchange="buscarPorRuc(this);" type="text" id="ruc" name="ruc" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha_fact">Fecha factura:</label>
+                    <input onchange="cambioFecha()" type="date" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label for="proveedor">Nombre:</label>
+                    <input type="text" id="proveedor" name="proveedor" required>
+                    <input type="text" id="id_proveedor" name="id_proveedor" value="1" hidden>
+                </div>
+                <div class="form-group">
+                    <label for="fecha-ingreso">Fecha de ingreso a bodega:</label>
+                    <input onchange="cambioFecha()" type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" name="direccion" required>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-body">
                 <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
@@ -79,11 +93,11 @@
                         <th width="2%"></th>
                         <th style="width: 90px;">Código</th>
                         <th style="width: 300px;">Descripción</th>    
-                        <th style="width: 10px;">Cant.Unid.</th>
+                        <th style="width: 5px;">Cant.Unid.</th>
                         <th style="width: 20px;">U/M</th>        
-                        <th id="th_cost">Costo</th>                       
+                        <th style="width: 20px;" id="th_cost">Precio</th>                       
                         <th hidden>PrecioIva</th>
-                        <th style="width: 1px;">IVA</th>
+                        <th style="width: 10px;">IVA</th>
                         <th style="width: 20px;">Subtotal</th>
                     </thead>
                     <tbody id="tb_items">
@@ -129,7 +143,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <button onclick="seleccion();" type="button" class="btn btn-sm btn-outline-success mr-3">
+                        <button onclick="guardar();" type="button" class="btn btn-sm btn-outline-success mr-3">
                             <i class="fa-solid fa-floppy-disk"></i> Guardar
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary mr-3">
@@ -191,171 +205,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Modal -->
-                <div class="modal fade" id="savemodal" tabindex="-1" role="dialog" aria-labelledby="savemodal" aria-hidden="true">
-                    <div class="modal-dialog modal-sm" role="document">
-                        <div class="modal-content rounded-5 shadow" style="width:530px;">
-                            <div class="modal-header bg-primary" style="color: #fff;">
-                                <h5 class="modal-title" id="popModalTitle">ANTES DE GRABAR, REVISE LA INFORMACIÓN</h5>
-                                <button onclick="cerrarmodal();" type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close" style="color: #fff;">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="form-group row">
-                                    <label for="ruc" class="col-sm-3 col-form-label">Identificación:</label>
-                                    <div class="col-sm-8">
-                                        <input onchange="buscarPorRuc(this);" type="text" class="form-control" id="ruc" name="ruc" value="9999999999999" required autocomplete="off">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="proveedor" class="col-sm-3 col-form-label">Proveedor:</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="proveedor" name="proveedor" value="CONSUMIDOR FINAL (SOLO CONTADOS)" required>
-                                        <input type="text" id="id_proveedor" name="id_proveedor" value="1" hidden>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="direccion" class="col-sm-3 col-form-label">Dirección:</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" id="direccion" name="direccion" value="SIN DIRECCIÓN" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for= "telefono" class="col-sm-3 col-form-label">Teléfono:</label>
-                                    <div class="col-sm-5">
-                                        <input type="text" class="form-control" id="telefono" name="telefono" value="999999999" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="email" class="col-sm-3 col-form-label">Email:</label>
-                                    <div class="col-sm-8">
-                                        <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="fecha_fact" class="col-sm-3 col-form-label">Fecha:</label>
-                                    <div class="col-sm-5">
-                                        <input onchange="cambioFecha()" type="date" class="form-control" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
-                                    </div>
-                                </div>
-
-                                <hr class="my-4">
-                                <div class="table-responsive">
-                                    <table id="modal-tabla" class="table table-sm" style="width: 100%">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th hidden></th>
-                                                <th>Tipo Documento</th>
-                                                <th>Serie-Establ.</th>
-                                                <th>Secuencial</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($seriesFact as $key => $serie)
-                                                <tr onclick="selectDoc(this);" class="{{ $key === 0 ? 'table-active' : '' }}">
-                                                    <td id="id_TipoDoc" hidden>{{$serie['tipo_documento']}}</td>
-                                                    <td id="tipoDoc">{{$serie['nombre']}}</td>
-                                                    <td id="serie">{{$serie['establecimiento']}}-{{$serie['punto_emision']}}</td>
-                                                    <td id="secuencial">{{$serie['secuencial']}}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-form-label col-sm-2">Numero:</label>
-                                    <input type="text" id="id_tipo_doc" name="id_tipo_doc" value="0" hidden>
-                                    <?php foreach ($seriesFact as $elemento) { ?>
-                                        <div class="col-sm-2">
-                                            <input id="serieNumero" name="serieNumero" type="text" class="form-control mt-1" value="{{$elemento['punto_emision']}}">
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input id="estableNumero" name="estableNumero" type="text" class="form-control mt-1" value="{{$elemento['establecimiento']}}">
-                                        </div>
-                                        <div class="col-sm-5">
-                                            <input id="secuencialNumero" name="secuencialNumero" type="text" class="form-control mt-1" value="<?php echo str_pad($elemento['secuencial'], 9, '0', STR_PAD_LEFT); ?>">
-                                        </div>
-                                        
-                                    <?php break; } ?>
-                                </div>
-                                <hr class="my-4">
-                                <div class="my-3">        
-                                    <div class="form-group row modalGroup">
-                                        <label for="apagar" class="col-sm-2 col-form-label text-sm-left">A pagar:</label>
-                                        <div class="col-sm-2">
-                                            <input type="apagar" class="form-control text-sm-left mt-4" id="apagar" name="apagar" value="0.00" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row modalGroup">
-                                        <label for="abono1" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                        <div class="col-sm-2">
-                                            <input onkeyup="calculoSaldo();" type="text" class="form-control text-sm-left mt-2" id="abono1" name="abono1" value="0.00" readonly>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago1" name="formaPago1" type="text" class="form-control mt-1">
-                                                <option value="0">--Seleccione--</option>
-                                                @foreach ($payment_terms as $item)
-                                                    <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-3 ntransfer">
-                                            <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group row modalGroup">
-                                        <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
-                                        <div class="col-sm-2">
-                                            <input onchange="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control mt-1">
-                                                <option value="0">--Seleccione--</option>
-                                                @foreach ($payment_terms as $item)
-                                                    <option value="{{$item['id']}}">{{$item['name']}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-3 ntransfer">
-                                            <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group row modalGroup">
-                                        <label for="saldo" class="col-sm-2 col-form-label text-sm-left">Saldo:</label>
-                                        <div class="col-sm-2">
-                                            <input type="text" class="form-control text-sm-left mt-2" id="saldo" name="saldo" value="0.00">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <hr class="my-4">
-
-                                <div>
-                                    <div class="d-flex justify-content-center">
-                                        <button class="btn btn-primary" type="submit">Grabar</button>
-                                        <button onclick="cerrarmodal();" class="btn btn-secondary ml-2" type="button">Corregir</button>
-                                    </div>
-                                </div>
-                            </div>                    
-                        </div>
-                    </div>
-                </div>
-            <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
-
         </div>
     </form>
 
@@ -365,6 +214,32 @@
 @section('css')
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <style>
+    .form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .form-group {
+        flex: 1 1 45%;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-group label {
+        width: 150px; /* Ancho fijo para las etiquetas */
+        margin-right: 10px;
+        text-align: right;
+    }
+
+    .form-group input {
+        width: 40%;
+        box-sizing: border-box;
+        padding: 0.25rem; /* Reduce el padding para hacer los inputs más finos */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 0.875rem; /* Reduce el tamaño de la fuente para inputs más finos */
+    }
 
         @media screen and (min-width:1200px) {
             .custom-paragraph {
@@ -746,17 +621,32 @@
     }
 
 
-    function seleccion() {
-        let apagar = parseFloat($('#apagar').val());  
-        if(apagar !== 0.00){
-            $('#abono1').prop('readonly', false);
-            $('#abono2').prop('readonly', false);
-            $('#abono1').val(apagar);
-            $('#formaPago1').val('1');
-            $('#formaPago2').val('1');
-
+    function guardar() {
+        const number = $("#number").val();        
+        
+        if (number) {
+            Swal.fire({
+                title: 'Guardar Factura',
+                text: 'Si la información es correcta, haga clic en "Sí" para enviar el formulario.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí',
+                cancelButtonText: 'No',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formulario').submit();
+                }
+            });
+        }else{
+            Swal.fire({
+                title: 'Error',
+                text: 'No se puede guardar la factura sin un número de documento.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
-        $('#savemodal').modal('show');
+        
     }
 
     function cerrarmodal() {
@@ -766,7 +656,7 @@
     function buscarPorRuc(object){
 
         let ruc = object.value;
-        if(ruc !== '9999999999999'){
+        if(ruc){
             let url = "/bills/buscarVendedor/" + ruc;        
             $.ajax({
                 type: 'GET',
@@ -781,14 +671,10 @@
                     if (data.length !== 0) {
                         $('#proveedor').val(data[0]['vendedor'])
                         $('#direccion').val(data[0]['direccion'])
-                        $('#telefono').val(data[0]['telefono'])
-                        $('#email').val(data[0]['email'])
                         $('#id_proveedor').val(data[0]['id'])
                     } else {
                         $('#proveedor').val('')
                         $('#direccion').val('')
-                        $('#telefono').val('')
-                        $('#email').val('')
                         $('#id_proveedor').val('')
                     }
                 }
