@@ -85,7 +85,7 @@
         <div class="card">
             <div class="card-body">
                 <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
-                    <thead>
+                    <thead class="bg-dark sticky-top">
                         <tr>
                             <th width="4%"></th>
                             <th width="15%">Codigo</th>
@@ -406,6 +406,7 @@
 
     function addRow3() {
         let type = $('#select_move').val();
+        console.log(type)
         let url = "/elements/order/row/movements";
         $.ajax({
             type: 'GET',
