@@ -144,16 +144,18 @@ class BillController extends Controller
 
             // Ejecutar las consultas
             $resultado = $conexion->query($consulta);
-
+            
             // Obtener los resultados de todas las consultas
             $resultados = [];
             do {
                 $resultados[] = $resultado->fetchAll(\PDO::FETCH_ASSOC);
             } while ($resultado->nextRowset());
 
+            //return $resultados[3];
             // Asignar los resultados a las variables correspondientes
             $items = $resultados[0];
             $vendors = $resultados[1];
+
             $seriesFact = $resultados[2];
             $numFact = intval($resultados[3][0]['number']) + 1;
             $payment_terms = $resultados[4];
@@ -177,7 +179,7 @@ class BillController extends Controller
      */
     public function store(Request $request)
     {
-        //return $request;
+
         $nombreBD = App::make('dataBase');
 
         try {
@@ -189,10 +191,10 @@ class BillController extends Controller
             $numero_ident = $request->ruc;
             $tipo_ident = $this->identificarTipoIdentificacion($numero_ident);
             $name = $request->proveedor;
-            $phone = $request->telefono;
-            $email = $request->email;
+            $phone = $request->telefono ?? null;
+            $email = $request->email ?? null;
             $direccion = $request->direccion;
-            $balance = $request->saldo;
+            $balance = $request->saldo ?? null;
             if ($id_proveedor !== null) {
                 $sql = "UPDATE vendors 
                         SET tipo_ident = :tipo_ident,     
@@ -551,7 +553,6 @@ class BillController extends Controller
             echo "Error al insertar el registro: " . $e->getMessage();
         }
     }
-
 
     /**
      * Display the specified resource.

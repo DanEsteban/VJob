@@ -486,6 +486,17 @@ class OperationController extends Controller
                 $stmtC->execute();
                 $resultadoCosto = $stmtC->fetch(\PDO::FETCH_ASSOC);         
     
+            }else{
+
+                $consultaCosto = "SELECT * FROM product_balances WHERE id_item = :code AND year = :yearActual AND month = :monthActual ";
+    
+                $stmtC = $db->prepare($consultaCosto);
+                $stmtC->bindParam(':code', $code, \PDO::PARAM_INT);
+                $stmtC->bindParam(':yearActual', $yearActual, \PDO::PARAM_STR);
+                $stmtC->bindParam(':monthActual', $monthActual, \PDO::PARAM_STR);
+                $stmtC->execute();
+                $resultadoCosto = $stmtC->fetch(\PDO::FETCH_ASSOC);      
+
             }
 
 
