@@ -10,8 +10,8 @@
 
 @php
     $length = 9;
-    $numberD = str_pad($document_numbers[2]['number'], $length,"0", STR_PAD_LEFT);
-    $numberI = str_pad($document_numbers[3]['number'], $length,"0", STR_PAD_LEFT);
+    $numberD = str_pad($document_numbers[1]['number'], $length,"0", STR_PAD_LEFT);
+    $numberI = str_pad($document_numbers[2]['number'], $length,"0", STR_PAD_LEFT);
     //$numberFC = str_pad($document_numbers[4]['number'], $length,"0", STR_PAD_LEFT);
     // $numberD = str_pad($order_numberD[0]['number'], $length,"0", STR_PAD_LEFT);
     // $numberI = str_pad($order_numberI[0]['number'], $length,"0", STR_PAD_LEFT);
@@ -45,9 +45,9 @@
                                     <label for="select_move" class="col-sm-3 col-form-label form-control-sm">Tipo:</label>
                                     <select id="select_move" onchange="typenumber(this);" name="mov_transaction" class="form-select form-select-sm" aria-label=".form-select-sm" tabindex="2">
                                         <option value="none" selected disabled>Seleccione Movimiento</option>
-                                        @for ($i = 2; $i < 4; $i++)
+                                        @for ($i = 1; $i < 3; $i++)
                                             <option value="{{$document_numbers[$i]['id']}}">{{ $document_numbers[$i]['type'] }}</option>
-                                            @endfor
+                                        @endfor
                                     </select>
                                 </div>
                             </div>
@@ -383,8 +383,8 @@
 
     function typenumber(objeto){
         $type = $(objeto).val();
-        
-        if ($type == 3) {
+        console.log($type);
+        if ($type == 2) {
             var variablejs = "<?php echo $numberD; ?>" ;
             $("#number").val(variablejs);
             $("#dTable td:nth-child(6) input").prop('readonly', true);

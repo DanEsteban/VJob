@@ -72,6 +72,7 @@ class EmpresasController extends Controller
                     num_doc_sri varchar(20) DEFAULT NULL,
                     id_vendor int(11) NOT NULL,
                     date date NOT NULL,
+                    date_ingreso_bodega date DEFAULT NULL,
                     phone varchar(100) DEFAULT NULL,
                     email varchar(255) DEFAULT NULL,
                     id_term int(11) DEFAULT NULL,

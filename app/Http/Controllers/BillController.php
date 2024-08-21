@@ -179,14 +179,14 @@ class BillController extends Controller
      */
     public function store(Request $request)
     {
-
+        //return $request;
         $nombreBD = App::make('dataBase');
 
         try {
             $db = new \PDO('mysql:host=localhost;dbname=' . $nombreBD, 'root', '');
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-            //Customer
+            //Vendor
             $id_proveedor = $request->id_proveedor ?? null;
             $numero_ident = $request->ruc;
             $tipo_ident = $this->identificarTipoIdentificacion($numero_ident);
@@ -265,6 +265,7 @@ class BillController extends Controller
             $tipo_documento = $request->id_tipo_doc;
             $num_doc_sri = $request->serieNumero . $request->estableNumero . $request->secuencialNumero;
             $date = $request->fecha_fact;
+            $date_ingreso_bodega = $request->date_ingreso_bodega;
             $phone = $request->telefono;
             $email = $request->email;
             $direccion = $request->direccion;
@@ -276,8 +277,8 @@ class BillController extends Controller
             $saldo = $request->saldo;
 
             $sql = "INSERT INTO bills (number, tipo_documento, num_doc_sri, id_vendor,
-            date, phone, email, direccion, subtotal, total, taxes, base0, base_iva, saldo) VALUES 
-            (:number, :tipo_documento, :num_doc_sri, :id_proveedor, :date, :phone, 
+            date, date_ingreso_bodega,  phone, email, direccion, subtotal, total, taxes, base0, base_iva, saldo) VALUES 
+            (:number, :tipo_documento, :num_doc_sri, :id_proveedor, :date, :date_ingreso_bodega, :phone, 
             :email, :direccion, :subtotal, :total, :taxes, :base0, :base_iva, :saldo)";
 
             $stmt = $db->prepare($sql);
@@ -286,6 +287,7 @@ class BillController extends Controller
             $stmt->bindParam(':num_doc_sri', $num_doc_sri, \PDO::PARAM_STR);
             $stmt->bindParam(':id_proveedor', $id_proveedor, \PDO::PARAM_INT);
             $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
+            $stmt->bindParam(':date_ingreso_bodega', $date_ingreso_bodega, \PDO::PARAM_STR);
             $stmt->bindParam(':phone', $phone, \PDO::PARAM_STR);
             $stmt->bindParam(':email', $email, \PDO::PARAM_STR);
             $stmt->bindParam(':direccion', $direccion, \PDO::PARAM_STR);

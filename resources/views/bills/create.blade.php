@@ -32,7 +32,7 @@
     <br>
 
     <div class="card">
-        <div class="card-header">
+        <div class="card-header bg-white">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
@@ -48,165 +48,179 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <form id="formulario" action="{{route('bills.store')}}" method="POST"> 
-        @csrf
-        <input type="text" name="emp_nombre" value="{{$datosEmp['emp_nombre']}}" hidden>
-        <input type="text" name="emp_ruc" value="{{$datosEmp['emp_ruc']}}" hidden>
-        <input type="text" name="emp_dir" value="{{$datosEmp['emp_dir']}}" hidden>
-        <div class="card-body">
-            <div class="form-container">
-                <div class="form-group">
-                    <label for="number">No. Documento:</label>
-                    <input type="text" id="number" name="number" required autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="ruc">R.U.C.:</label>
-                    <input onchange="buscarPorRuc(this);" type="text" id="ruc" name="ruc" required autocomplete="off">
-                </div>
-
-                <div class="form-group">
-                    <label for="fecha_fact">Fecha factura:</label>
-                    <input onchange="cambioFecha()" type="date" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
-                </div>
-                <div class="form-group">
-                    <label for="proveedor">Nombre:</label>
-                    <input type="text" id="proveedor" name="proveedor" required>
-                    <input type="text" id="id_proveedor" name="id_proveedor" value="1" hidden>
-                </div>
-                <div class="form-group">
-                    <label for="fecha-ingreso">Fecha de ingreso a bodega:</label>
-                    <input onchange="cambioFecha()" type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
-                </div>
-
-                <div class="form-group">
-                    <label for="direccion">Dirección:</label>
-                    <input type="text" id="direccion" name="direccion" required>
-                </div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <table id="dTable" class="table table-responsive" style="width: 100%; max-height: 329px;">
-                    <thead class="bg-dark sticky-header">
-                        <th width="2%"></th>
-                        <th style="width: 90px;">Código</th>
-                        <th style="width: 300px;">Descripción</th>    
-                        <th style="width: 5px;">Cant.Unid.</th>
-                        <th style="width: 20px;">U/M</th>        
-                        <th style="width: 20px;" id="th_cost">Precio</th>                       
-                        <th hidden>PrecioIva</th>
-                        <th style="width: 10px;">IVA</th>
-                        <th style="width: 20px;">Subtotal</th>
-                    </thead>
-                    <tbody id="tb_items">
-                        <?php for ($i = 0; $i < 10; $i++) : ?>
-                            <tr id="tr_items">
-                                <td>
-                                    <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                                <td>
-                                    <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
-                                    <datalist id="itemsList">
-                                        @foreach ($items as $item)
-                                            <option value="{{$item['id']}}"></option> 
-                                        @endforeach
-                                    </datalist>
-                                </td>
-                                <td>
-                                    <input onchange="changeDescription(this, {{json_encode($items)}})" id="description" type="text" autocomplete="off" class="form-control form-control-sm" list="itemDesList">
-                                    <datalist id="itemDesList">
-                                        @foreach ($items as $item)
-                                            <option value="{{$item['item_name']}}"></option>
-                                        @endforeach
-                                    </datalist>
-                                </td>
-                                <td id="tdC1"><input type="text" onchange="changeQty(this);" id="cantidad" name="cantidad[]" class="form-control form-control-sm"></td>
-                                <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" ></td>  
-                                <td><input id="price" onchange="changePrice(this);" name="price[]" type="text" class="form-control form-control-sm"></td>
-                                <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
-                                <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
-                                <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
-                            </tr>
-                        <?php endfor; ?> 
-                    </tbody>
-                </table>
-                <hr>
-                <center>
-                    <button onclick="addRow();" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus"></i> Row</button>
-                </center> 
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <button onclick="guardar();" type="button" class="btn btn-sm btn-outline-success mr-3">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary mr-3">
-                            <i class="fa-solid fa-print"></i> Imprimir
-                        </button>
-                        <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-3">
-                            <i class="fa-solid fa-door-open"></i> Salir
-                        </button>
+        <div class="card-body bg-white">
+            <form id="formulario" action="{{route('bills.store')}}" method="POST"> 
+                @csrf
+                <input type="text" name="emp_nombre" value="{{$datosEmp['emp_nombre']}}" hidden>
+                <input type="text" name="emp_ruc" value="{{$datosEmp['emp_ruc']}}" hidden>
+                <input type="text" name="emp_dir" value="{{$datosEmp['emp_dir']}}" hidden>
+                <div class="card-body">
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label for="number">No. Documento:</label>
+                            <input type="text" id="number" name="number" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="ruc">R.U.C.:</label>
+                            <input onchange="buscarPorRuc(this);" type="text" id="ruc" name="ruc" required autocomplete="off">
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="fecha_fact">Fecha factura:</label>
+                            <input onchange="cambioFecha()" type="date" id="fecha_fact" name="fecha_fact" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="proveedor">Nombre:</label>
+                            <input type="text" id="proveedor" name="proveedor" required>
+                            <input type="text" id="id_proveedor" name="id_proveedor" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha-ingreso">Fecha de ingreso a bodega:</label>
+                            <input onchange="cambioFecha()" type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" min="{{ now()->subDays(15)->format('Y-m-d') }}">
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="direccion">Dirección:</label>
+                            <input type="text" id="direccion" name="direccion" required>
+                        </div>
+                        <div class="form-group">
+                            <label for= "telefono">Teléfono:</label>
+                            <input type="text" id="telefono" name="telefono" placeholder="999999999" required>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" placeholder="you@example.com">          
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-md-6"> 
                 <div class="card">
                     <div class="card-body">
-                        <div class="card-text">
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Subtotal:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="sumaSub" name="sumaSub" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Base 0%:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseCero" name="baseCero" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>Base IVA:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseIva" name="baseIva" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                    <strong>I.V.A:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                    <input class="border-0 col-sm-12 text-right font-weight-bold" id="siIva" name="siIva" type="text" value="0.00" readonly>
-                                </div>
-                            </div>
+                        <div class="table-responsive" style="max-height: 329px; overflow-y: auto;">
+                            <table id="dTable" class="table" style="width: 100%;">
+                                <thead class="bg-dark sticky-top">
+                                    <th width="2%"></th>
+                                    <th style="width: 90px;">Código</th>
+                                    <th style="width: 300px;">Descripción</th>    
+                                    <th style="width: 5px;">Cant.Unid.</th>
+                                    <th style="width: 20px;">U/M</th>        
+                                    <th style="width: 20px;" id="th_cost">Precio</th>                       
+                                    <th hidden>PrecioIva</th>
+                                    <th style="width: 10px;">IVA</th>
+                                    <th style="width: 20px;">Subtotal</th>
+                                </thead>
+                                <tbody id="tb_items">
+                                    <?php for ($i = 0; $i < 10; $i++) : ?>
+                                        <tr id="tr_items">
+                                            <td>
+                                                <button onclick="vaciarRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
+                                            </td>
+                                            <td>
+                                                <input onchange="changeItem(this, {{json_encode($items)}});" id="items" name="items[]" type="text" autocomplete="off" class="form-control form-control-sm" list="itemsList">
+                                                <datalist id="itemsList">
+                                                    @foreach ($items as $item)
+                                                        <option value="{{$item['id']}}"></option> 
+                                                    @endforeach
+                                                </datalist>
+                                            </td>
+                                            <td>
+                                                <input onchange="changeDescription(this, {{json_encode($items)}})" id="description" type="text" autocomplete="off" class="form-control form-control-sm" list="itemDesList">
+                                                <datalist id="itemDesList">
+                                                    @foreach ($items as $item)
+                                                        <option value="{{$item['item_name']}}"></option>
+                                                    @endforeach
+                                                </datalist>
+                                            </td>
+                                            <td id="tdC1"><input type="text" onchange="changeQty(this);" id="cantidad" name="cantidad[]" class="form-control form-control-sm"></td>
+                                            <td><input id="unit" name="unit[]" type="text" class="form-control form-control-sm" ></td>  
+                                            <td><input id="price" onchange="changePrice(this);" name="price[]" type="text" class="form-control form-control-sm"></td>
+                                            <td hidden><input type="text" id="id_iva" name="iva[]" hidden></td>
+                                            <td><input type="text" id="iva" class="form-control form-control-sm" readonly></td>
+                                            <td><input type="text" id="subtotal" name="subtotal[]" class="form-control form-control-sm" readonly></td>
+                                        </tr>
+                                    <?php endfor; ?> 
+                                </tbody>
+                            </table>
                             <hr>
-                            <div class="row align-items-center">
-                                <div class="col-sm-12 col-md-6 mb-2 text-md-end">
-                                <strong>Total:</strong>
-                                </div>
-                                <div class="col-sm-12 col-md-6">
-                                <input class="border-0 col-sm-12 text-right font-weight-bold" id="total" name="total" type="text" value="0.00" readonly>
+                            <center>
+                                <button onclick="addRow();" type="button" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus"></i> Row</button>
+                            </center> 
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <button onclick="guardar();" type="button" class="btn btn-sm btn-outline-success mr-3">
+                                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary mr-3">
+                                    <i class="fa-solid fa-print"></i> Imprimir
+                                </button>
+                                <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-3">
+                                    <i class="fa-solid fa-door-open"></i> Salir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="col-md-6"> 
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-text">
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-12 col-md-6 mb-2 text-md-end">
+                                            <strong>Subtotal:</strong>
+                                        </div>
+                                        <div class="col-sm-12 col-md-6">
+                                            <input class="border-0 col-sm-12 text-right font-weight-bold" id="sumaSub" name="sumaSub" type="text" value="0.00" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-12 col-md-6 mb-2 text-md-end">
+                                            <strong>Base 0%:</strong>
+                                        </div>
+                                        <div class="col-sm-12 col-md-6">
+                                            <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseCero" name="baseCero" type="text" value="0.00" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-12 col-md-6 mb-2 text-md-end">
+                                            <strong>Base IVA:</strong>
+                                        </div>
+                                        <div class="col-sm-12 col-md-6">
+                                            <input class="border-0 col-sm-12 text-right font-weight-bold" id="baseIva" name="baseIva" type="text" value="0.00" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-12 col-md-6 mb-2 text-md-end">
+                                            <strong>I.V.A:</strong>
+                                        </div>
+                                        <div class="col-sm-12 col-md-6">
+                                            <input class="border-0 col-sm-12 text-right font-weight-bold" id="siIva" name="siIva" type="text" value="0.00" readonly>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-12 col-md-6 mb-2 text-md-end">
+                                        <strong>Total:</strong>
+                                        </div>
+                                        <div class="col-sm-12 col-md-6">
+                                        <input class="border-0 col-sm-12 text-right font-weight-bold" id="total" name="total" type="text" value="0.00" readonly>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
+
+    
 
 @stop
 
@@ -654,8 +668,8 @@
     }
 
     function buscarPorRuc(object){
-
         let ruc = object.value;
+        console.log(ruc)
         if(ruc){
             let url = "/bills/buscarVendedor/" + ruc;        
             $.ajax({
@@ -672,10 +686,14 @@
                         $('#proveedor').val(data[0]['vendedor'])
                         $('#direccion').val(data[0]['direccion'])
                         $('#id_proveedor').val(data[0]['id'])
+                        $('#telefono').val(data[0]['telefono'])
+                        $('#email').val(data[0]['email'])
                     } else {
                         $('#proveedor').val('')
                         $('#direccion').val('')
                         $('#id_proveedor').val('')
+                        $('#telefono').val('')
+                        $('#email').val('')
                     }
                 }
             });            
