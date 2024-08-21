@@ -223,7 +223,7 @@ class ElementsController extends Controller
 
             $jitems = json_encode($items);
 
-            if( $request->type == 3){
+            if( $request->type == 2){
                 $row = '<tr id="tr_items">'.
                     '<td><button onclick="delRow(this);" type="button" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button></td>
                     <td>

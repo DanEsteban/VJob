@@ -97,7 +97,7 @@ class MovementsController extends Controller
             $result2= $conexion->query($consulta2);
             $result3= $conexion->query($consulta3);
             $result4= $conexion->query($consulta4);
-            // $result5= $conexion->query($consulta5);
+            // $result5= $conexion->query($consulta5); 
 
             $items = $result->fetchAll(\PDO::FETCH_ASSOC);
             //$types = $result2->fetchAll(\PDO::FETCH_ASSOC);
@@ -111,6 +111,7 @@ class MovementsController extends Controller
 
             // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'warehouses'));
             
+
             return view('movements.create', compact('items', 'document_numbers', 'warehouses'));
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
