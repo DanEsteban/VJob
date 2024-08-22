@@ -395,7 +395,7 @@
 
         }
     }
-
+    
     function delRow(object) {
         var filas = $('#tb_items #tr_items').length;
         if(filas > 1){
@@ -406,7 +406,6 @@
 
     function addRow3() {
         let type = $('#select_move').val();
-        console.log(type)
         let url = "/elements/order/row/movements";
         $.ajax({
             type: 'GET',
