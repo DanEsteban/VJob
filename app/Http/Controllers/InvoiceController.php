@@ -372,7 +372,7 @@ class InvoiceController extends Controller
             $items = $resultados[0];
             $vendors = $resultados[1];
             $seriesFact = $resultados[2];
-            $numFact = intval($resultados[3][0]['number']) + 1;
+            $numFact = intval($resultados[3][0]['number']);
             $payment_terms = $resultados[4];
             $datosEmp = [];
             foreach ($resultados[5] as $fila) {
@@ -458,8 +458,9 @@ class InvoiceController extends Controller
             // Generar número de factura único
             $length = 9; 
             $sales_number = "";
-            $number = intval($request->number);
-            $secuencial = $request->number;
+            // $number = intval($request->number);
+            // return $number;
+            $secuencial = $request->secuencialNumero;
 
             $sql = "SELECT * FROM invoices WHERE number = :secuencial LIMIT 1";
 
@@ -468,19 +469,19 @@ class InvoiceController extends Controller
             $stmt->execute();
             $if_exists = $stmt->rowCount();
 
-            if ($if_exists == 1) {
-                while ($if_exists == 1) {
-                    $number = intval($secuencial);   
-                    $number += 1;
-                    $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
-                    $sales_number = $secuencial;
-                    $stmt->execute();
-                    $if_exists = $stmt->rowCount();
-                }
-            } else {
-                $sales_number = $request->number;
+            while ($if_exists == 1) {
+                $number = intval($secuencial);   
+                $number += 1;
+                $secuencial = str_pad($number, $length,"0", STR_PAD_LEFT);
+                
+                // Actualizar el valor del parámetro vinculado
+                $stmt->bindParam(':secuencial', $secuencial, \PDO::PARAM_STR);
+                $stmt->execute();
+                $if_exists = $stmt->rowCount();
             }
-
+            
+            $sales_number = $secuencial;
+            //return $sales_number;
             //Invoice
             $number = $sales_number;
             $tipo_documento = $request->id_tipo_doc;
@@ -666,8 +667,7 @@ class InvoiceController extends Controller
 
             // Payment_Customers
             $id_customer = $request->id_cliente ?? $id_cliente;
-            //return $id_customer;
-            $invoice = $request->number;
+            $invoice = $request->secuencialNumero;
             $amount = $request->total;
 
             $sql = "INSERT INTO payment_customer 
