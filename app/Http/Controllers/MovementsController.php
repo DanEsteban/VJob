@@ -115,7 +115,7 @@ class MovementsController extends Controller
             echo "Error de conexión: " . $e->getMessage();
         } 
     }
-
+    
     /**
      * Store a newly created resource in storage.
      *
