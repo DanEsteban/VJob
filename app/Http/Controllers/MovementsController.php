@@ -108,10 +108,8 @@ class MovementsController extends Controller
 
             //return  $document_numbers;
             //return $order_numberD[0]['number']; 
-
             // return view('movements.create', compact('items', 'order_numberD', 'order_numberI', 'warehouses'));
-            
-
+    
             return view('movements.create', compact('items', 'document_numbers', 'warehouses'));
         }catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
@@ -145,7 +143,7 @@ class MovementsController extends Controller
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
 
-            $mov_transac_str = ($mov_transac == 3) ? "Egreso" : "Ingreso";
+            $mov_transac_str = ($mov_transac == 2) ? "Egreso" : "Ingreso";
 
             // Función para obtener un número secuencial único
             function getUniqueSecuencial($conexion, $secuencial, $length, $mov_transac_str) {
@@ -260,14 +258,14 @@ class MovementsController extends Controller
                     $totalQty = 0;
                     $totalCost = 0;
 
-                    if ($mov_transac == 3) {
+                    if ($mov_transac == 2) {
                         $totalQty = $futureCosts['qty'] - $qty;
                         $averageCost = $futureCosts['avg_cost'];
 
                         $totalCost = $averageCost * $totalQty;                
                         
                     }
-                    else{
+                    elseif ($mov_transac == 3) {
                         $totalQty = $futureCosts['qty'] + $qty ;
                         $totalCost = $futureCosts['cost'] + ($cost * $qty);
                         $averageCost = $totalCost / $totalQty;
