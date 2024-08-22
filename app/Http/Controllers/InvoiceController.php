@@ -372,7 +372,7 @@ class InvoiceController extends Controller
             $items = $resultados[0];
             $vendors = $resultados[1];
             $seriesFact = $resultados[2];
-            $numFact = intval($resultados[3][0]['number']);
+            $numFact = intval($resultados[3][0]['number']) + 1;
             $payment_terms = $resultados[4];
             $datosEmp = [];
             foreach ($resultados[5] as $fila) {

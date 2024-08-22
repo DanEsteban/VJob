@@ -725,7 +725,7 @@ class EmpresasController extends Controller
                 );
 
                 $datosInicialesdocument_numbers = array(
-                    "('Factura', '1')",
+                    "('Factura', '0')",
                     "('Egreso', '1')",
                     "('Ingreso', '1')",
                     "('FacturaCompra', '1')",
