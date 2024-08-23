@@ -663,9 +663,6 @@
         
     }
 
-    function cerrarmodal() {
-        $('#savemodal').modal('toggle');
-    }
 
     function buscarPorRuc(object){
         let ruc = object.value;
@@ -709,26 +706,6 @@
         }
     }
 
-    function selectDoc(object){
-        //console.log(object);
-        $('tr').removeClass('table-active');
-        $(object).addClass('table-active');
-
-        let idtipoDoc = ($(object).find('#id_TipoDoc')).html();
-        let tipoDoc = ($(object).find('#tipoDoc')).html();
-        let numeros = ($(object).find('#serie')).html();
-        let secuencial = ($(object).find('#secuencial')).html();
-        let serie = numeros.split("-")[0];
-        let establecimiento = numeros.split("-")[1];
-        $('#serieNumero').val(serie);
-        $('#estableNumero').val(establecimiento);
-        $('#id_tipo_doc').val(idtipoDoc);
-        
-        let numero = secuencial.toString().padStart(9, '0');
-        $('#secuencialNumero').val(numero);
-        
-
-    }
 
     function calculoSaldo(){
         
