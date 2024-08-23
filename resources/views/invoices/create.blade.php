@@ -929,7 +929,7 @@
     function cerrarmodal() {
         $('#savemodal').modal('toggle');
     }
-
+    
     function buscarPorRuc(object){
 
         let ruc = object.value;

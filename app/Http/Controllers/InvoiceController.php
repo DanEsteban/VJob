@@ -1307,63 +1307,63 @@ class InvoiceController extends Controller
 
     // }
 
-    // public function verificarCliente($ruc)
-    // {
-    //     $nombreBD = App::make('dataBase');
+    public function verificarCliente($ruc)
+    {
+        $nombreBD = App::make('dataBase');
 
-    //     $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
-    //     $usuario = "root";
-    //     $contrasena = "";
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
 
-    //     try
-    //     {
-    //         $conexion = new \PDO($dsn, $usuario, $contrasena);
-    //         $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        try
+        {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
-    //         $consulta = "SELECT * FROM customers WHERE numero_ident = '{$ruc}'";
-    //         $result= $conexion->query($consulta);
+            $consulta = "SELECT * FROM customers WHERE numero_ident = '{$ruc}'";
+            $result= $conexion->query($consulta);
 
-    //         $customer = [];
+            $customer = [];
 
-    //         foreach ($result as $fila) {
-    //             $customer[]=[
-    //                 "id" => $fila['id'],
-    //                 "cliente" => $fila['name'],
-    //                 "email" => $fila['email'],
-    //                 "telefono" => $fila['phone'],
-    //                 "direccion" => $fila['direccion']
-    //             ];
-    //         }
+            foreach ($result as $fila) {
+                $customer[]=[
+                    "id" => $fila['id'],
+                    "cliente" => $fila['name'],
+                    "email" => $fila['email'],
+                    "telefono" => $fila['phone'],
+                    "direccion" => $fila['direccion']
+                ];
+            }
 
-    //         return json_encode($customer);
+            return json_encode($customer);
             
-    //     }catch (\PDOException $e) {
-    //         echo "Error de conexión: " . $e->getMessage();
-    //     } 
-    // }
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+    }
 
-    // public function tipoDocumento($tipo)
-    // {
-    //     $nombreBD = App::make('dataBase');
+    public function tipoDocumento($tipo)
+    {
+        $nombreBD = App::make('dataBase');
 
-    //     $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
-    //     $usuario = "root";
-    //     $contrasena = "";
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
 
-    //     try
-    //     {
-    //         $conexion = new \PDO($dsn, $usuario, $contrasena);
-    //         $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        try
+        {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             
-    //         $consulta = "SELECT number FROM document_numbers WHERE type = '{$tipo}'";
-    //         $result= $conexion->query($consulta);
+            $consulta = "SELECT number FROM document_numbers WHERE type = '{$tipo}'";
+            $result= $conexion->query($consulta);
 
-    //         $tipo =  $result->fetch();
+            $tipo =  $result->fetch();
 
-    //         return json_encode($tipo);
+            return json_encode($tipo);
             
-    //     }catch (\PDOException $e) {
-    //         echo "Error de conexión: " . $e->getMessage();
-    //     } 
-    // }
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        } 
+    }
 }
