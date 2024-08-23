@@ -14,12 +14,10 @@
 @section('content')
 
 <?php
-    use Carbon\Carbon;
-        
+    use Carbon\Carbon;    
     date_default_timezone_set('America/Guayaquil');
 
     $fechaActual = $cabeceraInv['date'];
-    //$fechaActual = 2024-01-31
     $fechaFormateada = Carbon::createFromFormat('Y-m-d', $fechaActual)->locale('es_ES')->isoFormat('dddd, D [de] MMMM [de] YYYY');
 
     const porc_iva = 0.12;
@@ -32,65 +30,58 @@
         </div>
     @endif
     <div class="card">
-        <div class="card-header">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-6 text-left">
-                        <h1>{{$datosEmp['emp_nombre']}}</h1>
-                        <p>{{$datosEmp['emp_ruc']}}</p>
-                        <p>{{$datosEmp['emp_dir']}}</p>
-                    </div>
-                    <div class="col-md-6 d-flex justify-content-end">
-                        <h1 class="text-rigth">Logo Empresa</h1>
-                    </div>
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-left mb-3 mb-md-0">
+                    <img src="/{{$datosEmp['emp_ruta_logo']}}" class="img-fluid" width="200px" alt="">
+                </div>
+
+                <div class="col-md-6 text-md-right">
+                    <p class="mb-1"><strong>{{$datosEmp['emp_nombre']}}</strong></p>
+                    <p class="mb-1"><strong>Ruc: </strong>{{$datosEmp['emp_ruc']}}</p>
+                    <p class="mb-1">{{$datosEmp['emp_dir']}}</p>
+                    <p class="mb-0"><strong>Telf: </strong>{{$datosEmp['emp_tel']}}</p>
                 </div>
             </div>
-        </div>
-
-        <div class="card-body">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
-                            <h4 class="invoice-color mb-2 mt-md-2">{{$titulo}} #<?php echo $cabeceraInv['num_doc_sri']; ?></h4>
-                            <div class="text-right">
-                                <label for="fecha">Fecha:</label>
-                                <span>{{$fechaFormateada}}</span>
-                            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                        <h4 class="invoice-color mb-2 mt-md-2">{{$titulo}} #<?php echo $cabeceraInv['num_doc_sri']; ?></h4>
+                        <div class="text-right">
+                            <label for="fechaSpan">Fecha:</label>
+                            <span id="fechaSpan">{{$fechaFormateada}}</span>
                         </div>
                     </div>
                 </div>
-                <hr>
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><b>Nombre:</b> {{$cabeceraInv['name']}} </p>
-                        <p><b>RUC:</b> {{$cabeceraInv['numero_ident']}} </p>
-                        <p><b>Dirección:</b> {{$cabeceraInv['direccion']}}</p>                         
-                    </div>
-                    <div class="col-md-5">
-                        <p><b>Correo electrónico:</b> {{$cabeceraInv['email']}}</p>
-                        <p><b>Teléfono:</b> {{$cabeceraInv['phone']}}</p>                     
-                    </div>
-                    <div id="botones" class="col-md-3">
-                        <div class="d-flex justify-content-end">
-                            <a href="/invoices/create" type="button" class="btn btn-sm btn-outline-primary mr-2">
-                                <i class="fas fa-file"></i> Nuevo
-                            </a>
-                            <button onclick="imprimir();" type="button" class="btn btn-sm btn-outline-primary mr-2">
-                                <i class="fas fa-print"></i> Imprimir
-                            </button>
-                            <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
-                                <i class="fas fa-door-open"></i> Salir
-                            </button>                     
-                        </div>
+            </div>    
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p><b>Nombre:</b> {{$cabeceraInv['name']}} </p>
+                    <p><b>RUC:</b> {{$cabeceraInv['numero_ident']}} </p>
+                    <p><b>Dirección:</b> {{$cabeceraInv['direccion']}}</p>                         
+                </div>
+                <div class="col-md-5">
+                    <p><b>Correo electrónico:</b> {{$cabeceraInv['email']}}</p>
+                    <p><b>Teléfono:</b> {{$cabeceraInv['phone']}}</p>                     
+                    <p><b>Comentario:</b> {{$cabeceraInv['comentario']}}</p> 
+                </div>
+                <div id="botones" class="col-md-3">
+                    <div class="d-flex justify-content-end">
+                        {{-- <a href="/invoices/create" type="button" class="btn btn-sm btn-outline-primary mr-2">
+                            <i class="fas fa-file"></i> Nuevo
+                        </a> --}}
+                        <button onclick="imprimir();" type="button" class="btn btn-sm btn-outline-primary mr-2">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <button onclick="salir();" type="button" class="btn btn-sm btn-outline-success mr-2">
+                            <i class="fas fa-door-open"></i> Salir
+                        </button>                     
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
+            <hr>
             <div class="table-responsive">
                 <table id="dTable" class="table table-bordered">
                     <thead class="bg-dark">
@@ -500,7 +491,7 @@
             denyButtonText: `Cancelar`,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "/invoices";
+                    window.location.href = "/Dashboard";
                 }
             });
     }

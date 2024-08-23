@@ -45,10 +45,9 @@ class DocumentsController extends Controller
         $contrasena = "";
 
         $id = $request->id_fact;
-        
+        $comentario = $request->comentario;
         try
         {
-            
             $conexion = new \PDO($dsn, $usuario, $contrasena);
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -90,13 +89,14 @@ class DocumentsController extends Controller
             $created_at = $invoice["created_at"];
             $updated_at = $invoice["updated_at"];
 
-            $sql = "INSERT INTO documents (number, tipo_documento, num_doc_sri, id_customer,
-            date, phone, subtotal, email, taxes,  base0, base_iva, total, saldo, doc_genera) VALUES (:number, :tipo_documento, 
-            :num_doc_sri, :id_cliente, :date, :phone, :subtotal, :email, :taxes,  :base0, :base_iva, :total, :saldo, :doc_genera)";
+            $sql = "INSERT INTO documents (number, tipo_documento, comentario, num_doc_sri, id_customer,
+            date, phone, subtotal, email, taxes,  base0, base_iva, total, saldo, doc_genera) VALUES (:number, :tipo_documento, :comentario, :num_doc_sri, 
+            :id_cliente, :date, :phone, :subtotal, :email, :taxes,  :base0, :base_iva, :total, :saldo, :doc_genera)";
             
             $stmt = $conexion->prepare($sql);
             $stmt->bindParam(':number', $number, \PDO::PARAM_STR);
             $stmt->bindParam(':tipo_documento', $tipo_documento, \PDO::PARAM_INT);
+            $stmt->bindParam(':comentario', $comentario, \PDO::PARAM_STR);
             $stmt->bindParam(':num_doc_sri', $num_doc_sri, \PDO::PARAM_STR);
             $stmt->bindParam(':id_cliente', $id_customer, \PDO::PARAM_INT);
             $stmt->bindParam(':date', $date, \PDO::PARAM_STR);
@@ -180,7 +180,7 @@ class DocumentsController extends Controller
             $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $consulta = "SELECT 
-                    documents.num_doc_sri, documents.date, documents.subtotal, documents.taxes, documents.base0, 
+                    documents.num_doc_sri, documents.comentario, documents.date, documents.subtotal, documents.taxes, documents.base0, 
                     documents.base_iva, documents.total, 
                     customers.numero_ident, customers.name, customers.phone, 
                     customers.email, customers.direccion, customers.balance 

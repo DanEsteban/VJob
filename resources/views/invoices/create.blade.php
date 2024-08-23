@@ -15,7 +15,6 @@
 
 <?php
     use Carbon\Carbon;
-
     date_default_timezone_set('America/Guayaquil');
 
     $fechaActual = Carbon::now();
@@ -44,14 +43,14 @@
                     <p class="mb-1">{{$datosEmp['emp_dir']}}</p>
                     <p class="mb-0"><strong>Telf: </strong>{{$datosEmp['emp_tel']}}</p>
                 </div>
-            </div>
+            </div>  
             <div class="row">
                 <div class="col-sm-12">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
                         <h4 class="invoice-color mb-2 mt-md-2">Invoice #<?php echo str_pad($numFact, 9, "0", STR_PAD_LEFT); ?></h4>
                         <div class="text-right">
                             <label for="fechaSpan">Fecha:</label>
-                            <span id="fechaSpan"><?php echo $fechaFormateada ; ?></span>
+                            <span id="fechaSpan">{{$fechaFormateada}}</span>
                         </div>
                     </div>
                 </div>
@@ -1082,9 +1081,9 @@
 
     function salir() {
         Swal.fire({
-            title: 'Do you want to exit the form?',
+            title: 'Quiere salir del Formulario?',
             showDenyButton: true,
-            confirmButtonText: 'Exit',
+            confirmButtonText: 'Salir',
             denyButtonText: `Cancelar`,
             }).then((result) => {
                 if (result.isConfirmed) {
