@@ -143,6 +143,7 @@ class EmpresasController extends Controller
                 "documents" => "id int(11) NOT NULL AUTO_INCREMENT,
                     number varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                     tipo_documento int(2) NOT NULL,
+                    comentario varchar(255) NOT NULL,
                     num_doc_sri varchar(20) NOT NULL,
                     id_customer int(11) NOT NULL,
                     date date NOT NULL,
