@@ -126,14 +126,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            @if ($existeNC['existe'] != 1)
-                @if ($cabeceraInv['numero_ident'] != "9999999999999") 
-                    <button onclick="generarNC({{(int)($cabeceraInv['number'])}})"type="button" class="btn btn-sm btn-outline-success mr-2">
-                        <i class="fas fa-door-open"></i> Generar N/C
-                    </button>
-                @endif       
-            @endif            
+        <div class="col-md-6">         
         </div>
         <div class="col-md-6">
             <div class="card">

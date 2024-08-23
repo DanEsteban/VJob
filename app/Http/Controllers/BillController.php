@@ -180,12 +180,13 @@ class BillController extends Controller
     public function store(Request $request)
     {
         //return $request;
+        
         $nombreBD = App::make('dataBase');
 
         try {
             $db = new \PDO('mysql:host=localhost;dbname=' . $nombreBD, 'root', '');
             $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
+            
             //Vendor
             $id_proveedor = $request->id_proveedor ?? null;
             $numero_ident = $request->ruc;
@@ -486,22 +487,17 @@ class BillController extends Controller
             //     }
             // }
 
-            $sql = "UPDATE document_numbers SET number = :number WHERE type = 'FacturaCompra'";
+            $sql = "SELECT * FROM document_numbers WHERE type = 'FacturaCompra'";
             $stmt = $db->prepare($sql);
-            $stmt->bindParam(':number', $number, \PDO::PARAM_INT);
             $stmt->execute();
 
             // Incrementar el número secuencial y actualizar la serie de facturas
-            $sec = $request->secuencialNumero;
-            $sec = ltrim($sec, '0');
+            $numeroFac = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $sec = $numeroFac['number'];
             $sec = (int)$sec + 1;
 
-            if ($request->id_tipo_doc === "1") {
-                $sql = "UPDATE serie_factura SET secuencial = :sec WHERE nombre = 'FacturaCompra'";
-            } else {
-                $sql = "UPDATE serie_factura SET secuencial = :sec WHERE nombre = 'Nota de Venta'";
-            }
 
+            $sql = "UPDATE document_numbers SET number = :sec WHERE type = 'FacturaCompra'";
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':sec', $sec, \PDO::PARAM_INT);
             $stmt->execute();
