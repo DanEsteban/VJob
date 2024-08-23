@@ -413,7 +413,7 @@ class InvoiceController extends Controller
             $direccion = $request->direccion;
             $id_vendedor = $request->vendedor;
             $balance = $request->saldo;
-            if($id_cliente !== null){   
+            if($id_cliente != null){   
                 $sql = "UPDATE customers 
                         SET tipo_ident = :tipo_ident,     
                             numero_ident = :numero_ident,
