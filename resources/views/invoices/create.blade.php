@@ -328,18 +328,16 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-sm-3 ntransfer">
-                                                <input type="text" class="form-control" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
-                                            </div>
-                                            <div class="col-sm-2">
-                                                <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden>
+                                            <div class="col-sm-3 d-flex align-items-center">
+                                                <input type="text" class="form-control me-auto" id="numTransfer1" name="numTransfer1" placeholder="Nro. Transferencia" hidden>
+                                                <input type="text" class="form-control" id="banco1" name="banco1" placeholder="Banco" hidden >
                                             </div>
                                         </div>
                                         
                                         <div class="form-group row modalGroup">
                                             <label for="abono2" class="col-sm-2 col-form-label text-sm-left">Abono:</label>
                                             <div class="col-sm-2">
-                                                <input onchange="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
+                                                <input onkeyup="calculoSaldo();" type="text" class="form-control mt-1" id="abono2" name="abono2" value="0.00" readonly>
                                             </div>
                                             <div class="col-sm-2">
                                                 <select onchange="changeFormaPago();" id="formaPago2" name="formaPago2" type="text" class="form-control mt-1">
@@ -349,11 +347,9 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-sm-3 ntransfer">
-                                                <input type="text" class="form-control" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
-                                            </div>
-                                            <div class="col-sm-2">
-                                                <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden>
+                                            <div class="col-sm-3 d-flex align-items-center">
+                                                <input type="text" class="form-control me-auto" id="numTransfer2" name="numTransfer2" placeholder="Nro. Transferencia" hidden>
+                                                <input type="text" class="form-control" id="banco2" name="banco2" placeholder="Banco" hidden >
                                             </div>
                                         </div>
 
@@ -377,8 +373,7 @@
                             </div>
                         </div>
                     </div>
-                <!-- ///////////////////////////////////////////////////////////////////////////////////////////// -->      
-
+                <!-- ///////////////////////////////////////////////////////////////////////////////////////////// --> 
             </form>
         </div>
     </div>
@@ -427,11 +422,10 @@
             display: inline-block; 
         }
 
-
         #savemodal input{
             height: 27px;
         }
-
+        /*Todo lo de formgroup .me es para el select del abono 1 y dos*/
         .form-group {
             margin: 0;
         }
@@ -446,10 +440,10 @@
             height: 1.8rem;
         }
 
-        .ntransfer{
-            margin-left: 1rem;
+        .d-flex .form-control {
+            width: 80px; /* Dejar que los campos ajusten su ancho automáticamente */
+            margin-left: 2rem; 
         }
-
         .card-header .col-md-6 p {
             margin-bottom: 3px;
         }
@@ -542,7 +536,19 @@
             if (event.key === "Enter") {
                 event.preventDefault();
             }
-        });        
+        }); 
+        
+        $('form').on('submit', function(event) {
+            // Verifica si el total es 0.00
+            if ($("#total").val() == "0.00") {
+                Swal.fire({
+                    icon: "error",
+                    title: "No puede guardar una factura si no ha seleccionado un producto",
+                });
+                event.preventDefault(); // Evita el envío del formulario
+                return;
+            }
+        });
     });
 
     function cambioFecha() {
@@ -992,7 +998,6 @@
         let apagar = parseFloat($('#apagar').val());
         let abono1 = parseFloat($('#abono1').val()) || 0.00;
         let abono2 = parseFloat($('#abono2').val()) || 0.00;
-
         let totalAbonos = abono1 + abono2; 
 
         if (abono1 > apagar) {
@@ -1007,15 +1012,25 @@
             abono2 = apagar - abono1;
         }
 
-        let saldo = apagar - abono1 - abono2;
-        $('#abono1').val(abono1.toFixed(2));
-        $('#abono2').val(abono2.toFixed(2));
-        $('#saldo').val(saldo.toFixed(2));
-
         // if (apagar != abono1) {
         //     $('#abono2').val(parseFloat(apagar-abono1).toFixed(2));
         //     $('#saldo').val(0.00);
         // }  
+        // Verificar si el RUC es de consumidor final
+        if($("#ruc").val() == "9999999999999"){
+            Swal.fire({
+                icon: "error",
+                title: "Un CONSUMIDOR FINAL debe hacer todo el pago!",
+            });
+            // Asignar el total de "apagar" a "abono1" y reiniciar "abono2"
+            abono1 = apagar;
+            abono2 = 0.00;
+        }
+
+        let saldo = apagar - abono1 - abono2;
+        $('#abono1').val(abono1.toFixed(2));
+        $('#abono2').val(abono2.toFixed(2));
+        $('#saldo').val(saldo.toFixed(2));
 
         function showError(message, element) {
             Swal.fire({
@@ -1046,7 +1061,6 @@
             $("#numTransfer2").attr('hidden', true);
             $("#banco2").attr('hidden', true);
         }
-
     }
 
     function addRow() {
