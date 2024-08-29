@@ -381,6 +381,7 @@ class InvoiceController extends Controller
 
             //return $items;
             //return $datosEmp;
+            //return $seriesFact;
             return view('invoices.create', compact('items','vendors','seriesFact','numFact', 'payment_terms', 'datosEmp'));
             
         }catch (\PDOException $e) {
@@ -520,9 +521,7 @@ class InvoiceController extends Controller
 
             //Invoice Items
             $id_invoice = $lastId_invoice;
-
-            $qty = 0;
-            
+            $qty = 0;          
             $detalles = [];
 
 
@@ -531,7 +530,6 @@ class InvoiceController extends Controller
             $dateObject = new DateTime($date);
             $year = $dateObject->format('Y');
             $month = $dateObject->format('m');
-
 
             $sql_select_product_cost = "SELECT avg_cost FROM product_balances WHERE id_item = :id_item AND year = :year AND month = :month";
             $stmt_select_product_cost = $db->prepare($sql_select_product_cost);
@@ -555,7 +553,6 @@ class InvoiceController extends Controller
             AND year = :year 
             AND month = :month";
             $stmt_get_future_costs = $db->prepare($sql_get_future_costs);
-
             
             foreach ($request->items as $index => $item) {
                 
@@ -620,13 +617,10 @@ class InvoiceController extends Controller
                     $averageCost = 0;
                     $totalQty = 0;
                     $totalCost = 0;
-
                     $totalQty = $futureCosts['qty'] - $qty;
                     $averageCost = $futureCosts['avg_cost'];
-
                     $totalCost = $averageCost * $totalQty;                
-                        
-
+            
 
                     $sql_update_productBalance = "UPDATE product_balances 
                         SET qty = :totalQty, cost = :totalCost , avg_cost = :averageCost
@@ -662,7 +656,6 @@ class InvoiceController extends Controller
             }      
             
             //return $detalles;
-
             //$db->commit();
 
             // Payment_Customers

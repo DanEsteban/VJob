@@ -34,7 +34,7 @@
                             <input autocomplete="off" name="customer" onchange="filterInvoice(this.value);" class="form-control form-control-sm" type="text" list="customerList" placeholder="Choose a Customer" style="font-size: 20px" required>
                             <datalist id="customerList">
                                 @foreach ($customers as $customer)
-                                    <option value="{{$customer->company_name}}"></option>
+                                    <option value="{{$customer['name']}}"></option>
                                 @endforeach
                             </datalist>
                         </div>
@@ -68,7 +68,7 @@
                                     <input onchange="changeTerm(this.value);" name="term" class="form-control form-control-sm" type="text" list="termList" placeholder="Choose a Term" required>
                                     <datalist id="termList">
                                         @foreach ($terms as $term)
-                                            <option value="{{$term->name}}"></option>
+                                            <option value="{{$term['name']}}"></option>
                                         @endforeach
                                     </datalist>
                                 </div>

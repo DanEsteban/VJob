@@ -8,17 +8,10 @@ use App\Models\PaymentTerms;
 use App\Models\PaymentCustomers;
 use App\Models\PaymentsDetails;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class PaymentController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:payment.index')->only('index'); 
-        $this->middleware('can:payment.create')->only('create', 'store');
-        $this->middleware('can:payment.edit')->only('edit', 'update');
-        //$this->middleware('can:payment.show')->only('show');
-        $this->middleware('can:payment.destroy')->only('destroy');
-    }
 
     /**
      * Display a listing of the resource.
@@ -27,10 +20,35 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $terms = PaymentTerms::all();
-        $customers = Customers::where('is_active', 1)->get();
+        $nombreBD = App::make('dataBase');
+        $dsn = 'mysql:host=localhost;dbname='. $nombreBD;
+        $usuario = "root";
+        $contrasena = "";
 
-        return view('payments.index', compact('customers', 'terms'));
+        try
+        {
+            $conexion = new \PDO($dsn, $usuario, $contrasena);
+            $conexion->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            $consulta = "SELECT * FROM payment_terms";
+            $result = $conexion->query($consulta);
+            $terms = $result->fetchAll(\PDO::FETCH_ASSOC);
+
+            $consulta2 = "SELECT * FROM customers ORDER BY id ASC LIMIT 18446744073709551615 OFFSET 1";
+            $result2 = $conexion->query($consulta2);
+            $customers = $result2->fetchAll(\PDO::FETCH_ASSOC);
+            
+            return view('payments.index', [
+                'terms' => $terms,
+                'customers' => $customers
+            ]);
+
+        }catch (\PDOException $e) {
+            echo "Error de conexión: " . $e->getMessage();
+        }    
+        
+        // $terms = PaymentTerms::all();
+        // $customers = Customers::where('is_active', 1)->get();
     }
 
     /**
@@ -51,7 +69,7 @@ class PaymentController extends Controller
      */
     public function store(Request $request)
     {
-        $customer = Customers::where('company_name', $request->customer)->first();
+        $date = Customers::where('company_name', $request->customer)->first();
         $id_term = PaymentTerms::where('name', $request->term)->value('id');
         $payment =  PaymentCustomers::create([
                 'id_customer' => $customer->id,
