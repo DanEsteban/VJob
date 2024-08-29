@@ -81,6 +81,8 @@ Route::get('/elements/priceProduct/row', [ElementsController::class, 'addRowPric
 Route::get('/elements/order/row', [ElementsController::class, 'addRowOrder'])->name('element.order.row');
 Route::get('/elements/order/row/movements', [ElementsController::class, 'addRowOrder3'])->name('element.order.row.movements');
 
+Route::resource('payments', PaymentController::class);
+
 
 
 ///////////////////////////////////////////////////////
@@ -118,7 +120,6 @@ Route::get('/options', function () { return view('options.index'); })->middlewar
 
 Route::resource('orders', OrderController::class)->except(['destroy'])->middleware(['auth:sanctum', 'verified']);
 
-Route::resource('payments', PaymentController::class)->middleware(['auth:sanctum', 'verified']);
 Route::get('/operations/customer/payment/delete/{id}', [OperationController::class, 'paymentDelete'])->middleware(['auth:sanctum', 'verified']);
 
 Route::resource('productsReport', ProductReportController::class)->middleware(['auth:sanctum', 'verified']);
